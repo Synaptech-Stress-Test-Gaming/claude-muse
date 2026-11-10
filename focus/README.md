@@ -1,6 +1,6 @@
 # focus/: muscle-corrected focus scores
 
-The code behind the **LEGACY / CORRECTED / GATE** switch in `muse-panel.html`. The panel itself only wires these files in, the same way it loads the `game/` folder. Keep the `focus` folder next to `muse-panel.html`. The scripts are plain browser scripts that share the panel's globals; the load order is set in `muse-panel.html` (see `panel/README.md`): `focus-recording.js` before `panel/dsp.js`, the other three after `panel/focus.js`.
+The code behind the **LEGACY / CORRECTED / GATE-ONLY** buttons in `muse-panel.html`. The panel itself only wires these files in, the same way it loads the `game/` folder. Keep the `focus` folder next to `muse-panel.html`. The scripts are plain browser scripts that share the panel's globals; the load order is set in `muse-panel.html` (see `panel/README.md`): `focus-recording.js` before `panel/dsp.js`, the other three after `panel/focus.js`.
 
 Corrected and Gate-only are **proxies, not validated focus measures**. Beta over alpha is itself only a rough stand-in for attention.
 
@@ -9,7 +9,7 @@ Corrected and Gate-only are **proxies, not validated focus measures**. Beta over
 | File | What it does |
 |---|---|
 | `focus-engine.js` | The scoring. Takes the last 256 readings (1 second) of each forehead sensor every 250 ms, makes one Hann-windowed spectrum per sensor, and reads alpha (8-13 Hz), beta (13-30 Hz) and muscle noise (30-40 Hz) power. Runs the window decision order and computes the Corrected and Gate-only scores, each with its own smoothing. Also checks `calibration.json` data and its settings fingerprint. |
-| `focus-calibration.js` | The **CAL** button: a 20 second guided calibration (8 s relaxed, then twice 4 s of clenching the jaw and scrunching the forehead). Per forehead sensor with skin contact it measures resting levels and fits how much muscle noise raises beta (Theil-Sen), refuses a poor fit with a reason, and stores the result in the browser. Shift-click CAL loads a `calibration.json` file instead. |
+| `focus-calibration.js` | The **CALIBRATE** button: a 20 second guided calibration (8 s relaxed, then twice 4 s of clenching the jaw and scrunching the forehead). Per forehead sensor with skin contact it measures resting levels and fits how much muscle noise raises beta (Theil-Sen), refuses a poor fit with a reason, and stores the result in the browser. Shift-click CALIBRATE loads a `calibration.json` file instead. |
 | `focus-switch.js` | Which score is shown: remembers your choice, disables Corrected and Gate-only (and says why) until a valid calibration exists, draws the status badge, and sets the score that feeds the number, the bar, the floating meter and the game. |
 | `focus-switch.css` | Styles for the switch and the status badge (cosmic and clean looks). |
 | `focus-recording.js` | The extra recording columns, appended after the panel's original ones. |

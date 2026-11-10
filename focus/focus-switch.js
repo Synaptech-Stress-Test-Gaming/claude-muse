@@ -24,9 +24,11 @@ function setMode(m){
 function renderFocusSwitch(){
   const em=effMode(),sh=shown();
   $("fmL").classList.toggle("on",em==="legacy");$("fmC").classList.toggle("on",em==="corrected");$("fmG").classList.toggle("on",em==="gate");
-  $("fmG").disabled=!corrOK();$("fmG").title=corrOK()?"Gate-only: new extractor and gate, no subtraction (a proxy, not validated focus)":"Gate-only unavailable: "+CAL_WHY;
-  $("fmC").disabled=!corrOK();$("fmC").title=corrOK()?"Muscle-corrected score (a proxy, not validated focus)":"Corrected unavailable: "+CAL_WHY;
-  $("fform").innerHTML=em==="legacy"?"LEGACY ln(&beta;&divide;&alpha;)":em==="gate"?"GATE-ONLY (proxy)":"CORRECTED (proxy)";
+  for(const [id,m] of [["fmL","legacy"],["fmC","corrected"],["fmG","gate"]])$(id).setAttribute("aria-checked",em===m?"true":"false");
+  $("fmL").title="Legacy: the original ln(beta/alpha) score";
+  $("fmLoad").classList.toggle("ok",corrOK());$("fmLoad").textContent=corrOK()?"RECALIBRATE":"CALIBRATE";
+  $("fmG").disabled=!corrOK();$("fmG").title=corrOK()?"Gate-only: new extractor and gate, no subtraction (a proxy, not validated focus)":"Gate-only unavailable: "+CAL_WHY+". Press CALIBRATE.";
+  $("fmC").disabled=!corrOK();$("fmC").title=corrOK()?"Muscle-corrected score (a proxy, not validated focus)":"Corrected unavailable: "+CAL_WHY+". Press CALIBRATE.";
   let note;
   if(QC)note=QC.msg();
   else if(focus.cal)note=focus.cal.msg();
@@ -41,7 +43,7 @@ function renderFocusSwitch(){
     fn.appendChild(b);
   }
   if(em==="legacy"&&motionHeld()){const b=document.createElement("b");b.id="cstat";b.className="hold";b.textContent="HELD \u00b7 "+motionWhy();fn.appendChild(b);}
-  fn.appendChild(document.createTextNode(note+(MODE_PREF!=="legacy"&&!corrOK()?" "+MODE_NAME[MODE_PREF]+" unavailable: "+CAL_WHY+". Showing Legacy.":(!corrOK()?(CAL_WHY==="No calibration loaded"?" Press CAL to enable Corrected and Gate.":" Corrected and Gate off: "+CAL_WHY+"."):""))));
+  fn.appendChild(document.createTextNode(note+(MODE_PREF!=="legacy"&&!corrOK()?" "+MODE_NAME[MODE_PREF]+" unavailable: "+CAL_WHY+". Showing Legacy.":(!corrOK()?(CAL_WHY==="No calibration loaded"?" · Corrected and Gate-only need CALIBRATE.":" · Corrected and Gate off: "+CAL_WHY+"."):""))));
 }
 function initFocusSwitch(){
   $("fmL").addEventListener("click",()=>setMode("legacy"));

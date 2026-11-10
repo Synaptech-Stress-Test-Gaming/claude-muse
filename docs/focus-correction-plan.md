@@ -38,6 +38,6 @@ Optional and separately tested. Adds `corrected_blink`, a `corrections` list, `l
 The panel switch stays the same; there are no separate blink or muscle toggles (code flags only).
 
 ## Known gaps in the panel today
-- No gyro or accelerometer gate (the panel does not read them yet).
+- Head movement: a gyro/accelerometer gate now exists (panel/motion.js). While it flags movement the score is held and marked HELD, and it resumes after 1.5 s of stillness. It cannot see jaw clenching or forehead tension without head movement. Its thresholds are provisional until tuned on recordings.
 - The blink gate is a simple peak-to-peak limit taken from the calibration file, not a delta/theta detector.
 - Clean-look layout of the new switch was not checked visually.

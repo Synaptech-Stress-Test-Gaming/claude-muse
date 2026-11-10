@@ -372,9 +372,7 @@ html[data-look="clean"]{
 [data-look="neon"] .mute:is(.row0,.row1,.row2,.row3,.row4){left:1218px!important;top:calc(var(--cy) - 27px)!important;width:90px!important;height:54px!important;font-size:12px;letter-spacing:.1em}
 /* focus row */
 [data-look="neon"] #fname{left:355px!important;top:662px!important;font-size:20px}
-[data-look="neon"] #fform{left:357px!important;top:690px!important;font-size:10.5px}
-[data-look="neon"] #fmode{left:355px!important;top:706px!important}
-[data-look="neon"] #fbar{left:515px!important;top:668px!important;width:228px!important;height:50px!important;gap:3px}
+[data-look="neon"] #fbar{left:602px!important;top:668px!important;width:141px!important;height:50px!important;gap:3px}
 [data-look="neon"] #fnum{left:776px!important;top:668px!important}
 [data-look="neon"] #fnote{left:776px!important;top:692px!important;width:208px!important;font-size:9px;line-height:1.15}
 [data-look="neon"] #gameLink{left:870px!important;top:676px!important}

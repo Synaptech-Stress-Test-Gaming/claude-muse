@@ -5,6 +5,7 @@
 <title>Muse 2 Control Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>try{var l=new URLSearchParams(location.search).get("look")||localStorage.getItem("muse2panel.look");document.documentElement.dataset.look=l==="clean"||l==="neon"?l:"cosmic";}catch(e){document.documentElement.dataset.look="cosmic";}</script>
+<script>try{if(new URLSearchParams(location.search).get("stress")==="1")document.documentElement.classList.add("show-stress");}catch(e){}</script>
 <link rel="stylesheet" href="panel/ui.css">
 <link rel="stylesheet" href="focus/focus-switch.css">
 </head>
@@ -41,16 +42,22 @@
   <div id="rawov"></div>
 
   <!-- focus -->
-  <div class="g" id="gFocus"><div class="cov dark" style="left:290px;top:686px;width:252px;height:68px"></div>
-  <div class="fname t" id="fname" style="left:298px;top:688px">FOCUS</div>
-  <div class="fform t" id="fform" style="left:300px;top:716px">LEGACY ln(&beta;&divide;&alpha;)</div>
-  <div id="fmode" role="group" aria-label="Which focus score is shown" style="left:396px;top:714px"><button type="button" id="fmL" class="on">LEGACY</button><button type="button" id="fmC">CORRECTED</button><button type="button" id="fmG">GATE</button><button type="button" id="fmLoad" title="Muscle calibration (20 s): relax, then clench jaw and scrunch forehead twice (Shift-click loads a calibration.json file)">CAL</button></div>
+  <div class="g" id="gFocus"><div class="cov dark" style="left:290px;top:682px;width:412px;height:80px"></div>
+  <div class="fname t" id="fname" style="left:298px;top:684px">FOCUS</div>
+  <div id="gameLink" class="t" style="left:600px;top:690px;font-size:9.5px;letter-spacing:.14em;color:#6f82c4" data-state="off">GAME: OFF</div>
+  <div id="fctl" style="left:298px;top:714px">
+    <div id="fmode" role="radiogroup" aria-label="Which focus score is shown">
+      <button type="button" id="fmL" role="radio" aria-checked="true" class="on">LEGACY</button>
+      <button type="button" id="fmC" role="radio" aria-checked="false">CORRECTED</button>
+      <button type="button" id="fmG" role="radio" aria-checked="false">GATE-ONLY</button>
+    </div>
+    <button type="button" id="fmLoad" title="Muscle calibration (20 s): relax, then clench jaw and scrunch forehead twice (Shift-click loads a calibration.json file)">CALIBRATE</button>
+  </div>
   <input type="file" id="calFile" accept=".json,application/json" hidden>
-  <div id="fnote" style="left:300px;top:733px">Connect to use focus</div>
-  <div id="gameLink" class="t" style="left:420px;top:694px;font-size:9.5px;letter-spacing:.14em;color:#6f82c4" data-state="off">GAME: OFF</div></div>
-  <div class="g" id="gMeter"><div class="cov bar" style="left:546px;top:672px;width:508px;height:80px"></div>
-  <div id="fnum" class="t" style="left:552px;top:704px">--</div>
-  <div id="fbar" style="left:606px;top:680px;width:428px;height:64px"></div></div>
+  <div id="fnote" style="left:298px;top:742px">Connect to use focus</div></div>
+  <div class="g" id="gMeter"><div class="cov bar" style="left:706px;top:672px;width:348px;height:80px"></div>
+  <div id="fnum" class="t" style="left:712px;top:704px">--</div>
+  <div id="fbar" style="left:766px;top:680px;width:268px;height:64px"></div></div>
   <div class="g" id="gCal"><div class="cov dark" style="left:1068px;top:688px;width:328px;height:60px"></div>
   <button class="oct" id="btnCal" disabled style="left:1076px;top:692px;width:312px;height:52px;--fg:#cfe7ff;--bd:#4aa8ff;font-size:11.5px;letter-spacing:.16em;line-height:1.35;gap:14px">
     <svg viewBox="0 0 24 24" fill="none" stroke="#6fd0ff" stroke-width="1.6" stroke-linecap="round" style="width:26px;height:26px"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>AUTO SET BASELINES<br>10 SECONDS</span></button></div>
