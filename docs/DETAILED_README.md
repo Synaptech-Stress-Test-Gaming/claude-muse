@@ -136,9 +136,9 @@ and `used` / `ignored` after calibration. Collapse it with the arrow.
 Julian is changing the panel (reportedly a head-movement/blink filter), so this work is kept in separate files. Everything of ours that
 touches `muse-panel.html` is listed here so a merge is mechanical:
 1. In the demo generator: `6*Math.sin(2*Math.PI*38*t+c)` became `window.demoGamma*Math.sin(...)`, and `window.demoGamma=6` was added next to `window.demoAlpha=...`.
-2. Script tags `game/mkds.js` + `game/mkds-render.js` replaced by `game/bomb-logic.js` + `game/bomb.js`.
-3. The game button (`#btnMario`): label `B`, no `disabled`, note text `DEFUSE GAME`, and the block from `/* ===== Bomb defusal game` to just before
-   `/* ===== game link:` (`stressLive`, `marioReady`, `updateMarioBtn`, `openMario`).
+2. Script tags `game/mkds.js` + `game/mkds-render.js` in the head were replaced by `game/bomb-logic.js`, `game/bomb.js` and `game/menu.js` (the Mario Kart scripts are now loaded lazily by the menu).
+3. The round game button (`#btnMario`) now shows a gamepad icon and opens the **game menu**; the block from `/* ===== Game menu` to just before
+   `/* ===== game link:` (`focusReady`, `stressLive`, `marioReady`, no-op `updateMarioBtn`, and one `GameMenu.attach({...})` call that hands the menu the live signals).
 4. At the very bottom, after the main `</script>`: `<script src="stress.js">` and a small script that calls `Stress.attach({...})`.
 **If Julian's filter changes `S.raw`, `S.artUntil`, `S.rms`, `PL.bp`/`PL.bpPos` or `PL.bpm`, update only the callbacks in that last script:**
 `frontalWindows()` reads `S.raw` (should be the offset-removed signal; a cleaner filtered signal is better), `artifact()` reads
@@ -151,3 +151,9 @@ becomes less important but is harmless.
   sends the four sensor percentages to the game link, `.gitignore` for Python caches) into `feat/experiment-protocols`. No conflicts. The panel still
   posts the focus score to `127.0.0.1:8765`, so `game-py` keeps working; our **B** button replaced the Mario Kart launcher inside the panel only.
   No blink/head-movement filter was in that update yet; when it lands, see section 8 for the four callbacks to re-check.
+
+## 10. Game menu (adding games)
+The panel's round button opens a menu (`game/menu.js`). Games register there with one call (see the comment at the top of that file):
+`GameMenu.register({id, title, blurb, input, kind, scripts, needs, launch, howto})`. Built in: **Defuse** (stress), **Mario Kart (browser)** (focus, lazy-loaded,
+needs focus baselines), **Mario Kart (Python)** and **Animal Stacker** (external apps, shown with how to run them). A game gets a `ctx` with `stage`,
+`connected`, `focusReady`, `stressLive`, `focus()`, `stress()` (0..1), `sensors()` and `status()`.

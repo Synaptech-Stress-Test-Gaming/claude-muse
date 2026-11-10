@@ -215,11 +215,12 @@ input[type=range]:focus{outline:none}
   <button class="oct smallbtn" id="btnFull" style="left:1465px;top:643px;--fg:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Fullscreen</button>
 
   <!-- game launcher: Mario Kart (needs focus baselines) -->
-  <button id="btnMario" title="Play the bomb defusal game" style="left:1488px;top:700px;width:84px;height:84px;border-radius:50%;border:4px solid #fff;background:radial-gradient(circle at 35% 30%,#ff5a4f,#d3100b 70%);color:#fff;font:900 50px/76px Arial Black,Impact,sans-serif;text-align:center;cursor:pointer;box-shadow:0 0 22px rgba(255,60,50,.8),inset 0 -6px 10px rgba(0,0,0,.35);padding:0">B</button>
-  <div id="btnMarioNote" class="t" style="left:1450px;top:790px;width:170px;text-align:center;font-size:10px;letter-spacing:.12em;color:#9fb2e6">DEFUSE GAME</div>
+  <button id="btnMario" title="Play the bomb defusal game" style="left:1488px;top:700px;width:84px;height:84px;border-radius:50%;border:4px solid #fff;background:radial-gradient(circle at 35% 30%,#ff5a4f,#d3100b 70%);color:#fff;font:900 12px/84px Arial;text-align:center;cursor:pointer;box-shadow:0 0 22px rgba(255,60,50,.8),inset 0 -6px 10px rgba(0,0,0,.35);padding:0"><svg viewBox="0 0 64 40" width="52" height="34" style="display:block;margin:0 auto" fill="none" stroke="#fff" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"><path d="M16 4h32c8 0 14 8 15 18 1 8-3 14-9 14-5 0-8-5-11-9H21c-3 4-6 9-11 9-6 0-10-6-9-14C2 12 8 4 16 4z"/><path d="M18 14v10M13 19h10"/><circle cx="43" cy="16" r="2.6" fill="#fff"/><circle cx="50" cy="22" r="2.6" fill="#fff"/></svg></button>
+  <div id="btnMarioNote" class="t" style="left:1450px;top:790px;width:170px;text-align:center;font-size:10px;letter-spacing:.12em;color:#9fb2e6">GAME MENU</div>
 </div>
 <script src="game/bomb-logic.js"></script>
 <script src="game/bomb.js"></script>
+<script src="game/menu.js"></script>
 <div id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18v.5" stroke-linecap="round"/></svg><span id="toastText"></span></div>
 
 <script>
@@ -766,24 +767,18 @@ function renderFocus(){
   sendGame(p);
   updateMarioBtn();
 }
-/* ============ Bomb defusal game (game/bomb-logic.js, game/bomb.js) ============
-   Live mode is driven by the STRESS meter (stress.js) once it is calibrated. The game also has a manual test mode with a slider. */
+/* ============ Game menu (game/menu.js) ============
+   Games register in game/menu.js. The panel only supplies the live signals; add a game there, not here. */
+function focusReady(){return focus.lo!=null&&focus.hi!=null&&focus.hi-focus.lo>=0.05;}
 function stressLive(){return !!(window.StressMeter&&S.connected&&StressMeter.ready());}
-function marioReady(){return stressLive();}
-function updateMarioBtn(){
-  const b=$("btnMario");if(!b)return;
-  b.disabled=false;b.style.opacity="1";b.style.cursor="pointer";b.title="Play the bomb defusal game";
-  $("btnMarioNote").textContent=stressLive()?"DEFUSE: LIVE STRESS":"DEFUSE (TEST MODE)";
-}
-function openMario(){
-  if(!window.BombUI||BombUI.isOpen())return;
-  BombUI.open({mode:stressLive()?"live":"test",
+function marioReady(){return focusReady();}   // kept for older callers
+function updateMarioBtn(){}                    // renderFocus() still calls this; the menu needs no per-frame update
+addEventListener("load",()=>GameMenu.attach({button:$("btnMario"),note:$("btnMarioNote"),
+  ctx:()=>({stage:$("stage"),connected:S.connected,focusReady:focusReady(),stressLive:stressLive(),
+    focus:()=>S.connected?focusPct():null,
     stress:()=>{const v=window.StressMeter&&StressMeter.value();return v==null?0:v/100;},
-    status:()=>S.connected?(stressLive()?"Muse stress meter live":"Muse connected, calibrate the stress meter"):"Muse not connected",
-    onClose:updateMarioBtn});
-  updateMarioBtn();
-}
-document.addEventListener("click",e=>{if(e.target&&e.target.id==="btnMario")openMario();});
+    sensors:()=>SENSORS.map((nm,i)=>{const p=S.connected&&S.emitted>0&&S.pct[i]!=null?Math.round(S.pct[i]):null;return{txt:p==null?"--":p+"%",cls:p==null?"":p>=70?"good":p>=40?"fair":"poor"};}),
+    status:()=>S.connected?(S.emitted>0?"Muse live":"Muse waiting"):"Muse not connected"})}));
 /* ============ game link: the focus meter (0-100) is sent to the game running on this computer ============ */
 const GAME_URL="http://127.0.0.1:8765/";
 let gameBusy=false,gameLast=0,gameOk=false;
