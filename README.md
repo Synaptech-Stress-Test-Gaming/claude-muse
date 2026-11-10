@@ -5,6 +5,7 @@ A single-page control panel that shows the live brainwave data from a **Muse 2**
 This README covers the panel and the project files. The games have their own READMEs:
 
 - [game/README.md](game/README.md): Mario Kart DS style race whose speed follows your focus (opens from the panel)
+- [game-py/README.md](game-py/README.md): the same Mario Kart game ported to Python (pygame), fed by the panel's focus score
 - [game-link/README.md](game-link/README.md): the earlier Animal Stacker prototype that can read the focus score
 
 ## What you need
@@ -73,6 +74,7 @@ CSV columns: `time_s, TP9, AF7, AF8, TP10` (microvolts), the five band signals, 
 | `Open Muse Panel.bat` | Launches the panel in Edge with Web Bluetooth switched on |
 | `cosmic-bg.jpg` | The artwork behind the panel. Keep it next to `muse-panel.html` |
 | `game/` | The Mario Kart game (see its README) |
+| `game-py/` | The Python version of the Mario Kart game (see its README) |
 | `game-link/` | The Animal Stacker prototype (see its README) |
 | `Claude outputs/` | An earlier copy of the panel kept for reference |
 | `PLAN.md` | Running plan and change log for the panel and game |
