@@ -79,5 +79,33 @@ ok(M4.score({ hr: 71, ratio: -0.98, tension: -2.98 }) < 30, "a tiny change on a 
   ok(!k.answer(5) && k.cur === 1022 && k.wrong === 1, "a wrong answer sends you back to the start");
 }
 
+// pulse beats, heart rate variability, asymmetry
+{
+  const fs = 64, beatsT = []; let t = 0.5;
+  for (let i = 0; i < 40; i++) { beatsT.push(t); t += i % 2 ? 0.85 : 0.75; }              // IBIs alternate 750/850 ms: successive difference 100 ms
+  const x = new Float32Array(fs * 28);
+  for (let i = 0; i < x.length; i++) { let v = 0; for (const b of beatsT) { const d = i / fs - b; if (Math.abs(d) < 0.4) v += Math.exp(-d * d / (2 * 0.06 * 0.06)); } x[i] = v - 0.15; }
+  const found = St.findBeats(x, fs).map(p => p / fs), ibis = St.ibisFromBeats(found), r = St.rmssd(ibis);
+  ok(found.length >= 30 && near(found[1] - found[0], 0.75, 0.03), "finds the beats in a pulse signal (" + found.length + ")");
+  ok(r != null && near(r, 100, 20), "RMSSD recovers about 100 ms from alternating intervals (" + (r && r.toFixed(0)) + ")");
+  ok(St.rmssd([800, 810, 790]) === null, "RMSSD needs enough intervals");
+  const ib = St.ibisFromBeats([0, 0.2, 1.0, 1.8, 3.9, 4.7]).map(Math.round).join();
+  ok(ib === "800,800,800", "impossible and jumpy intervals are dropped (" + ib + ")");
+  const w7 = sine(10, 10), w8 = sine(10, 20);
+  ok(near(St.faa(w7, w8), Math.log(4), 0.1), "frontal asymmetry is ln(alpha AF8) - ln(alpha AF7)");
+}
+// signals that move opposite to the usual direction (HRV falls, asymmetry can go either way)
+{
+  const M = St.makeMeter({ minSamples: 10, ema: 1 }), q = () => r() * 0.2;
+  M.startCal(); for (let i = 0; i < 30; i++) M.push({ hr: 70 + r() * 2, hrv: 60 + r() * 4, faa: 0.1 + q() }); M.endPhase();
+  M.startPhase("stress"); for (let i = 0; i < 30; i++) M.push({ hr: 95 + r() * 2, hrv: 25 + r() * 4, faa: -0.4 + q() }); M.endPhase();
+  M.build(); const st = Object.fromEntries(M.report.map(x => [x.key, x]));
+  ok(st.hrv.status === "used" && st.faa.status === "used" && st.hr.status === "used", "falling HRV and shifted asymmetry are used (two-sided)");
+  ok(near(M.score({ hr: 70, hrv: 60, faa: 0.1 }), 20, 5) && near(M.score({ hr: 95, hrv: 25, faa: -0.4 }), 80, 5), "calm scores about 20 and task level about 80 when signals fall");
+  // baseline-only mode ignores signals with no known direction and flips HRV
+  const B = St.makeMeter({ minSamples: 10, ema: 1 }); B.startCal(); for (let i = 0; i < 30; i++) B.push({ hrv: 60 + r() * 4, faa: 0.1 + q() }); B.finishCal();
+  ok(B.score({ hrv: 20, faa: 5 }) > 80 && B.used.join() === "hrv", "baseline-only: lower HRV raises the score; asymmetry is not used without a task");
+}
+
 if (typeof document !== "undefined") { document.body.style.cssText = "font:14px monospace;white-space:pre;padding:16px;background:#111;color:#ddd"; document.body.textContent = out.join("\n") + "\n\n" + (fails ? fails + " FAILED" : "ALL PASSED"); }
 else { console.log(out.join("\n")); console.log(fails ? fails + " FAILED" : "ALL PASSED"); process.exit(fails ? 1 : 0); }

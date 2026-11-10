@@ -19,6 +19,9 @@ ok(B.heartBpm(0) === 64 && B.heartBpm(1) === 134, "heart rate 64 calm to 134 str
 
 ok(!B.isShorted(0) && !B.isShorted(2) && B.isShorted(3) && B.isShorted(6), "three wet patches short a module out");
 
+ok(B.effectiveStress(0.8, 0) === 0.8 && near(B.effectiveStress(0.8, 0.5), 0.4, 1e-9) && B.effectiveStress(1, B.TUNING.calmMax) < 0.31, "the phone shrinks stress effects");
+ok(B.TUNING.calmMax < 1 && B.TUNING.calmDecay > 0, "mind-clear is capped and fades");
+
 // wire rules
 const S_ODD = "A1B2C3", S_EVEN = "A1B2C4";
 ok(B.wireSolution(["red", "blue", "white", "white", "black"], S_ODD) === 3, "wire rule 1: last black + odd serial -> 4th wire");

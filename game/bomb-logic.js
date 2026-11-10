@@ -17,7 +17,9 @@ const TUNING = {
   maxSmudges: 16,        // wet patches on the bomb at once
   smudgeLife: 12,        // seconds before a wet patch dries
   slipPx: 28,            // a press on a wet patch slides this far (bomb pixels, mostly downward)
-  wipePenalty: 3,        // seconds taken off the clock to wipe the bomb dry
+  calmMax: 0.7,          // the phone can remove at most this share of your stress effects
+  calmPerPx: 5000,       // each pixel scrolled adds 1/calmPerPx of mind-clear (up to calmMax)
+  calmDecay: 0.012,      // mind-clear fades by this much per second after you put the phone down
   shortAt: 3             // this many wet patches on one module short it out until you wipe
 };
 
@@ -54,6 +56,8 @@ function sweatRate(stress, T) {
 }
 /* a module is shorted (dead to touch) when it carries enough wet patches */
 function isShorted(wetCount, T) { return wetCount >= (T || TUNING).shortAt; }
+/* the phone clears your head: the game's stress effects shrink by `calm` (0..calmMax) */
+function effectiveStress(stress, calm) { return clamp01(stress) * (1 - Math.max(0, Math.min(1, calm || 0))); }
 function heartBpm(stress) { return 64 + 70 * clamp01(stress); }
 
 /* ---------- wires module ---------- */
@@ -145,7 +149,7 @@ function judgeButton(level, heldSec, clock) {
 }
 function judgeKey(level, progress, sym) { return sym === level.keypad.order[progress] ? "ok" : "strike"; }
 
-const API = { TUNING, rng, stressFromFocus, clockRate, handShake, sweatRate, heartBpm, isShorted, WIRE_COLORS, WIRE_RULES, wireSolution,
+const API = { TUNING, rng, stressFromFocus, clockRate, handShake, sweatRate, heartBpm, isShorted, effectiveStress, WIRE_COLORS, WIRE_RULES, wireSolution,
   BUTTON_COLORS, BUTTON_LABELS, STRIP_COLORS, STRIP_DIGIT, BUTTON_RULES, STRIP_RULES, buttonSolution, TAP_MAX,
   KEY_COLUMNS, makeSerial, makeLevel, judgeWire, judgeButton, judgeKey };
 if (typeof module !== "undefined" && module.exports) module.exports = API;

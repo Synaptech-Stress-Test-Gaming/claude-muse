@@ -51,13 +51,16 @@ API: `StressMeter.value()` returns 0..100 or `null` (not connected or not calibr
 One level, three modules, 3:00 clock, 3 strikes. All art is drawn in code.
 - **Wires** (5): cut by colour counts and the serial number. **Button**: tap or hold, release on a clock digit.
   **Keypad**: press the four symbols in the order of the one column that contains them all.
-- **The manual (M key or top-bar button):** rules are *only* in the manual, so the player has to open and read it. It has a
-  section per module ("how to read it", the rules in order, hints). The clock keeps running while it is open.
+- **Table objects** (the bomb sits on a table; click/drag with the in-game "hand"): the **handbook** on the right (click to read; rules
+  are *only* there, with a section per module: how to read it, rules in order, hints), the **cloth** below-left (hold and drag it
+  over wet patches to wipe them; click it while the handbook is open to dab the page dry) and the **phone** on the left (see below).
+  The clock keeps running while you read or scroll. Esc closes the handbook or phone, then the game.
 - `bomb-logic.js` rules, seeded levels (`?seed=42` for a repeatable bomb), stress mapping, all `TUNING` numbers.
 - `bomb.js` view, input and effects. `BombUI.open({mode, focus, stress, status, seed, tuning, onEvent, onClose})`.
 
 **Two modes** (top-bar button): **Live (Muse)** uses the stress meter (`stress()` returns 0..1); **Manual test** shows a
-slider (focus 0..100, 0 = very stressed) and a "no reading" box. The end screen labels test runs "not real data".
+**stress** slider (0 = calm, 100 = maximum) and a "no reading" box. The in-game monitor shows only the stress bar (and mind clear);
+focus and stress are shown independently on the main panel (the original focus meter plus the stress card). The end screen labels test runs "not real data".
 The panel starts live mode only when connected and the stress meter is calibrated.
 
 **Stress effects** (stress smoothed over 1 s):
@@ -68,7 +71,8 @@ The panel starts live mode only when connected and the stress meter is calibrate
 | Slipping | a press on a wet patch slides about 28 px, mostly downward |
 | Short circuit | 3 patches on one module: it sparks and ignores touch (the timer display scrambles) until you wipe |
 | Soaked manual | while the manual is open, drops land on the paper. A wet blotch blurs the words under it; once dry it leaves a stain that is still hard to read (blurs 1.5 px). Stains are permanent for that bomb |
-| Wipe dry | Space or the top-bar button clears bomb patches and dries the paper (stains stay), costs 3 s on the clock |
+| Wipe | no hotkey: drag the cloth over each wet patch (hand tremor makes this harder); clicking the cloth while reading dries the page (stains stay). The cost is the time it takes |
+| Phone (doom scroll) | scrolling the feed fills **mind clear** (up to 70%); the game's stress effects shrink by that share and it fades 1.2%/s after you put the phone down. This is a game mechanic: it does not change the measured stress, and the clock keeps running while you scroll |
 | Heartbeat | audible from 25% stress; a red vignette pulses (64 bpm calm, 134 stressed); slight blur above 60% |
 | Clock | runs up to x1.6 faster at full stress, +x0.25 per strike |
 | Display glitch | above 55% stress the timer flickers |
@@ -76,10 +80,10 @@ The panel starts live mode only when connected and the stress meter is calibrate
 Events: `start, mode, strike, module_solved, slip, blocked, paper_wet, wipe, defused, explode, finish` (also `bomb:event` on
 `window`). The `finish` summary has result, time played, strikes, average stress, seconds under high stress, sweat drops,
 slips, shorted presses, paper blotches, wipes and the event log. This is the hook for logging and for Unity later.
-Manual test mode uses `stress = clamp((50 - focus) / 50)`.
+Events also include `dab`, `phone_up`, `phone_down`. (A `focus()` option still exists for old callers: `stress = clamp((50 - focus) / 50)`.)
 
 ## 5. Tests and what was verified
-- `game/bomb.test.js` (18 checks) and `stress.test.js` (26 checks): rules, 2,000 generated bombs all solvable, sweat and
+- `game/bomb.test.js` (21 checks) and `stress.test.js` (35 checks): rules, 2,000 generated bombs all solvable, sweat and
   short-circuit numbers, FFT band placement, baseline and scoring maths. Run with Node (`node game/bomb.test.js`) or open
   the `*-test.html` pages. **Node is not installed on the Mac this was built on, so they were run in the browser.**
 - Played in a browser: wrong wire = strike; defused with the correct actions; sweat blurs and slips; a shorted module
@@ -99,3 +103,42 @@ Manual test mode uses `stress = clamp((50 - focus) / 50)`.
 4. Split `muse-panel.html` (about 870 lines) into modules so UI and logic work stop colliding.
 5. Save the game `finish` summary and the stress score alongside recordings; send them to Unity.
 6. The Mario Kart files are unused but still in `game/`.
+
+## 7. Stress meter v2: what changed and why (research notes)
+Search of the literature (2026-11-09) shaped these choices. None of it makes the score a validated measure.
+- **Muse for frontal alpha asymmetry (FAA):** a bioRxiv validation (Muse vs research-grade EEG, spectral measures and FAA) supports using
+  the Muse for alpha power and AF7/AF8 asymmetry, so FAA was added as a signal. The direction of FAA with stress is mixed in the
+  literature, so it is **two-sided**: it is used only if it moves for this person during the task, in either direction.
+- **Heart rate variability:** reviews and a wrist-PPG study report that PPG-derived HRV can recognise mental stress about as well as ECG.
+  RMSSD (falls under stress) was added from the Muse pulse signal: beats found by peak detection with parabolic interpolation, timed by
+  sample position (not arrival time), 30 s window, impossible/jumpy intervals dropped, needs 15 intervals. Heart rate now also comes from
+  the last 6 beats (about 5 s lag instead of the panel's 8 s autocorrelation window).
+- **Stressor:** mental arithmetic (and the Montreal Imaging Stress Task, which is arithmetic under time pressure and negative feedback)
+  is a standard way to raise arousal, which is why calibration uses counting backwards with restarts on mistakes.
+- **Muse stress studies:** classification of perceived stress from a Muse headband has been published (Arsalan et al. 2019) but with
+  per-study labels and models; a universal formula is not established. That is why the meter learns per person which signals respond.
+- Ratios like beta/alpha are mixed in the literature and easily contaminated by muscle activity (that is why the tension signal and the
+  artifact pause exist). Treat every signal as a game input.
+Sources: Validating the wearable MUSE headset for EEG spectral analysis and Frontal Alpha Asymmetry (bioRxiv 2021.11.02.466989);
+Arsalan et al., Classification of Perceived Mental Stress Using A Commercially Available EEG Headband (IEEE JBHI 2019); Evaluation of
+Mental Stress and Heart Rate Variability Derived from Wrist-Based Photoplethysmography (2019); Human Stress Assessment: A Comprehensive
+Review of Methods Using Wearable Sensors and Non-wearable Techniques (arXiv 2202.03033).
+
+**Responsiveness and "is it working?"**: the score updates 4 times per second (about 0.7 s smoothing); calibration samples are taken
+once per second. The card shows a status (NO HEADBAND / NOT CALIBRATED / CALIBRATING / LIVE / NO SIGNAL), a pulsing LIVE dot, a
+60 s scrolling graph with lines at 20/50/80, and one row per signal with a green dot when it is arriving, a bar for how far it has moved,
+and `used` / `ignored` after calibration. Collapse it with the arrow.
+
+## 8. Merging with Julian's branch (plan)
+Julian is changing the panel (reportedly a head-movement/blink filter), so this work is kept in separate files. Everything of ours that
+touches `muse-panel.html` is listed here so a merge is mechanical:
+1. In the demo generator: `6*Math.sin(2*Math.PI*38*t+c)` became `window.demoGamma*Math.sin(...)`, and `window.demoGamma=6` was added next to `window.demoAlpha=...`.
+2. Script tags `game/mkds.js` + `game/mkds-render.js` replaced by `game/bomb-logic.js` + `game/bomb.js`.
+3. The game button (`#btnMario`): label `B`, no `disabled`, note text `DEFUSE GAME`, and the block from `/* ===== Bomb defusal game` to just before
+   `/* ===== game link:` (`stressLive`, `marioReady`, `updateMarioBtn`, `openMario`).
+4. At the very bottom, after the main `</script>`: `<script src="stress.js">` and a small script that calls `Stress.attach({...})`.
+**If Julian's filter changes `S.raw`, `S.artUntil`, `S.rms`, `PL.bp`/`PL.bpPos` or `PL.bpm`, update only the callbacks in that last script:**
+`frontalWindows()` reads `S.raw` (should be the offset-removed signal; a cleaner filtered signal is better), `artifact()` reads
+`S.artUntil` (blink/jaw flag), `heartRate()` reads `PL.bpm`, `ppgWindow()` reads `PL.bp`. Our files (`stress.js`, `game/bomb*.js`, tests,
+docs, the Mac launcher) are new, so they cannot conflict. If his filter removes blinks upstream, the stress meter's own artifact pause
+becomes less important but is harmless.
