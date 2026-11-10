@@ -350,7 +350,7 @@ html[data-look="clean"]{
 
 /* ===== NEON LOOK ===== (everything below only applies when data-look="neon"; background is neon-bg.png, same 1672x941 stage) */
 .neon-only{display:none}
-[data-look="neon"] #stage{background:#02030f url(neon-bg.png) 0 0/1672px 941px no-repeat}
+[data-look="neon"] #stage{background:#02030f url(../neon-bg.png) 0 0/1672px 941px no-repeat}
 [data-look="neon"] .cov{display:none!important}
 [data-look="neon"] .neon-only{display:block}
 .nc{background:#040a40;border:1px solid rgba(100,140,255,.55);box-shadow:inset 0 0 12px rgba(60,100,255,.3)}
