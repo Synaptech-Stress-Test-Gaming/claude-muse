@@ -73,6 +73,13 @@ const CSS = `
 .bz-man .cols{display:flex;gap:10px;margin-top:6px}.bz-man .cols div{flex:1;border:1px solid #9a8f6c;padding:6px;text-align:center;font:22px/1.5 "Segoe UI Symbol","Apple Symbols",serif}.bz-man .cols small{display:block;font:11px Georgia}
 .bz-tools{position:absolute;left:14px;bottom:12px;z-index:5;background:rgba(0,0,0,.55);border:1px solid #2b3946;border-radius:8px;padding:8px 12px;font-size:11px;color:#9bb0c2;display:flex;flex-direction:column;gap:5px;cursor:auto}
 .bz-tools label{display:flex;gap:6px;align-items:center}.bz-tools small{color:#7f93a5}.bz-tools input[type=range]{width:170px}
+.bz-sweat{position:absolute;inset:0;pointer-events:none;z-index:3}
+.bz-sweat .drop{position:absolute;left:0;top:0;border-radius:50% 50% 50% 50%/70% 70% 30% 30%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.95),rgba(170,215,255,.7) 55%,rgba(90,150,220,.55));box-shadow:0 0 6px rgba(150,200,255,.6)}
+.bz-sweat .smudge{position:absolute;border-radius:50% 50% 50% 50%/58% 58% 42% 42%;backdrop-filter:blur(3px) saturate(1.3);-webkit-backdrop-filter:blur(3px) saturate(1.3);background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.7),rgba(190,225,255,.2) 38%,rgba(120,175,230,.14) 72%);box-shadow:inset 0 -4px 6px rgba(0,0,0,.3),inset 2px 3px 4px rgba(255,255,255,.55),0 3px 5px rgba(0,0,0,.35)}
+.bz-sweat .sp{position:absolute;width:6px;height:6px;border-radius:50%;background:rgba(190,225,255,.85)}
+.bz-sweat .streak{position:absolute;width:5px;border-radius:3px;background:linear-gradient(rgba(190,225,255,.7),rgba(190,225,255,0))}
+.bz-vig{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 42%,rgba(150,0,0,.9) 100%)}
+.bz-hand.slip{border-color:#7fc4ff;box-shadow:0 0 0 6px rgba(120,190,255,.45)}
 .bz-end{position:absolute;inset:0;z-index:7;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);cursor:auto}
 .bz-end .card{min-width:360px;max-width:520px;background:#141d26;border:2px solid #3c566d;border-radius:12px;padding:24px 30px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.7)}
 .bz-end h1{font-size:34px;letter-spacing:.2em;margin-bottom:8px}.bz-end .win h1{color:#43f28a}.bz-end .lose h1{color:#ff453a}
@@ -125,7 +132,7 @@ function open(opts) {
 
   /* top bar */
   const bar = el("div", "bz-bar", '<b>DEFUSE</b><span class="st" id="bzSt"></span><span class="sp"></span>', root);
-  const bMode = el("button", "bz-btn", "", bar), bMan = el("button", "bz-btn", "MANUAL (M)", bar), bSnd = el("button", "bz-btn", "SOUND ON", bar), bExit = el("button", "bz-btn", "EXIT (Esc)", bar);
+  const bMode = el("button", "bz-btn", "", bar), bWipe = el("button", "bz-btn", "WIPE DRY (Space)", bar), bMan = el("button", "bz-btn", "MANUAL (M)", bar), bSnd = el("button", "bz-btn", "SOUND ON", bar), bExit = el("button", "bz-btn", "EXIT (Esc)", bar);
   const stEl = bar.querySelector("#bzSt");
 
   const view = el("div", "bz-view", null, root);
@@ -134,11 +141,14 @@ function open(opts) {
   const bomb = el("div", "bz-bomb", null, wrap);
   const cs = el("div", "bz-case", null, bomb);
   const inn = el("div", "bz-in", null, cs);
+  const sweat = el("div", "bz-sweat", null, bomb);
+  const vig = el("div", "bz-vig", null, root);
   const flash = el("div", "bz-flash", null, root);
   const hand = el("div", "bz-hand", null, root);
 
   /* build modules */
   let level, S;
+  let drops = [], smudges = [], spawnAcc = 0;
   const items = [];   // interactive things: { el, down(), up() }
   const reg = (e, down, up) => items.push({ el: e, down, up });
 
@@ -176,10 +186,10 @@ function open(opts) {
 
   const bVit = bay("vit", inn);
   el("div", "h", "OPERATOR MONITOR", bVit);
-  const rowF = el("div", "row f", '<label><span>FOCUS</span><b>--</b></label><div class="bar"><i></i></div>', bVit); rowF.style.top = "52px";
-  const rowS = el("div", "row s", '<label><span>STRESS</span><b>--</b></label><div class="bar"><i></i></div>', bVit); rowS.style.top = "108px";
+  const rowF = el("div", "row f", '<label><span>FOCUS</span><b>--</b></label><div class="bar"><i></i></div>', bVit); rowF.style.top = "46px";
+  const rowS = el("div", "row s", '<label><span>STRESS</span><b>--</b></label><div class="bar"><i></i></div>', bVit); rowS.style.top = "94px";
   const vNote = el("div", "note", "", bVit);
-  const effect = el("div", "row", '<label><span>HAND TREMOR</span><b id="bzT">0 px</b></label><label style="margin-top:8px"><span>CLOCK SPEED</span><b id="bzC">x1.00</b></label>', bVit); effect.style.top = "166px";
+  const effect = el("div", "row", '<label><span>HAND TREMOR</span><b id="bzT">0 px</b></label><label style="margin-top:5px"><span>CLOCK SPEED</span><b id="bzC">x1.00</b></label><label style="margin-top:5px"><span>HEART RATE</span><b id="bzH">64 bpm</b></label><label style="margin-top:5px"><span>SWEAT ON BOMB</span><b id="bzW">0</b></label>', bVit); effect.style.top = "142px";
 
   /* manual */
   const man = el("div", "bz-man", "", root);
@@ -188,7 +198,7 @@ function open(opts) {
    <h3>The button</h3><ol>${L.BUTTON_RULES.map(r => `<li>${r}</li>`).join("")}</ol><p>${L.STRIP_RULES}</p><p><i>Tap</i> = release within half a second.</p>
    <h3>Symbol keypad</h3><p>Find the one column that contains all four symbols on your keypad. Press the symbols in the order they appear in that column, top to bottom.</p>
    <div class="cols">${L.KEY_COLUMNS.map((c, i) => `<div><small>Column ${i + 1}</small>${c.map(s => `<div style="border:0;padding:0">${s}</div>`).join("")}</div>`).join("")}</div>
-   <h3>Stress</h3><p>This is a prototype for the Muse 2 focus meter. When your focus drops, your hands start to shake, the clock runs faster and the display may glitch. Stay calm.</p>`;
+   <h3>Stress</h3><p>This is a prototype for the Muse 2 focus meter. When your focus drops, your hands shake, sweat drips onto the bomb, the clock runs faster and the display may glitch. Wet patches blur what is under them, and a press on a wet patch slides downward. Wipe the bomb dry with Space (it costs a few seconds). Stay calm.</p>`;
 
   /* test tools */
   const tools = el("div", "bz-tools", `<b style="letter-spacing:.2em;color:#e6c46a">MANUAL TEST MODE</b><label>Focus <input type="range" id="bzSl" min="0" max="100" value="50"><b id="bzSv">50</b></label><small>0 = very stressed, 50+ = calm</small><label><input type="checkbox" id="bzNo"> simulate "no reading"</label>`, root);
@@ -209,7 +219,8 @@ function open(opts) {
   function build(seed) {
     level = L.makeLevel(seed); level.timeLimit = T.timeLimit; level.maxStrikes = T.maxStrikes;
     S = { remaining: level.timeLimit, strikes: 0, state: "running", solved: { wires: false, button: false, keypad: false }, cut: [false, false, false, false, false],
-      pressAt: null, pressItem: null, progress: 0, stressSm: 0, stressSum: 0, stressHi: 0, focusSum: 0, focusN: 0, t: 0, nextGlitch: 6, glitchUntil: 0, lastSec: -1, events: [] };
+      pressAt: null, pressItem: null, progress: 0, stressSm: 0, stressSum: 0, stressHi: 0, focusSum: 0, focusN: 0, t: 0, nextGlitch: 6, glitchUntil: 0, lastSec: -1, events: [], slips: 0, drops: 0, wipes: 0, nextSpike: 4, spikeUntil: 0, beat: 0, lastBeat: 0 };
+    drops.forEach(d => d.e.remove()); drops = []; smudges.forEach(m => m.e.remove()); smudges = []; sweat.innerHTML = ""; spawnAcc = 0;
     items.length = 0; bWire.querySelectorAll('.hit').forEach(x => x.remove());
     plate.lastChild.textContent = level.serial;
     ledB.className = ledW.className = ledK.className = "led";
@@ -294,11 +305,49 @@ function open(opts) {
     } else { k.classList.add("bad"); setTimeout(() => k.classList.remove("bad"), 450); strike("wrong key"); }
   }
 
+  /* ---------- sweat ---------- */
+  function spawnDrop() {
+    const r = 5 + Math.random() * 4, d = el("div", "drop", null, sweat);
+    d.style.width = r * 2 + "px"; d.style.height = r * 2.6 + "px";
+    drops.push({ e: d, x: 40 + Math.random() * 880, y: -50, vy: 30 + Math.random() * 60, target: 70 + Math.random() * 500, r });
+  }
+  function splat(d) {
+    d.e.remove(); S.drops++; beep(1500 + Math.random() * 700, .05, "sine", .03);
+    const R = 16 + Math.random() * 20, m = el("div", "smudge", null, sweat);
+    m.style.cssText = `width:${R * 2}px;height:${R * 2.2}px;left:${d.x - R}px;top:${d.target - R}px`;
+    smudges.push({ e: m, x: d.x, y: d.target, R, born: S.t });
+    while (smudges.length > T.maxSmudges) smudges.shift().e.remove();
+    for (let i = 0; i < 6; i++) {
+      const p = el("i", "sp", null, sweat), a = Math.random() * Math.PI * 2, dist = 14 + Math.random() * 26;
+      p.style.left = d.x + "px"; p.style.top = d.target + "px";
+      p.animate([{ transform: "translate(0,0) scale(1)", opacity: .9 }, { transform: `translate(${Math.cos(a) * dist}px,${Math.sin(a) * dist - 8}px) scale(.3)`, opacity: 0 }], { duration: 450 + Math.random() * 300, easing: "ease-out" }).onfinish = () => p.remove();
+    }
+    if (Math.random() < 0.6) {
+      const st = el("div", "streak", null, sweat); st.style.left = d.x - 2 + "px"; st.style.top = d.target + R * 0.6 + "px";
+      st.animate([{ height: "0px", opacity: .6 }, { height: 50 + Math.random() * 90 + "px", opacity: 0 }], { duration: 1800 + Math.random() * 800, easing: "ease-in" }).onfinish = () => st.remove();
+    }
+  }
+  function wipe() {
+    if (S.state !== "running" || !smudges.length) return;
+    smudges.forEach(m => m.e.remove()); smudges = []; S.wipes++; S.remaining -= T.wipePenalty;
+    beep(300, .12, "triangle", .05); emit("wipe", { penaltySec: T.wipePenalty });
+  }
+  function slipAt(x, y) { /* a press on a wet patch slides mostly downward */
+    for (const m of smudges) {
+      const r = m.e.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      if (Math.hypot(x - cx, y - cy) < Math.max(r.width, r.height) / 2) {
+        S.slips++; hand.classList.add("slip"); setTimeout(() => hand.classList.remove("slip"), 250); beep(220, .08, "sine", .04); emit("slip", {});
+        return [x + (Math.random() - .5) * T.slipPx * k * .6, y + T.slipPx * k * (.6 + Math.random() * .8)];
+      }
+    }
+    return [x, y];
+  }
+
   /* ---------- end states ---------- */
   function summary() {
     const dur = Math.max(S.t, 0.001);
     return { seed: level.seed, mode, result: S.state, secondsPlayed: +S.t.toFixed(1), clockLeft: +Math.max(S.remaining, 0).toFixed(1), strikes: S.strikes,
-      modulesSolved: nSolved(), avgStress: +(S.stressSum / dur).toFixed(3), secondsHighStress: +S.stressHi.toFixed(1),
+      modulesSolved: nSolved(), sweatDrops: S.drops, slips: S.slips, wipes: S.wipes, avgStress: +(S.stressSum / dur).toFixed(3), secondsHighStress: +S.stressHi.toFixed(1),
       avgFocus: S.focusN ? +(S.focusSum / S.focusN).toFixed(1) : null, events: S.events.slice() };
   }
   function finish(kind, title, msg) {
@@ -306,7 +355,7 @@ function open(opts) {
     endEl.innerHTML = `<div class="card ${kind === "won" ? "win" : "lose"}"><h1>${title}</h1><p>${msg}</p><div class="stats">
       <div><span>Time played</span><b>${sm.secondsPlayed} s</b></div><div><span>Clock left</span><b>${sm.clockLeft} s</b></div><div><span>Strikes</span><b>${sm.strikes} / ${level.maxStrikes}</b></div>
       <div><span>Modules solved</span><b>${sm.modulesSolved} / 3</b></div><div><span>Average stress (0-1)</span><b>${sm.avgStress}</b></div><div><span>Seconds under high stress</span><b>${sm.secondsHighStress}</b></div>
-      <div><span>Average focus</span><b>${sm.avgFocus == null ? "no reading" : sm.avgFocus}</b></div><div><span>Mode</span><b>${mode === "test" ? "manual test (not real data)" : "live (Muse)"}</b></div><div><span>Seed</span><b>${sm.seed}</b></div></div>
+      <div><span>Sweat drops / slips</span><b>${sm.sweatDrops} / ${sm.slips}</b></div><div><span>Average focus</span><b>${sm.avgFocus == null ? "no reading" : sm.avgFocus}</b></div><div><span>Mode</span><b>${mode === "test" ? "manual test (not real data)" : "live (Muse)"}</b></div><div><span>Seed</span><b>${sm.seed}</b></div></div>
       <div class="row"><button class="bz-btn" id="bzNew">NEW BOMB</button><button class="bz-btn" id="bzRe">RETRY THIS BOMB</button><button class="bz-btn" id="bzEx">EXIT</button></div></div>`;
     endEl.style.display = "flex";
     endEl.querySelector("#bzNew").onclick = () => build();
@@ -341,6 +390,7 @@ function open(opts) {
   view.addEventListener("pointerdown", e => {
     if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (x) { /* no sound */ } }
     raw = [e.clientX, e.clientY]; handPos = [raw[0] + jit[0], raw[1] + jit[1]];
+    if (S.state === "running") handPos = slipAt(handPos[0], handPos[1]);
     if (S.state !== "running") return;
     hand.classList.add("dn");
     const it = hit(handPos[0], handPos[1]); downItem = it; if (it && it.down) it.down();
@@ -351,8 +401,8 @@ function open(opts) {
   /* ---------- main loop ---------- */
   let raf = 0, last = performance.now();
   const focusNow = () => { if (mode === "test") return no.checked ? null : +sl.value; return opts.focus ? opts.focus() : null; };
-  function frame(now) {
-    raf = requestAnimationFrame(frame);
+  function frame(now) { raf = requestAnimationFrame(frame); update(now); }
+  function update(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
     const f = focusNow();
     let target = opts.stress ? opts.stress() : null; if (target == null || !isFinite(target)) target = L.stressFromFocus(f, T);
@@ -364,22 +414,33 @@ function open(opts) {
       if (sec !== S.lastSec) { S.lastSec = sec; beep(rate > 1.3 ? 1000 : 800, .04, "square", .03); }
       if (S.remaining <= 0) { S.remaining = 0; explode("time"); }
       if (s > T.glitchStress && S.t > S.nextGlitch) { S.glitchUntil = S.t + 0.7; S.nextGlitch = S.t + 6 + Math.random() * 6; beep(70, .5, "sawtooth", .05); root.classList.add("bz-glitch"); setTimeout(() => root.classList.remove("bz-glitch"), 700); }
+      spawnAcc += L.sweatRate(s, T) * dt; while (spawnAcc >= 1) { spawnAcc -= 1; spawnDrop(); }
+      if (s > 0.5 && S.t > S.nextSpike) { S.spikeUntil = S.t + 0.45; S.nextSpike = S.t + 3 + Math.random() * 3; }
+      S.beat += dt * L.heartBpm(s) / 60;
+      if (Math.floor(S.beat) > S.lastBeat) { S.lastBeat = Math.floor(S.beat); if (s > 0.25) { beep(60, .12, "sine", .09); setTimeout(() => beep(52, .1, "sine", .06), 210); } }
       if (S.pressAt != null && (performance.now() - S.pressAt) / 1000 > 0.4) { strip.className = "strip on stripc-" + level.button.strip; }
     }
     if (S.state === "running" || S.state === "won") {
       let str = clockDigits(); if (S.state === "running" && S.t < S.glitchUntil) str = String(Math.floor(Math.random() * 9000 + 1000));
       setDigits(str);
     }
+    /* falling sweat, wet patches, heartbeat vignette */
+    for (let i = drops.length - 1; i >= 0; i--) { const d = drops[i]; d.vy += 1100 * dt; d.y += d.vy * dt; d.e.style.transform = `translate(${d.x}px,${d.y}px)`; if (d.y >= d.target) { drops.splice(i, 1); splat(d); } }
+    for (let i = smudges.length - 1; i >= 0; i--) { const m = smudges[i], age = S.t - m.born; if (age > T.smudgeLife) { m.e.remove(); smudges.splice(i, 1); } else m.e.style.opacity = Math.min(1, (T.smudgeLife - age) / 4); }
+    const ph = S.beat % 1, env = Math.exp(-ph * 7) + 0.6 * Math.exp(-Math.abs(ph - 0.22) * 25);
+    vig.style.opacity = s > 0.12 ? Math.min(1, s * (0.25 + 0.55 * env)) : 0;
+    if (S.state === "running") bomb.style.filter = s > 0.6 ? `blur(${((s - 0.6) / 0.4 * 1.1 * (0.4 + env * 0.6)).toFixed(2)}px)` : "";
     /* hand shake */
     const tt = now / 1000;
-    jit = [shake * k * (Math.sin(tt * 6.3 + 1) + 0.6 * Math.sin(tt * 11.7 + 2)) / 1.6, shake * k * (Math.sin(tt * 5.1 + 3) + 0.6 * Math.sin(tt * 13.1)) / 1.6];
+    const sp = S.t < S.spikeUntil ? 1 + 1.2 * Math.sin(Math.PI * (1 - (S.spikeUntil - S.t) / 0.45)) : 1;
+    jit = [shake * sp * k * (Math.sin(tt * 6.3 + 1) + 0.6 * Math.sin(tt * 11.7 + 2)) / 1.6, shake * sp * k * (Math.sin(tt * 5.1 + 3) + 0.6 * Math.sin(tt * 13.1)) / 1.6];
     if (raw) { handPos = [raw[0] + jit[0], raw[1] + jit[1]]; if (overView) { hand.style.display = "block"; hand.style.transform = `translate(${handPos[0]}px,${handPos[1]}px)`; } }
     bomb.style.transform = `scale(${k}) rotate(${(s * 0.5 * Math.sin(tt * 1.7)).toFixed(3)}deg)`;
     /* vitals */
     const noRead = f == null && !(opts.stress && opts.stress() != null);
     rowF.querySelector("b").textContent = f == null ? "--" : Math.round(f); rowF.querySelector(".bar i").style.width = (f == null ? 0 : f) + "%";
     rowS.querySelector("b").textContent = Math.round(s * 100) + "%"; rowS.querySelector(".bar i").style.width = (s * 100) + "%";
-    effect.querySelector("#bzT").textContent = shake.toFixed(1) + " px"; effect.querySelector("#bzC").textContent = "x" + rate.toFixed(2);
+    effect.querySelector("#bzT").textContent = shake.toFixed(1) + " px"; effect.querySelector("#bzC").textContent = "x" + rate.toFixed(2); effect.querySelector("#bzH").textContent = Math.round(L.heartBpm(s)) + " bpm"; effect.querySelector("#bzW").textContent = smudges.length;
     vNote.textContent = mode === "test" ? "MANUAL TEST MODE: focus is set by the slider. Results are not real data." : noRead ? "LIVE MODE: no focus reading yet. Connect the headband and press Auto Set Baselines in the panel. Until then there are no stress effects." : "LIVE MODE: driven by the experimental focus meter. Not a validated stress measure.";
     stEl.textContent = (mode === "test" ? "MANUAL TEST" : "LIVE") + (opts.status ? "  |  " + opts.status() : "");
   }
@@ -390,12 +451,13 @@ function open(opts) {
     wrap.style.width = 960 * k + "px"; wrap.style.height = 620 * k + "px";
   }
   function onKey(e) {
-    if (e.key === "Escape") { if (man.style.display === "block") man.style.display = "none"; else close(); }
+    if (e.key === " ") { e.preventDefault(); wipe(); }
+    else if (e.key === "Escape") { if (man.style.display === "block") man.style.display = "none"; else close(); }
     else if (e.key === "m" || e.key === "M") { man.style.display = man.style.display === "block" ? "none" : "block"; }
   }
   bMan.onclick = () => { man.style.display = man.style.display === "block" ? "none" : "block"; };
   bSnd.onclick = () => { muted = !muted; bSnd.textContent = muted ? "SOUND OFF" : "SOUND ON"; };
-  bExit.onclick = () => close();
+  bExit.onclick = () => close(); bWipe.onclick = wipe;
   window.addEventListener("keydown", onKey); window.addEventListener("resize", fit);
 
   function close() {
@@ -404,7 +466,9 @@ function open(opts) {
     root.remove(); ui = null; try { opts.onClose && opts.onClose(); } catch (e) { console.error(e); }
   }
 
-  ui = { close, restart: build, state: () => S, level: () => level, el: root };
+  /* advance(seconds): run the simulation faster than real time (used by tests and screenshots) */
+  function advance(sec) { let n = last; for (let i = 0; i < Math.round(sec * 60); i++) { n += 1000 / 60; update(n); } last = performance.now(); }
+  ui = { close, restart: build, state: () => S, level: () => level, el: root, advance };
   fit(); build(opts.seed); setMode(mode); raf = requestAnimationFrame(frame);
 }
 

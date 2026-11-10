@@ -13,6 +13,10 @@ ok(near(B.stressFromFocus(0), 1, 1e-9) && near(B.stressFromFocus(25), 0.5, 1e-9)
 ok(near(B.clockRate(0, 0), 1, 1e-9) && near(B.clockRate(1, 0), B.TUNING.clockMax, 1e-9) && B.clockRate(0, 2) > 1.4, "clock speed rises with stress and strikes");
 ok(B.handShake(0) === 0 && near(B.handShake(1), B.TUNING.shakePx, 1e-9), "hand shake scales with stress");
 
+ok(B.sweatRate(0) === 0 && B.sweatRate(B.TUNING.sweatStart) === 0, "no sweat while calm");
+ok(near(B.sweatRate(1), B.TUNING.sweatMax, 1e-9) && B.sweatRate(0.5) > 0 && B.sweatRate(0.5) < B.sweatRate(0.8), "sweat rises with stress");
+ok(B.heartBpm(0) === 64 && B.heartBpm(1) === 134, "heart rate 64 calm to 134 stressed");
+
 // wire rules
 const S_ODD = "A1B2C3", S_EVEN = "A1B2C4";
 ok(B.wireSolution(["red", "blue", "white", "white", "black"], S_ODD) === 3, "wire rule 1: last black + odd serial -> 4th wire");

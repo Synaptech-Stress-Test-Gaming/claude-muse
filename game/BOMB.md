@@ -18,7 +18,11 @@ The end screen says which mode a run used. Manual-test runs are not real data.
 
 ## What stress does
 `stress = clamp((50 - focus) / 50)`: calm at focus 50 or more, full stress at 0. Stress is smoothed over 1 s, then:
-- **Hand tremor**: your pointer jitters up to 16 px, so small targets are harder to hit.
+- **Hand tremor**: your pointer jitters up to 16 px, with sudden spikes above 50% stress, so small targets are harder to hit.
+- **Sweat**: drops fall onto the bomb (up to about 1 per second) and leave water-lens patches that blur what is under them.
+  A press on a wet patch **slips** downward. Patches dry after 14 s, or wipe them all with **Space** (costs 3 s on the clock).
+- **Heartbeat**: from 25% stress you hear a heartbeat, and a red vignette pulses with it (64 bpm calm, 134 stressed).
+  Above 60% stress the picture blurs slightly on each beat.
 - **Clock speed**: up to x1.6 (plus x0.25 per strike).
 - **Display glitches** above 55% stress (the clock flickers, no state changes).
 With no focus reading the game runs calm. All numbers are in `TUNING` in `bomb-logic.js`.
@@ -32,12 +36,12 @@ BombUI.open({
   stress: () => 0..1 | null,    // optional: overrides the focus mapping (for a future stress algorithm)
   status: () => "text for the top bar",
   seed: 42,                     // optional: repeatable bomb
-  onEvent: (type, data) => {},  // start, mode, strike, module_solved, defused, explode, finish
+  onEvent: (type, data) => {},  // start, mode, strike, module_solved, slip, wipe, defused, explode, finish
   onClose: () => {}
 });
 ```
 Events are also fired on `window` as `bomb:event` (`detail = {type, data}`). The `finish` event carries a summary
-(result, time played, strikes, average stress, seconds under high stress, average focus, event log).
+(result, time played, strikes, average stress, seconds under high stress, average focus, sweat drops, slips, wipes, event log).
 
 ## Files
 `bomb-logic.js` rules, level generation, stress mapping (no DOM) · `bomb.js` view and input ·

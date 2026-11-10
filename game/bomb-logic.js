@@ -11,7 +11,13 @@ const TUNING = {
   clockMax: 1.6,         // clock speed at full stress (1 = normal)
   strikeSpeedup: 0.25,   // each strike adds this much to the clock speed
   glitchStress: 0.55,    // above this stress the display can glitch
-  smoothingSec: 1.0      // low-pass time constant for the stress signal
+  smoothingSec: 1.0,     // low-pass time constant for the stress signal
+  sweatStart: 0.15,      // sweat begins above this stress
+  sweatMax: 1.1,         // sweat drops per second at full stress
+  maxSmudges: 16,        // wet patches on the bomb at once
+  smudgeLife: 14,        // seconds before a wet patch dries
+  slipPx: 28,            // a press on a wet patch slides this far (bomb pixels, mostly downward)
+  wipePenalty: 3         // seconds taken off the clock to wipe the bomb dry
 };
 
 /* ---------- random numbers (seedable, so a level can be replayed) ---------- */
@@ -39,6 +45,13 @@ function clockRate(stress, strikes, T) {
   return 1 + stress * (T.clockMax - 1) + strikes * T.strikeSpeedup;
 }
 function handShake(stress, T) { return stress * (T || TUNING).shakePx; }
+/* sweat drops per second: none while calm, rising steeply toward full stress */
+function sweatRate(stress, T) {
+  T = T || TUNING;
+  if (stress <= T.sweatStart) return 0;
+  return T.sweatMax * Math.pow((stress - T.sweatStart) / (1 - T.sweatStart), 1.2);
+}
+function heartBpm(stress) { return 64 + 70 * clamp01(stress); }
 
 /* ---------- wires module ---------- */
 const WIRE_COLORS = ["red", "blue", "yellow", "white", "black"];
@@ -129,7 +142,7 @@ function judgeButton(level, heldSec, clock) {
 }
 function judgeKey(level, progress, sym) { return sym === level.keypad.order[progress] ? "ok" : "strike"; }
 
-const API = { TUNING, rng, stressFromFocus, clockRate, handShake, WIRE_COLORS, WIRE_RULES, wireSolution,
+const API = { TUNING, rng, stressFromFocus, clockRate, handShake, sweatRate, heartBpm, WIRE_COLORS, WIRE_RULES, wireSolution,
   BUTTON_COLORS, BUTTON_LABELS, STRIP_COLORS, STRIP_DIGIT, BUTTON_RULES, STRIP_RULES, buttonSolution, TAP_MAX,
   KEY_COLUMNS, makeSerial, makeLevel, judgeWire, judgeButton, judgeKey };
 if (typeof module !== "undefined" && module.exports) module.exports = API;
