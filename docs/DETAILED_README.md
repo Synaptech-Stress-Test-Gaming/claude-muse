@@ -33,11 +33,16 @@ the player's own calm baseline:
 | Frontal beta/alpha | AF7 + AF8, 2 s Hann FFT, `ln(beta 13-30 / alpha 8-13)` | common (unvalidated) arousal feature; skipped while a blink/jerk artifact is flagged |
 | Muscle tension | AF7 + AF8, `ln(gamma 30-44 / total 1-44)` | forehead tension (frowning, clenching) shows up here; this is EMG, not brain activity |
 
-**Calibrate calm** (30 s, `?stcal=N` to change): sit still, eyes open. Baseline = mean and SD per signal (SD floored at
-3 bpm and 0.15 ln units). Each second: `z = (value - mean) / SD` (clamped to +-4), weighted average (0.40 / 0.35 / 0.25,
-renormalised if a signal is missing, for example no pulse), then `score = clamp(20 + 80 * z / 3, 0, 100)`, smoothed
-(EMA 0.25). **20 = your calm baseline, 100 = about 3 SD above it.** The card at the bottom-left shows the score and each
-signal's z. In demo mode it has sliders for simulated heart rate, beta and face tension.
+**Calibration (two phases, `?stcal=N` sets the length of each, default 30 s):**
+1. **Calm:** sit still, eyes open. 2. **Task:** count backwards from 1022 by 13 as fast as you can, typing each answer (a wrong
+answer restarts the count). The first 30% (max 8 s) of each phase is skipped because heart rate uses an 8 s window and arousal
+takes time to build. For each signal the meter measures how far it moved between the phases (effect size d). Signals with
+d < 0.5 are **ignored and the card says so**; the rest are weighted by d (max 3). Score = `20 + 60 * (position between your calm
+level and your task level)`, clamped 0..100, smoothed. So **20 = your calm, 80 = your level during the task.**
+Fallbacks: if you skip the task, it uses calm only (`20 + 80*z/3`, 100 = about 3 SD above calm, less reliable); if the task
+changed no signal, it falls back to calm-only and flags the model "weak". With no usable signal for 5 s it shows `--`.
+The card at the bottom-left shows the score and each signal's position. In demo mode it has sliders for simulated heart rate,
+beta and face tension.
 Limits: relative to one person on one day; caffeine, movement, a loose headband or concentration also move it
 (solving a puzzle raises beta and heart rate without being "stress"). Treat it as a game input, not a measurement.
 API: `StressMeter.value()` returns 0..100 or `null` (not connected or not calibrated); `StressMeter.ready()`.
@@ -74,7 +79,7 @@ slips, shorted presses, paper blotches, wipes and the event log. This is the hoo
 Manual test mode uses `stress = clamp((50 - focus) / 50)`.
 
 ## 5. Tests and what was verified
-- `game/bomb.test.js` (18 checks) and `stress.test.js` (15 checks): rules, 2,000 generated bombs all solvable, sweat and
+- `game/bomb.test.js` (18 checks) and `stress.test.js` (26 checks): rules, 2,000 generated bombs all solvable, sweat and
   short-circuit numbers, FFT band placement, baseline and scoring maths. Run with Node (`node game/bomb.test.js`) or open
   the `*-test.html` pages. **Node is not installed on the Mac this was built on, so they were run in the browser.**
 - Played in a browser: wrong wire = strike; defused with the correct actions; sweat blurs and slips; a shorted module

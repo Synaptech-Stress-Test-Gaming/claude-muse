@@ -44,5 +44,40 @@ ok(M3.finishCal() === false && !M3.ready(), "too few samples fails safely");
 const M4 = St.makeMeter({ minSamples: 10, ema: 1 }); M4.startCal(); for (let i = 0; i < 20; i++) M4.push({ hr: 70, ratio: -1, tension: -3 }); M4.finishCal();
 ok(M4.score({ hr: 71, ratio: -0.98, tension: -2.98 }) < 30, "a tiny change on a flat baseline stays low");
 
+// two-phase calibration: learns which signals respond for this person
+{
+  const noise = () => r() * 0.2;
+  const T = St.makeMeter({ minSamples: 10, ema: 1 });
+  T.startCal(); for (let i = 0; i < 30; i++) T.push({ hr: 70 + r() * 2, ratio: -1 + noise(), tension: -3 + noise() });
+  T.endPhase(); T.startPhase("stress");
+  for (let i = 0; i < 30; i++) T.push({ hr: 100 + r() * 2, ratio: -1 + noise(), tension: -2 + noise() }); // hr and tension respond, beta/alpha does not
+  T.endPhase();
+  ok(T.build() && T.model.mode === "two-point", "two-point model is built from calm + task");
+  const st = Object.fromEntries(T.report.map(x => [x.key, x.status]));
+  ok(st.hr === "used" && st.tension === "used" && st.ratio === "ignored", "responsive signals are used, the unresponsive one is ignored (" + JSON.stringify(st) + ")");
+  ok(near(T.score({ hr: 70, ratio: -1, tension: -3 }), 20, 4), "calm scores about 20 in two-point mode");
+  ok(near(T.score({ hr: 100, ratio: -1, tension: -2 }), 80, 4), "task level scores about 80");
+  ok(near(T.score({ hr: 85, ratio: -1, tension: -2.5 }), 50, 6), "halfway between scores about 50");
+  ok(T.score({ hr: 140, ratio: -1, tension: -1 }) === 100 && T.score({ hr: 40, ratio: -1, tension: -4 }) < 5, "scores clamp to 0..100");
+  ok(!("ratio" in T.z) && T.used.join() === "hr,tension", "ignored signal does not contribute");
+  // task changed nothing: fall back and say so
+  const W = St.makeMeter({ minSamples: 10, ema: 1 });
+  W.startCal(); for (let i = 0; i < 30; i++) W.push({ hr: 70 + r() * 2, ratio: -1 + noise(), tension: -3 + noise() }); W.endPhase();
+  W.startPhase("stress"); for (let i = 0; i < 30; i++) W.push({ hr: 70 + r() * 2, ratio: -1 + noise(), tension: -3 + noise() }); W.endPhase();
+  ok(W.build() && W.model.mode === "baseline-only" && W.model.weak === true, "a task that changes nothing falls back to baseline-only and is flagged weak");
+  // task with a missing heart rate during the task still works with the rest
+  const H = St.makeMeter({ minSamples: 10, ema: 1 });
+  H.startCal(); for (let i = 0; i < 30; i++) H.push({ hr: 70 + r() * 2, ratio: -1 + noise(), tension: -3 + noise() }); H.endPhase();
+  H.startPhase("stress"); for (let i = 0; i < 30; i++) H.push({ hr: null, ratio: 0, tension: -3 + noise() }); H.endPhase();
+  H.build(); const hs = Object.fromEntries(H.report.map(x => [x.key, x.status]));
+  ok(hs.hr === "no data in task" && hs.ratio === "used" && H.model.mode === "two-point", "missing signal in the task is skipped, others still used");
+}
+// arithmetic task
+{
+  const k = St.makeTask(1022, 13);
+  ok(k.prompt() === "1022 - 13" && k.answer("1009") && k.answer(996) && k.cur === 996 && k.correct === 2, "task accepts correct answers and advances");
+  ok(!k.answer(5) && k.cur === 1022 && k.wrong === 1, "a wrong answer sends you back to the start");
+}
+
 if (typeof document !== "undefined") { document.body.style.cssText = "font:14px monospace;white-space:pre;padding:16px;background:#111;color:#ddd"; document.body.textContent = out.join("\n") + "\n\n" + (fails ? fails + " FAILED" : "ALL PASSED"); }
 else { console.log(out.join("\n")); console.log(fails ? fails + " FAILED" : "ALL PASSED"); process.exit(fails ? 1 : 0); }
