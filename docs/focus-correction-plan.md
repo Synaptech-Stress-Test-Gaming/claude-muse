@@ -17,6 +17,7 @@ Per forehead channel, in linear power: `excess = max(emg - emg_rest - margin, 0)
 
 | Item | Status |
 |---|---|
+| Code lives in `focus/` (engine, calibration, switch, recording, CSS, tests); the panel only wires it in | Done |
 | Single-PSD feature extractor (256-point Hann periodogram, 1 Hz bins) | Done (in the panel) |
 | Ordered gate: gap, blink, hold-off, heavy muscle, corrected, ok; `valid`; 3 s max hold | Done |
 | Pipeline fingerprint check; panel refuses a mismatched `calibration.json` | Done |

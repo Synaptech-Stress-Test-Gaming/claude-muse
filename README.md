@@ -4,6 +4,7 @@ A single-page control panel that shows the live brainwave data from a **Muse 2**
 
 This README covers the panel and the project files. The games have their own READMEs:
 
+- [focus/README.md](focus/README.md): the Legacy / Corrected / Gate-only focus scores, the CAL calibration and the extra recording columns (loaded by the panel; keep the `focus` folder next to it)
 - [game/README.md](game/README.md): Mario Kart DS style race whose speed follows your focus (opens from the panel)
 - [game-py/README.md](game-py/README.md): the same Mario Kart game ported to Python (pygame), fed by the panel's focus score
 - [game-link/README.md](game-link/README.md): the earlier Animal Stacker prototype that can read the focus score
@@ -16,7 +17,7 @@ This README covers the panel and the project files. The games have their own REA
 
 ## How to start it
 
-1. Download or clone this repo and keep every file together (the panel needs `cosmic-bg.jpg` and the `game` folder next to it).
+1. Download or clone this repo and keep every file together (the panel needs `cosmic-bg.jpg` and the `game` and `focus` folders next to it).
 2. Double-click **Open Muse Panel.bat**. It opens the panel in its own Edge window with the Bluetooth features turned on.
 3. Put the headband on, press **Connect**, and pick your Muse when the browser asks.
 
@@ -61,7 +62,7 @@ Corrected and Gate-only are **proxies, not validated focus measures**. Beta over
 
 Rejected windows are drawn as **gaps** (`--`, no lit bar), never as a held old value. The game keeps your last speed during a gap. After 3 seconds without a valid window, the recorded smoothed value goes blank.
 
-**Calibration needed.** Corrected and Gate-only stay greyed out, with the reason shown, until you do a muscle calibration. This is separate from Auto Set Baselines. Connect the headband and press **CAL**: relax your face for 8 seconds, then twice clench your jaw **and** scrunch your forehead as hard as you can for 4 seconds (about 20 seconds in all). The panel measures your resting levels, fits how much your muscle noise raises beta, and enables both modes. Only forehead sensors with skin contact are used: if one is dead (for example AF7 at 0%), it is skipped and the score runs on the other. It refuses a poor fit and tells you why (for example, clench harder). The result is kept in your browser. **Shift-click CAL** loads a `calibration.json` file instead, which is refused if its settings fingerprint does not match the panel. This quick calibration is simpler than the full plan (no cross-validation, no frown or blink segments); see [docs/focus-correction-plan.md](docs/focus-correction-plan.md).
+**Calibration needed.** Corrected and Gate-only stay greyed out, with the reason shown, until you do a muscle calibration. This is separate from Auto Set Baselines. Connect the headband and press **CAL**: relax your face for 8 seconds, then twice clench your jaw **and** scrunch your forehead as hard as you can for 4 seconds (about 20 seconds in all). The panel measures your resting levels, fits how much your muscle noise raises beta, and enables both modes. Only forehead sensors with skin contact are used: if one is dead (for example AF7 at 0%), it is skipped and the score runs on the other. It refuses a poor fit and tells you why (for example, clench harder). The result is kept in your browser. **Shift-click CAL** loads a `calibration.json` file instead, which is refused if its settings fingerprint does not match the panel. This quick calibration is simpler than the full plan (no cross-validation, no frown or blink segments); see [focus/README.md](focus/README.md) and [docs/focus-correction-plan.md](docs/focus-correction-plan.md).
 
 After calibrating, press **Auto Set Baselines** once; it sets the range for all three scores. Your choice of score is remembered between visits.
 
