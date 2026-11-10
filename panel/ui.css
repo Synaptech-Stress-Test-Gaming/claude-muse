@@ -414,3 +414,8 @@ html[data-look="clean"]{
 [data-look="neon"] #btnFull{left:296px!important}
 /* raw view: scaled to sit exactly over the five band rows */
 [data-look="neon"] #rawov{left:335px!important;top:298px!important;transform:scale(.84);transform-origin:0 0}
+
+/* stress meter card (built by stress.js): parked at the top centre so it never covers the Connect button or the FOCUS switch;
+   when collapsed it shows only its title and status line */
+#stressCard{left:50%!important;bottom:auto!important;top:8px;transform:translateX(-50%);z-index:60}
+#stressCard.min>.row{display:none}
