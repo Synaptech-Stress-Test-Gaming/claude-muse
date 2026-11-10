@@ -157,3 +157,9 @@ The panel's round button opens a menu (`game/menu.js`). Games register there wit
 `GameMenu.register({id, title, blurb, input, kind, scripts, needs, launch, howto})`. Built in: **Defuse** (stress), **Mario Kart (browser)** (focus, lazy-loaded,
 needs focus baselines), **Mario Kart (Python)** and **Animal Stacker** (external apps, shown with how to run them). A game gets a `ctx` with `stage`,
 `connected`, `focusReady`, `stressLive`, `focus()`, `stress()` (0..1), `sensors()` and `status()`.
+
+## 11. Panel split (2026-11-09)
+`muse-panel.html` was split into `panel/*.js` + `panel/ui.css` by category (UI, signal path, Bluetooth, focus meter, recording, games, stress link): see `panel/README.md`
+for the table and the mapping from the old single file. Code was moved, not rewritten. The "edits to `muse-panel.html`" in section 8 now live in
+`panel/gamelink.js` (game menu hookup), `panel/ble.js` (`demoGamma`) and `panel/stress-link.js` (stress glue). The game button is now a small "Games" button
+in the right-hand button column (same style as Band view / Raw view / Float focus / Fullscreen).

@@ -71,12 +71,13 @@ CSV columns: `time_s, TP9, AF7, AF8, TP10` (microvolts), the five band signals, 
 
 | File | What it is |
 |---|---|
-| `muse-panel.html` | The whole panel (page, styling, Bluetooth, signal processing, focus meter) |
+| `muse-panel.html` | The panel page (markup and script list only; the code is in `panel/`) |
 | `Open Muse Panel.bat` | Launches the panel in Edge with Web Bluetooth switched on |
 | `cosmic-bg.jpg` | The artwork behind the panel. Keep it next to `muse-panel.html` |
 | `game/` | The Mario Kart game (see its README) |
 | `game-py/` | The Python version of the Mario Kart game (see its README) |
 | `game/menu.js` | The game menu (round button on the panel). Add new games with one `GameMenu.register(...)` call |
+| `panel/` | The panel's code split by category (UI, signal path, Bluetooth, focus meter, recording, games, stress link). See `panel/README.md` |
 | `stress.js` | The experimental stress meter (heart rate, HRV, frontal beta/alpha, face tension; two-phase calibration) |
 | `docs/DETAILED_README.md` | Detailed status: how everything works, what is tested, open work, how to merge |
 | `Open Muse Panel (Mac).command` | Mac launcher (serves the folder on localhost and opens Chrome) |
