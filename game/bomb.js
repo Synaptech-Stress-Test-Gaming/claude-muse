@@ -225,17 +225,7 @@ function open(opts) {
 
   /* manual */
   const man = el("div", "bz-man", "", root);
-  man.innerHTML = `<div class="paper"><h2>Bomb Defusal Handbook</h2><p><i>Field edition. Read the section for the module you are working on. Keep this paper dry.</i></p>
-   <h3>0. Before you start</h3><ol><li>The <b>serial number</b> is on the white plate at the top middle of the bomb.</li><li>Three strikes or an empty clock and it goes off. Every wrong action is a strike.</li><li>The clock keeps running while you read.</li></ol>
-   <h3>1. Wires</h3><p><b>How to read it:</b> there are always 5 wires, listed top to bottom. Count how many of each colour there are first. Then check the rules in order: the <b>first rule that fits</b> is the one to use. Only the wire it names is safe to cut.</p>
-   <ol>${L.WIRE_RULES.map(r => `<li>${r}</li>`).join("")}</ol><p><b>Hints:</b> "last wire" means the bottom one. "Odd" or "even" always means the last digit of the serial number.</p>
-   <h3>2. The button</h3><p><b>How to read it:</b> note the colour of the button and the word on it. Check the rules in order and use the first one that fits. The answer is either a <b>tap</b> or a <b>hold</b>.</p>
-   <ol>${L.BUTTON_RULES.map(r => `<li>${r}</li>`).join("")}</ol><p>${L.STRIP_RULES}</p>
-   <p><b>Hints:</b> a <i>tap</i> is a quick press and release (under half a second). When holding, watch the clock: the digit can be in any of the four places, for example 02:41 has a 4.</p>
-   <h3>3. Symbol keypad</h3><p><b>How to read it:</b> look at the four symbols on your keypad. Find the <b>one column</b> below that contains all four. Press the symbols in the order they appear in that column, top to bottom. A wrong key is a strike.</p>
-   <div class="cols">${L.KEY_COLUMNS.map((c, i) => `<div><small>Column ${i + 1}</small>${c.map(s => `<div style="border:0;padding:0">${s}</div>`).join("")}</div>`).join("")}</div>
-   <p><b>Hint:</b> if two columns share a symbol, use another symbol to tell them apart. Only one column holds all four.</p>
-   <h3>4. Keep calm</h3><p>This prototype reads your stress. When it rises your hands shake and sweat drips on the bomb: wet patches blur what is under them, a press on one slips, and three on a module short it out until you dry it. Sweat also soaks <b>this paper</b>: wet blotches blur the words, and a dried blotch leaves a stain that is still hard to read. Wipe the bomb by holding the cloth on the table and dragging it over the wet patches; click the cloth while you read to dab the page dry. If you feel your hands shaking, pick up the phone on the table and scroll for a while: it clears your head, but the clock keeps running. Stay calm.</p></div>`;
+  man.innerHTML = `<div class="paper"></div>`;
   const paper = man.querySelector(".paper"); const mclose = el("button", "mclose", "PUT DOWN", null); man.insertBefore(mclose, man.firstChild); mclose.onclick = () => toggleManual(false); let blots = [], pdrops = [], pAcc = 0;
 
   /* test tools */
@@ -262,6 +252,22 @@ function open(opts) {
     if (S) emit("mode", { mode: m });
   }
   bMode.onclick = () => { if (S && S.state === "running" && S.t > 1 && !confirm("Switching mode mid-game mixes test and real readings in this run's results. Switch anyway?")) return; setMode(mode === "test" ? "live" : "test"); };
+
+  /* ---------- the service sheet: written for THIS bomb only (rules differ on every bomb) ---------- */
+  function renderManual() {
+    const lv = level, esc = x => x;
+    const wr = lv.wires.rules.map((r, i) => `<li>${L.wireRuleText(r, i === 0)}</li>`).join("");
+    const br = lv.button.rules.map((r, i) => `<li>${L.buttonRuleText(r, i === 0)}</li>`).join("");
+    const cols = lv.keypad.columns.map((c, i) => `<div><small>Column ${i + 1}</small>${c.map(x => `<div style="border:0;padding:0">${x}</div>`).join("")}</div>`).join("");
+    paper.innerHTML = `<h2>Service sheet</h2><p><i>Issued for bomb</i> <b style="letter-spacing:.14em;font-family:Menlo,monospace">${lv.serial}</b>. <i>These instructions are only valid for this bomb. Check the serial number on the plate matches. Keep this paper dry.</i></p>
+     <h3>0. Before you start</h3><ol><li>The <b>serial number</b> is on the white plate at the top middle of the bomb. "Odd" or "even" always means its last digit.</li><li>Three strikes or an empty clock and it goes off. Every wrong action is a strike.</li><li>The clock keeps running while you read.</li></ol>
+     <h3>1. Wire panel (${lv.wires.colors.length} wires)</h3><p>Wires are numbered top to bottom. Count the colours first. Use the <b>first rule that fits</b>; cut only the wire it names.</p><ol>${wr}</ol>
+     <h3>2. The button</h3><p>Note the button's colour and the word on it. Use the <b>first rule that fits</b>.</p><ol>${br}</ol><p>${L.stripRuleText(lv.button.stripDigits)}</p>
+     <p><b>Hints:</b> a <i>tap</i> is a quick press and release (under half a second). When holding, the digit can be in any of the four places of the clock, for example 02:41 has a 4.</p>
+     <h3>3. Symbol keypad</h3><p>Find the <b>one column</b> below that contains all four symbols on your keypad. Press them in the order they appear in that column, top to bottom.</p><div class="cols">${cols}</div>
+     <h3>4. Keep calm</h3><p>This prototype reads your stress. When it rises your hands shake and sweat drips on the bomb: wet patches blur what is under them, a press on one slips, and three on a module short it out until you wipe it. Sweat also soaks <b>this paper</b>: wet blotches blur the words, and a dried blotch leaves a stain that is still hard to read. Wipe the bomb by holding the cloth on the table and dragging it over the wet patches; click the cloth while you read to dab the page dry. If your hands are shaking, pick up the phone on the table and scroll for a while: it clears your head, but the clock keeps running. Stay calm.</p>`;
+    bookEl.innerHTML = `<i></i>SERVICE SHEET<br><span style="font-family:Menlo,monospace;letter-spacing:.1em">${lv.serial}</span><small>CLICK TO READ</small>`;
+  }
 
   /* ---------- level setup ---------- */
   function build(seed) {
@@ -290,6 +296,7 @@ function open(opts) {
     level.keypad.shown.forEach(sym => { const k = el("div", "key", sym, kGrid); reg(k, () => pressKey(k, sym), () => k.classList.remove("dn")); });
     strikeBox.querySelectorAll("i").forEach(i => i.className = "");
     updMods(); endEl.style.display = "none"; root.classList.remove("bz-glitch");
+    renderManual();
     emit("start", { seed: level.seed, serial: level.serial, mode });
   }
   function drawWire(i, cut) {

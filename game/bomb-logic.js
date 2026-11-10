@@ -60,49 +60,101 @@ function isShorted(wetCount, T) { return wetCount >= (T || TUNING).shortAt; }
 function effectiveStress(stress, calm) { return clamp01(stress) * (1 - Math.max(0, Math.min(1, calm || 0))); }
 function heartBpm(stress) { return 64 + 70 * clamp01(stress); }
 
-/* ---------- wires module ---------- */
+/* ---------- level-specific rules ----------
+   Every bomb gets its OWN rule set, generated from its seed and printed only in that bomb's service sheet (the in-game manual).
+   Without reading the sheet there is no way to know what to press. A new bomb means a new sheet. */
+const shuffle = (r, a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const int = (r, n) => Math.floor(r() * n);
+
+/* wires */
 const WIRE_COLORS = ["red", "blue", "yellow", "white", "black"];
-const WIRE_RULES = [
-  "If the last wire is black and the last digit of the serial number is odd, cut the 4th wire.",
-  "Otherwise, if there is exactly one red wire and more than one yellow wire, cut the 1st wire.",
-  "Otherwise, if there are no blue wires, cut the 2nd wire.",
-  "Otherwise, cut the 5th wire."
-];
-function wireSolution(wires, serial) {
-  const n = c => wires.filter(w => w === c).length;
-  const lastOdd = (+serial[serial.length - 1]) % 2 === 1;
-  if (wires[4] === "black" && lastOdd) return 3;
-  if (n("red") === 1 && n("yellow") > 1) return 0;
-  if (n("blue") === 0) return 1;
-  return 4;
+const ORD = ["1st", "2nd", "3rd", "4th", "5th"];
+const countOf = (wires, c) => wires.filter(w => w === c).length;
+/* returns the wire index to cut if the rule applies, else -1 */
+function wireRuleMatch(rule, wires, serial) {
+  const odd = (+serial[serial.length - 1]) % 2 === 1;
+  switch (rule.type) {
+    case "lastParity": return wires[4] === rule.color && (rule.parity === "odd") === odd ? rule.cut : -1;
+    case "oneAndMore": return countOf(wires, rule.a) === 1 && countOf(wires, rule.b) > 1 ? rule.cut : -1;
+    case "none": return countOf(wires, rule.color) === 0 ? rule.cut : -1;
+    case "atLeast": return countOf(wires, rule.color) >= rule.n ? wires.lastIndexOf(rule.color) : -1;
+    case "firstIs": return wires[0] === rule.color ? rule.cut : -1;
+    case "otherwise": return rule.cut;
+  }
+  return -1;
+}
+function wireRuleText(rule, first) {
+  const pre = first ? "If " : "Otherwise, if ";
+  switch (rule.type) {
+    case "lastParity": return `${pre}the last wire is ${rule.color} and the last digit of the serial number is ${rule.parity}, cut the ${ORD[rule.cut]} wire.`;
+    case "oneAndMore": return `${pre}there is exactly one ${rule.a} wire and more than one ${rule.b} wire, cut the ${ORD[rule.cut]} wire.`;
+    case "none": return `${pre}there are no ${rule.color} wires, cut the ${ORD[rule.cut]} wire.`;
+    case "atLeast": return `${pre}there are ${rule.n} or more ${rule.color} wires, cut the last ${rule.color} wire.`;
+    case "firstIs": return `${pre}the first wire is ${rule.color}, cut the ${ORD[rule.cut]} wire.`;
+    default: return `Otherwise, cut the ${ORD[rule.cut]} wire.`;
+  }
+}
+function evalWireRules(rules, wires, serial) {
+  for (let i = 0; i < rules.length; i++) { const c = wireRuleMatch(rules[i], wires, serial); if (c >= 0) return { cut: c, rule: i }; }
+  return { cut: -1, rule: -1 };
+}
+function makeWireRules(r) {
+  const col = () => pick(r, WIRE_COLORS);
+  const rules = shuffle(r, ["lastParity", "oneAndMore", "none", "atLeast", "firstIs"]).slice(0, 3).map(type => {
+    const c = col();
+    switch (type) {
+      case "lastParity": return { type, color: c, parity: pick(r, ["odd", "even"]), cut: int(r, 5) };
+      case "oneAndMore": { let b = col(); while (b === c) b = col(); return { type, a: c, b, cut: int(r, 5) }; }
+      case "none": return { type, color: c, cut: int(r, 5) };
+      case "atLeast": return { type, color: c, n: 2 + int(r, 2) };
+      default: return { type: "firstIs", color: c, cut: int(r, 5) };
+    }
+  });
+  rules.push({ type: "otherwise", cut: int(r, 5) });
+  return rules;
 }
 
-/* ---------- button module ---------- */
+/* button */
 const BUTTON_COLORS = ["red", "blue", "white", "yellow"];
 const BUTTON_LABELS = ["HOLD", "PRESS", "ABORT"];
 const STRIP_COLORS = ["blue", "white", "yellow", "green"];
-const STRIP_DIGIT = { blue: 4, white: 1, yellow: 5, green: 1 };
-const BUTTON_RULES = [
-  "If the button is blue and says ABORT, hold it.",
-  "Otherwise, if the button is red and says HOLD, press and immediately release it (a tap).",
-  "Otherwise, if the button is yellow, hold it.",
-  "Otherwise, tap it."
-];
-const STRIP_RULES = "When you hold the button a coloured strip lights up. Release when the countdown shows the matching digit anywhere: blue 4, white 1, yellow 5, green 1.";
-function buttonSolution(label, color) {
-  if (color === "blue" && label === "ABORT") return "hold";
-  if (color === "red" && label === "HOLD") return "tap";
-  if (color === "yellow") return "hold";
-  return "tap";
-}
 const TAP_MAX = 0.5; // seconds: a press shorter than this is a tap
+const actText = a => a === "hold" ? "hold it" : "tap it (press and release at once)";
+function buttonRuleMatch(rule, label, color) {
+  switch (rule.type) {
+    case "colorLabel": return rule.color === color && rule.label === label ? rule.action : null;
+    case "color": return rule.color === color ? rule.action : null;
+    case "label": return rule.label === label ? rule.action : null;
+    default: return rule.action;
+  }
+}
+function buttonRuleText(rule, first) {
+  const pre = first ? "If " : "Otherwise, if ";
+  switch (rule.type) {
+    case "colorLabel": return `${pre}the button is ${rule.color} and says ${rule.label}, ${actText(rule.action)}.`;
+    case "color": return `${pre}the button is ${rule.color}, ${actText(rule.action)}.`;
+    case "label": return `${pre}the button says ${rule.label}, ${actText(rule.action)}.`;
+    default: return `Otherwise, ${actText(rule.action)}.`;
+  }
+}
+function evalButtonRules(rules, label, color) {
+  for (let i = 0; i < rules.length; i++) { const a = buttonRuleMatch(rules[i], label, color); if (a) return { action: a, rule: i }; }
+  return { action: null, rule: -1 };
+}
+function makeButtonRules(r) {
+  const rules = shuffle(r, ["colorLabel", "color", "label"]).map(type => {
+    const act = pick(r, ["hold", "tap"]);
+    if (type === "colorLabel") return { type, color: pick(r, BUTTON_COLORS), label: pick(r, BUTTON_LABELS), action: act };
+    if (type === "color") return { type, color: pick(r, BUTTON_COLORS), action: act };
+    return { type, label: pick(r, BUTTON_LABELS), action: act };
+  });
+  rules.push({ type: "otherwise", action: pick(r, ["hold", "tap"]) });
+  return rules;
+}
+const stripRuleText = map => "When you hold the button a coloured strip lights up. Release when the countdown shows the matching digit anywhere: " + STRIP_COLORS.map(c => `${c} ${map[c]}`).join(", ") + ".";
 
-/* ---------- keypad module ---------- */
-const KEY_COLUMNS = [
-  ["★", "☾", "♠", "✚", "⚑", "♦"],
-  ["☀", "♣", "★", "♥", "☂", "✚"],
-  ["♦", "☂", "☾", "☀", "♠", "♥"]
-];
+/* keypad */
+const SYMBOLS = ["★", "☾", "♠", "✚", "⚑", "♦", "☀", "♣", "♥", "☂"];
 
 /* ---------- serial number ---------- */
 function makeSerial(r) {
@@ -117,24 +169,36 @@ function makeLevel(seed) {
   seed = seed == null ? Math.floor(Math.random() * 1e9) : seed >>> 0;
   const r = rng(seed);
   const serial = makeSerial(r);
-  const wires = []; for (let i = 0; i < 5; i++) wires.push(pick(r, WIRE_COLORS));
-  const label = pick(r, BUTTON_LABELS), color = pick(r, BUTTON_COLORS), strip = pick(r, STRIP_COLORS);
-  let col, syms;
-  for (let guard = 0; guard < 200; guard++) {
-    col = Math.floor(r() * KEY_COLUMNS.length);
-    const pool = KEY_COLUMNS[col].slice(), chosen = [];
-    while (chosen.length < 4) chosen.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);
-    const owners = KEY_COLUMNS.filter(c => chosen.every(s => c.includes(s))).length;
-    if (owners === 1) { syms = chosen; break; }
+  /* wires: keep drawing until a CONDITIONAL rule decides the answer (so the fallback rule is not always the one that applies) */
+  let wires, wrules, wres;
+  for (let g = 0; g < 500; g++) {
+    wires = []; for (let i = 0; i < 5; i++) wires.push(pick(r, WIRE_COLORS));
+    wrules = makeWireRules(r); wres = evalWireRules(wrules, wires, serial);
+    if (wres.rule >= 0 && wres.rule < 3) break;
   }
-  const order = syms.slice().sort((a, b) => KEY_COLUMNS[col].indexOf(a) - KEY_COLUMNS[col].indexOf(b));
-  const shown = syms.slice();
-  for (let i = shown.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [shown[i], shown[j]] = [shown[j], shown[i]]; }
+  /* button: the rule set uses both hold and tap, and a conditional rule decides */
+  let label, color, brules, bres;
+  for (let g = 0; g < 500; g++) {
+    label = pick(r, BUTTON_LABELS); color = pick(r, BUTTON_COLORS); brules = makeButtonRules(r); bres = evalButtonRules(brules, label, color);
+    if (bres.rule >= 0 && bres.rule < 3 && new Set(brules.map(x => x.action)).size === 2) break;
+  }
+  const strip = pick(r, STRIP_COLORS), digits = shuffle(r, [1, 2, 3, 4, 5, 6, 7, 8, 9]), stripDigits = {};
+  STRIP_COLORS.forEach((c, i) => stripDigits[c] = digits[i]);
+  /* keypad: three random columns; the four symbols on the pad fit exactly one of them */
+  let columns, col, syms;
+  for (let g = 0; g < 500; g++) {
+    columns = [0, 1, 2].map(() => shuffle(r, SYMBOLS).slice(0, 6));
+    col = int(r, 3);
+    const chosen = shuffle(r, columns[col]).slice(0, 4);
+    if (columns.filter(c => chosen.every(x => c.includes(x))).length === 1) { syms = chosen; break; }
+  }
+  const order = syms.slice().sort((a, b) => columns[col].indexOf(a) - columns[col].indexOf(b));
+  const shown = shuffle(r, syms);
   return {
     seed, serial, timeLimit: TUNING.timeLimit, maxStrikes: TUNING.maxStrikes,
-    wires: { colors: wires, cut: wireSolution(wires, serial) },
-    button: { label, color, strip, action: buttonSolution(label, color), digit: STRIP_DIGIT[strip] },
-    keypad: { column: col, shown, order }
+    wires: { colors: wires, cut: wres.cut, rules: wrules, ruleUsed: wres.rule },
+    button: { label, color, strip, action: bres.action, digit: stripDigits[strip], rules: brules, stripDigits, ruleUsed: bres.rule },
+    keypad: { columns, column: col, shown, order }
   };
 }
 
@@ -149,9 +213,10 @@ function judgeButton(level, heldSec, clock) {
 }
 function judgeKey(level, progress, sym) { return sym === level.keypad.order[progress] ? "ok" : "strike"; }
 
-const API = { TUNING, rng, stressFromFocus, clockRate, handShake, sweatRate, heartBpm, isShorted, effectiveStress, WIRE_COLORS, WIRE_RULES, wireSolution,
-  BUTTON_COLORS, BUTTON_LABELS, STRIP_COLORS, STRIP_DIGIT, BUTTON_RULES, STRIP_RULES, buttonSolution, TAP_MAX,
-  KEY_COLUMNS, makeSerial, makeLevel, judgeWire, judgeButton, judgeKey };
+const API = { TUNING, rng, stressFromFocus, clockRate, handShake, sweatRate, heartBpm, isShorted, effectiveStress,
+  WIRE_COLORS, BUTTON_COLORS, BUTTON_LABELS, STRIP_COLORS, SYMBOLS, ORD, TAP_MAX,
+  wireRuleMatch, wireRuleText, evalWireRules, buttonRuleMatch, buttonRuleText, evalButtonRules, stripRuleText,
+  makeSerial, makeLevel, judgeWire, judgeButton, judgeKey };
 if (typeof module !== "undefined" && module.exports) module.exports = API;
 root.BombLogic = API;
 })(typeof window !== "undefined" ? window : globalThis);

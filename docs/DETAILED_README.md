@@ -49,10 +49,13 @@ API: `StressMeter.value()` returns 0..100 or `null` (not connected or not calibr
 
 ## 4. Bomb game (`game/`)
 One level, three modules, 3:00 clock, 3 strikes. All art is drawn in code.
-- **Wires** (5): cut by colour counts and the serial number. **Button**: tap or hold, release on a clock digit.
-  **Keypad**: press the four symbols in the order of the one column that contains them all.
-- **Table objects** (the bomb sits on a table; click/drag with the in-game "hand"): the **handbook** on the right (click to read; rules
-  are *only* there, with a section per module: how to read it, rules in order, hints), the **cloth** below-left (hold and drag it
+- **Wires** (5), **Button** (tap or hold, release on a clock digit) and **Keypad** (four symbols, pressed in the order of the one column that holds them all).
+  **The rules are different on every bomb.** Each bomb's seed generates its own rule set (which wire to cut, hold-or-tap table, strip digits,
+  keypad columns) and it is printed only on that bomb's **service sheet** (the handbook, headed with the bomb's serial number). Nothing on the bomb
+  or in the game tells you what to press, so the player must read the sheet and match it against the bomb. A conditional rule (never the fallback)
+  always decides the answer, 2,000 seeds are tested as solvable, and almost every bomb gets a different sheet.
+- **Table objects** (the bomb sits on a table; click/drag with the in-game "hand"): the **service sheet** on the right (click to read; this bomb's rules
+  are *only* there, with a section per module: how to read it, this bomb's rules in order, hints), the **cloth** below-left (hold and drag it
   over wet patches to wipe them; click it while the handbook is open to dab the page dry) and the **phone** on the left (see below).
   The clock keeps running while you read or scroll. Esc closes the handbook or phone, then the game.
 - `bomb-logic.js` rules, seeded levels (`?seed=42` for a repeatable bomb), stress mapping, all `TUNING` numbers.

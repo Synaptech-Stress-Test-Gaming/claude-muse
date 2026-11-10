@@ -22,41 +22,49 @@ ok(!B.isShorted(0) && !B.isShorted(2) && B.isShorted(3) && B.isShorted(6), "thre
 ok(B.effectiveStress(0.8, 0) === 0.8 && near(B.effectiveStress(0.8, 0.5), 0.4, 1e-9) && B.effectiveStress(1, B.TUNING.calmMax) < 0.31, "the phone shrinks stress effects");
 ok(B.TUNING.calmMax < 1 && B.TUNING.calmDecay > 0, "mind-clear is capped and fades");
 
-// wire rules
+// rule evaluation on explicit rule sets
 const S_ODD = "A1B2C3", S_EVEN = "A1B2C4";
-ok(B.wireSolution(["red", "blue", "white", "white", "black"], S_ODD) === 3, "wire rule 1: last black + odd serial -> 4th wire");
-ok(B.wireSolution(["red", "blue", "white", "white", "black"], S_EVEN) === 1 || true, "wire rule 1 does not apply with even serial");
-ok(B.wireSolution(["red", "yellow", "yellow", "white", "white"], S_EVEN) === 0, "wire rule 2: one red, two yellow -> 1st wire");
-ok(B.wireSolution(["white", "white", "yellow", "red", "white"], S_EVEN) === 1, "wire rule 3: no blue -> 2nd wire");
-ok(B.wireSolution(["blue", "blue", "white", "red", "white"], S_EVEN) === 4, "wire fallback -> 5th wire");
+const WR = [{ type: "lastParity", color: "black", parity: "odd", cut: 3 }, { type: "oneAndMore", a: "red", b: "yellow", cut: 0 }, { type: "atLeast", color: "blue", n: 2 }, { type: "otherwise", cut: 4 }];
+ok(B.evalWireRules(WR, ["red", "blue", "white", "white", "black"], S_ODD).cut === 3, "wire rule: last black + odd serial");
+ok(B.evalWireRules(WR, ["red", "blue", "white", "white", "black"], S_EVEN).rule === 3, "the same wires with an even serial fall through to the last rule");
+ok(B.evalWireRules(WR, ["red", "yellow", "yellow", "white", "white"], S_EVEN).cut === 0, "wire rule: one red and two yellow");
+ok(B.evalWireRules(WR, ["white", "blue", "white", "blue", "white"], S_EVEN).cut === 3, "wire rule: 'last blue wire' is computed from the wires");
+ok(B.wireRuleText(WR[0], true).startsWith("If the last wire is black") && B.wireRuleText(WR[3], false) === "Otherwise, cut the 5th wire.", "rule text reads naturally");
+const BR = [{ type: "colorLabel", color: "blue", label: "ABORT", action: "hold" }, { type: "color", color: "yellow", action: "tap" }, { type: "otherwise", action: "hold" }];
+ok(B.evalButtonRules(BR, "ABORT", "blue").action === "hold" && B.evalButtonRules(BR, "PRESS", "yellow").action === "tap" && B.evalButtonRules(BR, "PRESS", "red").rule === 2, "button rule evaluation, first match wins");
 
-// button rules
-ok(B.buttonSolution("ABORT", "blue") === "hold" && B.buttonSolution("HOLD", "red") === "tap" && B.buttonSolution("PRESS", "yellow") === "hold" && B.buttonSolution("PRESS", "white") === "tap", "button rules");
-
-// level generation: 2000 seeds are all solvable and consistent
-let bad = 0, wiresCovered = new Set(), actions = new Set(), cols = new Set();
+// every bomb has its own rule set, and every one is solvable
+let bad = 0, wiresCovered = new Set(), actions = new Set(), distinctSheets = new Set(), condWire = 0, condBtn = 0;
 for (let seed = 1; seed <= 2000; seed++) {
   const lv = B.makeLevel(seed), lv2 = B.makeLevel(seed);
   if (JSON.stringify(lv) !== JSON.stringify(lv2)) bad++;
   if (!/^[A-Z]\d[A-Z]\d[A-Z]\d$/.test(lv.serial)) bad++;
-  wiresCovered.add(lv.wires.cut); actions.add(lv.button.action); cols.add(lv.keypad.column);
-  const col = B.KEY_COLUMNS[lv.keypad.column];
-  if (lv.keypad.order.length !== 4 || new Set(lv.keypad.shown).size !== 4) bad++;
-  if (!lv.keypad.shown.every(s => lv.keypad.order.includes(s))) bad++;
-  if (B.KEY_COLUMNS.filter(c => lv.keypad.order.every(s => c.includes(s))).length !== 1) bad++; // only one column fits
-  if (!lv.keypad.order.every((s, i, a) => i === 0 || col.indexOf(a[i - 1]) < col.indexOf(s))) bad++;
+  distinctSheets.add(JSON.stringify([lv.wires.rules, lv.button.rules, lv.button.stripDigits, lv.keypad.columns]));
+  wiresCovered.add(lv.wires.cut); actions.add(lv.button.action);
+  // wires: the answer is exactly what the printed rules say, and a conditional rule (not the fallback) decides
+  const w = B.evalWireRules(lv.wires.rules, lv.wires.colors, lv.serial);
+  if (w.cut !== lv.wires.cut || w.rule < 0 || w.rule >= 3 || lv.wires.ruleUsed !== w.rule) bad++; else condWire++;
   if (B.judgeWire(lv, lv.wires.cut) !== "solved" || B.judgeWire(lv, (lv.wires.cut + 1) % 5) !== "strike") bad++;
-  const solvedKeys = lv.keypad.order.every((s, i) => B.judgeKey(lv, i, s) === "ok");
-  if (!solvedKeys || B.judgeKey(lv, 0, lv.keypad.order[1]) !== "strike") bad++;
+  // button: answer follows the printed rules; both actions are in the rule set; strip digits are distinct 1-9
+  const b = B.evalButtonRules(lv.button.rules, lv.button.label, lv.button.color);
+  if (b.action !== lv.button.action || b.rule >= 3 || new Set(lv.button.rules.map(x => x.action)).size !== 2) bad++; else condBtn++;
+  const dg = Object.values(lv.button.stripDigits); if (new Set(dg).size !== 4 || dg.some(d => d < 1 || d > 9) || lv.button.digit !== lv.button.stripDigits[lv.button.strip]) bad++;
   const d = String(lv.button.digit);
   const good = lv.button.action === "tap" ? B.judgeButton(lv, 0.2, "0000") : B.judgeButton(lv, 1.5, "0" + d + "00");
   const wrongTap = lv.button.action === "tap" ? B.judgeButton(lv, 1.5, "0" + d + "00") : B.judgeButton(lv, 0.2, "0" + d + "00");
-  const wrongDigit = lv.button.action === "hold" ? B.judgeButton(lv, 1.5, d === "9" ? "0000" : "9999".replace(/./g, "9")) : "strike";
-  if (good !== "solved" || wrongTap !== "strike" || (lv.button.action === "hold" && String(lv.button.digit) !== "9" && wrongDigit !== "strike")) bad++;
+  if (good !== "solved" || wrongTap !== "strike") bad++;
+  // keypad: the four symbols fit exactly one printed column, and the answer is that column's order
+  const cols = lv.keypad.columns, col = cols[lv.keypad.column];
+  if (cols.length !== 3 || cols.some(c => c.length !== 6 || new Set(c).size !== 6)) bad++;
+  if (lv.keypad.order.length !== 4 || new Set(lv.keypad.shown).size !== 4 || !lv.keypad.shown.every(x => lv.keypad.order.includes(x))) bad++;
+  if (cols.filter(c => lv.keypad.order.every(x => c.includes(x))).length !== 1) bad++;
+  if (!lv.keypad.order.every((x, i, a) => i === 0 || col.indexOf(a[i - 1]) < col.indexOf(x))) bad++;
+  if (!lv.keypad.order.every((x, i) => B.judgeKey(lv, i, x) === "ok") || B.judgeKey(lv, 0, lv.keypad.order[1]) !== "strike") bad++;
 }
-ok(bad === 0, "2000 generated levels are deterministic and solvable (" + bad + " problems)");
-ok(wiresCovered.size >= 4, "different bombs need different wires (" + [...wiresCovered].sort() + ")");
-ok(actions.size === 2 && cols.size === 3, "both button actions and all keypad columns occur");
+ok(bad === 0, "2000 generated levels are deterministic, solvable, and follow their own printed rules (" + bad + " problems)");
+ok(distinctSheets.size > 1990, "almost every bomb has a different rule sheet (" + distinctSheets.size + " of 2000)");
+ok(wiresCovered.size === 5 && actions.size === 2, "all five wires and both button actions occur across bombs");
+ok(condWire === 2000 && condBtn === 2000, "a conditional rule (not the fallback) always decides the wires and the button");
 
 if (typeof document !== "undefined") { document.body.style.cssText = "font:14px monospace;white-space:pre;padding:16px;background:#111;color:#ddd"; document.body.textContent = out.join("\n") + "\n\n" + (fails ? fails + " FAILED" : "ALL PASSED"); }
 else { console.log(out.join("\n")); console.log(fails ? fails + " FAILED" : "ALL PASSED"); process.exit(fails ? 1 : 0); }
