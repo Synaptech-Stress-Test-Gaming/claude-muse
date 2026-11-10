@@ -1,6 +1,6 @@
 # focus/: muscle-corrected focus scores
 
-The code behind the **LEGACY / CORRECTED / GATE** switch in `muse-panel.html`. The panel itself only wires these files in, the same way it loads the `game/` folder. Keep the `focus` folder next to `muse-panel.html`.
+The code behind the **LEGACY / CORRECTED / GATE** switch in `muse-panel.html`. The panel itself only wires these files in, the same way it loads the `game/` folder. Keep the `focus` folder next to `muse-panel.html`. The scripts are plain browser scripts that share the panel's globals; the load order is set in `muse-panel.html` (see `panel/README.md`): `focus-recording.js` before `panel/dsp.js`, the other three after `panel/focus.js`.
 
 Corrected and Gate-only are **proxies, not validated focus measures**. Beta over alpha is itself only a rough stand-in for attention.
 
