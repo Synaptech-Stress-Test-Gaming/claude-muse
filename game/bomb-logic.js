@@ -20,7 +20,10 @@ const TUNING = {
   calmMax: 0.7,          // the phone can remove at most this share of your stress effects
   calmPerPx: 5000,       // each pixel scrolled adds 1/calmPerPx of mind-clear (up to calmMax)
   calmDecay: 0.012,      // mind-clear fades by this much per second after you put the phone down
-  shortAt: 3             // this many wet patches on one module short it out until you wipe
+  shortAt: 3,            // this many wet patches on one module short it out until you wipe
+  calmModeSec: 12,       // finishing the phone feed forces calm (no shaking or sweat) for this long, once per bomb
+  phoneMinSec: 6,        // you must have watched at least this long before reaching the end counts
+  calmRampSec: 2         // effects fade back in over this long after calm mode ends
 };
 
 /* ---------- random numbers (seedable, so a level can be replayed) ---------- */
@@ -57,7 +60,9 @@ function sweatRate(stress, T) {
 /* a module is shorted (dead to touch) when it carries enough wet patches */
 function isShorted(wetCount, T) { return wetCount >= (T || TUNING).shortAt; }
 /* the phone clears your head: the game's stress effects shrink by `calm` (0..calmMax) */
-function effectiveStress(stress, calm) { return clamp01(stress) * (1 - Math.max(0, Math.min(1, calm || 0))); }
+function effectiveStress(stress, calm, forcedCalm) { if (forcedCalm != null && forcedCalm <= 0) return 0; return clamp01(stress) * (1 - Math.max(0, Math.min(1, calm || 0))) * (forcedCalm == null ? 1 : Math.min(1, forcedCalm)); }
+/* forced calm factor: 0 while calm mode is active, then ramps 0 -> 1 over calmRampSec; null when calm mode was never used */
+function calmModeFactor(t, until, T) { T = T || TUNING; if (until == null) return null; if (t < until) return 0; return Math.min(1, (t - until) / T.calmRampSec); }
 function heartBpm(stress) { return 64 + 70 * clamp01(stress); }
 
 /* ---------- level-specific rules ----------
@@ -213,7 +218,7 @@ function judgeButton(level, heldSec, clock) {
 }
 function judgeKey(level, progress, sym) { return sym === level.keypad.order[progress] ? "ok" : "strike"; }
 
-const API = { TUNING, rng, stressFromFocus, clockRate, handShake, sweatRate, heartBpm, isShorted, effectiveStress,
+const API = { TUNING, rng, stressFromFocus, clockRate, handShake, sweatRate, heartBpm, isShorted, effectiveStress, calmModeFactor,
   WIRE_COLORS, BUTTON_COLORS, BUTTON_LABELS, STRIP_COLORS, SYMBOLS, ORD, TAP_MAX,
   wireRuleMatch, wireRuleText, evalWireRules, buttonRuleMatch, buttonRuleText, evalButtonRules, stripRuleText,
   makeSerial, makeLevel, judgeWire, judgeButton, judgeKey };

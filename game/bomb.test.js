@@ -21,6 +21,9 @@ ok(!B.isShorted(0) && !B.isShorted(2) && B.isShorted(3) && B.isShorted(6), "thre
 
 ok(B.effectiveStress(0.8, 0) === 0.8 && near(B.effectiveStress(0.8, 0.5), 0.4, 1e-9) && B.effectiveStress(1, B.TUNING.calmMax) < 0.31, "the phone shrinks stress effects");
 ok(B.TUNING.calmMax < 1 && B.TUNING.calmDecay > 0, "mind-clear is capped and fades");
+ok(B.effectiveStress(1, 0, 0) === 0 && B.effectiveStress(1, 0, null) === 1 && near(B.effectiveStress(1, 0, 0.5), 0.5, 1e-9), "forced calm removes the effects, then fades back in");
+ok(B.calmModeFactor(5, null) === null && B.calmModeFactor(5, 10) === 0 && near(B.calmModeFactor(11, 10), 0.5, 1e-9) && B.calmModeFactor(20, 10) === 1, "calm mode factor: off, active, ramp, back to normal");
+ok(B.TUNING.calmModeSec >= 10 && B.TUNING.phoneMinSec > 0, "calm mode lasts at least 10 s and needs a minimum watch time");
 
 // rule evaluation on explicit rule sets
 const S_ODD = "A1B2C3", S_EVEN = "A1B2C4";

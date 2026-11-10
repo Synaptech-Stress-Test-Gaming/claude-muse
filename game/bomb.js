@@ -63,18 +63,35 @@ const CSS = `
 .vit .bar{height:16px;border-radius:4px;background:#050a0e;box-shadow:inset 0 0 0 2px #2d3c49;margin-top:5px;overflow:hidden}.vit .bar i{display:block;height:100%;width:0}
 .vit .f i{background:linear-gradient(90deg,#2b7fff,#3fe0ff)}.vit .s i{background:linear-gradient(90deg,#ffb020,#ff3b30)}
 .vit .note{position:absolute;left:18px;right:18px;bottom:14px;font-size:10px;line-height:1.5;color:#6d8294;text-align:center}
-.bz-hand{position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:2px solid #fff;background:rgba(255,255,255,.12);box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 10px rgba(120,200,255,.5);pointer-events:none;z-index:100003;display:none}
-.bz-hand::after{content:"";position:absolute;left:10px;top:10px;width:6px;height:6px;border-radius:50%;background:#fff}
-.bz-hand.dn{background:rgba(255,255,255,.4);border-color:#7fe0ff}
 .bz-glitch .bz-case{animation:bzg .12s steps(2) infinite}@keyframes bzg{0%{filter:hue-rotate(0)}50%{filter:hue-rotate(60deg) brightness(1.25)}100%{filter:hue-rotate(-40deg)}}
 .bz-flash{position:absolute;inset:0;pointer-events:none;background:#ff2a1a;opacity:0;z-index:4}
-.bz-man{position:absolute;right:16px;top:58px;bottom:16px;width:min(470px,46vw);background:#efe8d3;color:#2a2418;border-radius:6px;box-shadow:0 14px 40px rgba(0,0,0,.7);padding:20px 24px;overflow:auto;z-index:6;display:none;font-family:Georgia,"Times New Roman",serif;line-height:1.45;font-size:14px;cursor:auto}
+.bz-man{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.07),transparent 7%,transparent 93%,rgba(0,0,0,.08)),repeating-linear-gradient(0deg,rgba(120,100,60,.04) 0 1px,transparent 1px 3px),linear-gradient(180deg,#f2ebd6,#e8dfc6);color:#2a2418;border-radius:3px 3px 10px 3px;box-shadow:0 14px 40px rgba(0,0,0,.7),inset 0 0 40px rgba(120,95,50,.22);padding:20px 24px 120px;overflow:auto;display:none;font-family:Georgia,"Times New Roman",serif;line-height:1.45;font-size:14px;cursor:auto}
 .bz .bz-man p,.bz .bz-man li,.bz .bz-man b,.bz .bz-man i,.bz .bz-man h2,.bz .bz-man h3{color:#2a2418}.bz .bz-man .cols small{color:#5a4f33}
 .bz-man .paper{position:relative;min-height:100%}
+.bz .bz-man .sec{font:700 11px Georgia,serif;letter-spacing:.3em;color:#7a6b43;margin:16px 0 2px;border-bottom:2px solid #9a8f6c;padding-bottom:3px}
+.bz-man .serialbox{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 2px}.bz-man .serialbox .sn{font:700 30px Menlo,Consolas,monospace;letter-spacing:.14em;border:2px solid #3a3120;border-radius:6px;padding:4px 12px;background:#f6efd8}
+.bz-man .serialbox .sn u{color:#b3302a;text-decoration:underline;text-underline-offset:5px}
+.bz-man .mrow{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px dashed #b9ae8c}.bz-man .cond{flex:1;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:36px}.bz-man .arrow{font-size:22px;color:#7a6b43}
+.bz-man .chip{border:1.5px solid #5a4f33;border-radius:14px;padding:2px 9px;font:700 13px Georgia,serif;display:inline-flex;align-items:center;gap:5px;background:#f6efd8;color:#2a2418}
+.bz-man .dot{display:inline-block;width:15px;height:15px;border-radius:50%;border:1.5px solid #222}.bz-man .num{font:700 26px Georgia,serif;color:#b3302a;min-width:20px;text-align:center}
+.bz-man .act{font:700 12px Georgia,serif;letter-spacing:.1em;border-radius:16px;padding:5px 10px;display:inline-flex;align-items:center;gap:6px;color:#fff}.bz-man .act.tap{background:#2f7d4f}.bz-man .act.hold{background:#b3302a}
+.bz-man .act i{width:12px;height:12px;border-radius:50%;background:#fff;display:inline-block}.bz-man .act.hold i{box-shadow:0 0 0 3px rgba(255,255,255,.45)}
+.bz-man .strips{display:flex;gap:10px;justify-content:space-around;margin-top:8px}.bz-man .strips div{display:flex;flex-direction:column;align-items:center;gap:3px}.bz-man .strips span{width:16px;height:46px;border-radius:4px;border:1.5px solid #222}.bz-man .strips b{font:700 24px Georgia,serif;color:#2a2418}
+.bz-man .kcols{display:flex;gap:10px;margin-top:8px}.bz-man .kcols>div{flex:1;border:1.5px solid #5a4f33;border-radius:8px;background:#f6efd8;padding:6px 0;text-align:center;font:24px/1.55 "Segoe UI Symbol","Apple Symbols",serif;color:#2a2418}.bz-man .kcols small{display:block;font:700 18px Georgia,serif;color:#7a6b43;line-height:1}
+.bz-man .foot{margin-top:16px;text-align:center;font:13px Georgia,serif;color:#5a4f33}
+.bz-manwrap{position:absolute;right:16px;top:58px;bottom:128px;width:min(470px,46vw);z-index:6;display:none;transform-origin:50% 100%}
+.bz-manhand{position:absolute;right:-70px;bottom:-150px;width:230px;height:310px;pointer-events:none;z-index:3;filter:drop-shadow(0 12px 10px rgba(0,0,0,.5))}
 .bz-man .mclose{position:sticky;top:0;float:right;z-index:3;background:#d9cfae;border:1px solid #9a8f6c;color:#2a2418;border-radius:5px;padding:4px 10px;font:12px Georgia,serif;cursor:pointer}
-.bz-man .blot{position:absolute;border-radius:50% 46% 52% 48%;pointer-events:none;transform:translate(-50%,-50%)}
-.bz-man .blot.wet{backdrop-filter:blur(4.5px);-webkit-backdrop-filter:blur(4.5px);background:radial-gradient(rgba(110,140,175,.38),rgba(110,140,175,.12) 70%,rgba(110,140,175,0));box-shadow:inset 0 0 10px rgba(60,90,130,.5)}
-.bz-man .blot.dry{backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);background:radial-gradient(rgba(150,115,60,.34),rgba(150,115,60,.1) 70%,rgba(150,115,60,0))}
+.bz-man .blot{position:absolute;transform:translate(-50%,-50%);pointer-events:none}
+.bz-man .blot .bg{position:absolute;inset:0;transition:backdrop-filter .8s;border-radius:50%;-webkit-mask-image:radial-gradient(closest-side,#000 62%,rgba(0,0,0,0) 100%);mask-image:radial-gradient(closest-side,#000 62%,rgba(0,0,0,0) 100%)}
+.bz-man .blot.wet .bg{backdrop-filter:blur(2.6px) brightness(.96);-webkit-backdrop-filter:blur(2.6px) brightness(.96)}
+.bz-man .blot.dry .bg{backdrop-filter:blur(1.1px);-webkit-backdrop-filter:blur(1.1px)}
+.bz-man .blot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.bz-man .blot .tide{stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.bz-man .blot.wet .tide{stroke:rgba(60,85,120,.4);stroke-width:1}.bz-man .blot.wet .s0{stop-color:rgba(100,130,170,.16)}.bz-man .blot.wet .s1{stop-color:rgba(100,130,170,.12)}.bz-man .blot.wet .s2{stop-color:rgba(75,100,140,.20)}.bz-man .blot.wet .s3{stop-color:rgba(60,85,120,.38)}
+.bz-man .blot.dry .tide{stroke:rgba(140,100,45,.7);stroke-width:2.2}.bz-man .blot.dry .s0{stop-color:rgba(170,135,80,.05)}.bz-man .blot.dry .s1{stop-color:rgba(170,135,80,.10)}.bz-man .blot.dry .s2{stop-color:rgba(150,110,55,.35)}.bz-man .blot.dry .s3{stop-color:rgba(130,90,40,.55)}
+.bz-man .blot .shine{fill:rgba(255,255,255,.4)}.bz-man .blot.dry .shine{display:none}
+.bz-man .blot .runs{position:absolute;inset:0}.bz-man .blot .run{position:absolute;width:2.5px;border-radius:2px;height:0;background:linear-gradient(rgba(40,55,100,.5),rgba(40,55,100,0))}.bz-man .blot.dry .run{background:linear-gradient(rgba(110,80,40,.45),rgba(110,80,40,0))}
+.bz-man .rip{position:absolute;width:90px;height:90px;border-radius:50%;border:2px solid rgba(80,110,150,.5);pointer-events:none}
 .pdrop{position:fixed;left:0;top:0;width:11px;height:15px;border-radius:50% 50% 50% 50%/70% 70% 30% 30%;background:radial-gradient(circle at 35% 30%,#fff,#9cc9f5 60%,#5b95d3);z-index:8;pointer-events:none}
 .bz-man h2{font-size:20px;margin-bottom:2px}.bz-man h3{margin:16px 0 4px;font-size:15px;border-bottom:1px solid #b9ae8c}.bz-man ol{padding-left:20px}.bz-man li{margin:3px 0}
 .bz-man .cols{display:flex;gap:10px;margin-top:6px}.bz-man .cols div{flex:1;border:1px solid #9a8f6c;padding:6px;text-align:center;font:22px/1.5 "Segoe UI Symbol","Apple Symbols",serif}.bz-man .cols small{display:block;font:11px Georgia}
@@ -93,7 +110,26 @@ const CSS = `
 .bz-phone{position:fixed;left:24px;top:60px;bottom:24px;width:280px;max-height:620px;background:#0d0f12;border:8px solid #1d2128;border-radius:30px;z-index:6;display:none;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.7);cursor:auto}
 .bz-phone .ph{padding:10px 12px;background:#14171c;display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:.1em;color:#9bb0c2;gap:6px}
 .bz-phone .ph b{color:#ff5a4d;font:700 13px "SF Mono",Menlo,monospace}.bz-phone .mc{height:5px;background:#1b2128}.bz-phone .mc i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3fd6a0,#7be8ff)}
-.bz-phone .feed{flex:1;overflow:auto}.bz-phone .post{display:flex;gap:10px;padding:12px;border-bottom:1px solid #1d232b;color:#dfe8f0}
+.bz-phone .feed{flex:1;overflow:auto}.bz-phone .vid{position:relative;height:250px;overflow:hidden;border-bottom:1px solid #1d232b}
+.bz-phone .vid .cap{position:absolute;left:0;right:0;bottom:0;padding:26px 10px 8px;background:linear-gradient(transparent,rgba(0,0,0,.75));color:#fff;font:600 12px/1.35 "Segoe UI",Arial}
+.bz-phone .vid .tm{position:absolute;left:0;bottom:0;height:3px;background:#fff;animation:vtm 6s linear infinite}@keyframes vtm{from{width:0}to{width:100%}}
+.bz-phone .vid .lk{position:absolute;right:8px;top:8px;font-size:11px;color:#fff;background:rgba(0,0,0,.35);border-radius:10px;padding:2px 8px}
+.bz-phone .vid .an{position:absolute;left:50%;top:44%;font-size:92px;line-height:1;transform:translate(-50%,-50%)}
+.bz-phone .vid .ht{position:absolute;font-size:18px;opacity:0;animation:vht 2.4s ease-in infinite}@keyframes vht{0%{opacity:0;transform:translateY(0)}20%{opacity:.9}100%{opacity:0;transform:translateY(-120px) scale(1.4)}}
+.va-bounce{animation:vab .7s ease-in-out infinite alternate}@keyframes vab{from{transform:translate(-50%,-30%) rotate(-6deg)}to{transform:translate(-50%,-70%) rotate(6deg)}}
+.va-wiggle{animation:vaw .35s ease-in-out infinite alternate}@keyframes vaw{from{transform:translate(-50%,-50%) rotate(-14deg) scale(1)}to{transform:translate(-50%,-50%) rotate(14deg) scale(1.1)}}
+.va-peek{animation:vap 2.2s ease-in-out infinite}@keyframes vap{0%,100%{transform:translate(-50%,40%)}40%,60%{transform:translate(-50%,-55%)}}
+.va-spin{animation:vas 2.6s linear infinite}@keyframes vas{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.vb{animation:vbc .6s steps(4) infinite}@keyframes vbc{0%{background:#ff2bd6}25%{background:#18f0ff}50%{background:#b6ff1a}75%{background:#ff6a00}100%{background:#ff2bd6}}
+.vb .w{position:absolute;left:0;right:0;top:36%;text-align:center;font:900 34px/1 Impact,"Arial Black",sans-serif;color:#fff;text-shadow:3px 3px 0 #000;opacity:0;animation:vbw 1.8s steps(1) infinite}
+@keyframes vbw{0%{opacity:1}33%{opacity:0}100%{opacity:0}}.vb .e{position:absolute;font-size:44px;animation:vbe .5s linear infinite}@keyframes vbe{to{transform:rotate(360deg) scale(1.3)}}
+.bz-phone .endcard{padding:30px 16px 40px;text-align:center;color:#9bd3ff;font:600 13px/1.6 "Segoe UI",Arial}.bz-phone .endcard b{display:block;font-size:18px;color:#7be8ff;margin-bottom:6px}
+.bz-calmbadge{position:absolute;left:50%;top:56px;transform:translateX(-50%);z-index:5;display:none;align-items:center;gap:12px;background:rgba(10,40,30,.88);border:2px solid #43f2a8;border-radius:40px;padding:8px 18px 8px 10px;color:#c9ffe8;font:700 13px/1.3 "Segoe UI",Arial;letter-spacing:.14em;box-shadow:0 0 26px rgba(67,242,168,.55);pointer-events:none}
+.bz-calmbadge svg{width:38px;height:38px;animation:vbr 3s ease-in-out infinite}@keyframes vbr{0%,100%{transform:scale(.85)}50%{transform:scale(1.15)}}.bz-calmbadge small{display:block;font:400 10px/1.3 "Segoe UI",Arial;letter-spacing:.06em;color:#8fe9c4}
+.bz-hand{position:fixed;left:0;top:0;width:44px;height:56px;margin:-4px 0 0 -14px;pointer-events:none;z-index:100003;display:none;filter:drop-shadow(0 4px 4px rgba(0,0,0,.45));transform-origin:14px 4px}
+.bz-hand svg{width:100%;height:100%;overflow:visible;transition:transform .05s}.bz-hand.dn svg{transform:translateY(3px) scale(.96)}.bz-hand.slip svg{filter:drop-shadow(0 0 7px #7fc4ff)}
+.bz-calmfx{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;box-shadow:inset 0 0 160px rgba(67,242,168,.5);transition:opacity .6s}
+.bz-phone .post{display:flex;gap:10px;padding:12px;border-bottom:1px solid #1d232b;color:#dfe8f0}
 .bz-phone .post>i{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 14px Arial;color:#fff;font-style:normal}
 .bz-phone .post p{font-size:13px;line-height:1.45;margin:2px 0 5px;color:#e6edf3}.bz-phone .post small{color:#7f93a5}.bz-phone .post b{font-size:12px;color:#9bd3ff}
 .bz-sweat{position:absolute;inset:0;pointer-events:none;z-index:3}
@@ -102,11 +138,14 @@ const CSS = `
 .bz-sweat .sp{position:absolute;width:6px;height:6px;border-radius:50%;background:rgba(190,225,255,.85)}
 .bz-sweat .streak{position:absolute;width:5px;border-radius:3px;background:linear-gradient(rgba(190,225,255,.7),rgba(190,225,255,0))}
 .bz-vig{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 42%,rgba(150,0,0,.9) 100%)}
-.bay.shorted{box-shadow:inset 0 0 0 3px #ff9d2e,0 0 18px rgba(255,160,40,.7),0 3px 8px rgba(0,0,0,.5)}
-.bay .zap{position:absolute;inset:0;z-index:4;display:none;align-items:center;justify-content:center;text-align:center;background:rgba(10,14,20,.62);color:#ffcf5a;font:700 13px/1.5 "Segoe UI",Arial;letter-spacing:.18em;pointer-events:none;animation:bzz .18s steps(2) infinite}
-.bay.shorted .zap{display:flex}@keyframes bzz{0%{background:rgba(10,14,20,.62)}50%{background:rgba(40,30,8,.72)}}
+.bay.shorted{animation:bzflick .14s steps(2) infinite}@keyframes bzflick{0%{box-shadow:inset 0 0 0 2px #7fd6ff,0 0 14px 2px rgba(90,200,255,.9),0 3px 8px rgba(0,0,0,.5)}50%{box-shadow:inset 0 0 0 2px #fff6a8,0 0 22px 5px rgba(255,235,120,.9),0 3px 8px rgba(0,0,0,.5)}}
+.bay.shorted>*:not(.zap):not(.spark){animation:bzdim .16s steps(2) infinite}@keyframes bzdim{0%{filter:brightness(1)}50%{filter:brightness(.55) saturate(.6)}}
+.bay .zap{position:absolute;left:50%;top:-2px;transform:translateX(-50%);z-index:5;display:none;pointer-events:none;width:30px;height:40px;filter:drop-shadow(0 0 6px #ffe14d);animation:bzbolt .3s ease-in-out infinite alternate}
+.bay .zap svg{width:100%;height:100%}.bay.shorted .zap{display:block}@keyframes bzbolt{from{transform:translateX(-50%) scale(.9)}to{transform:translateX(-50%) scale(1.25)}}
+.bz-arcs{position:absolute;left:0;top:0;width:1260px;height:640px;pointer-events:none;z-index:4;overflow:visible}
+.bz-arcs polyline{fill:none;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px #6fd0ff) drop-shadow(0 0 8px #3aa8ff)}
+.smudge.hot{animation:bzhot .2s steps(2) infinite}@keyframes bzhot{0%{box-shadow:inset 0 -4px 6px rgba(0,0,0,.3),0 0 16px 6px rgba(110,210,255,.95)}50%{box-shadow:inset 0 -4px 6px rgba(0,0,0,.3),0 0 26px 10px rgba(255,245,170,.95)}}
 .bay .spark{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff6c2;box-shadow:0 0 8px 3px #ffb52e;z-index:5;pointer-events:none}
-.bz-hand.slip{border-color:#7fc4ff;box-shadow:0 0 0 6px rgba(120,190,255,.45)}
 .bz-end{position:absolute;inset:0;z-index:7;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);cursor:auto}
 .bz-end .card{min-width:360px;max-width:520px;background:#141d26;border:2px solid #3c566d;border-radius:12px;padding:24px 30px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.7)}
 .bz-end h1{font-size:34px;letter-spacing:.2em;margin-bottom:8px}.bz-end .win h1{color:#43f28a}.bz-end .lose h1{color:#ff453a}
@@ -127,7 +166,7 @@ function digitSvg() {
   return `<svg class="dg" viewBox="0 0 40 70">${"abcdefg".split("").map(s => `<polygon class="s" data-s="${s}" points="${SEGP[s]}"/>`).join("")}</svg>`;
 }
 function bay(cls, parent) {
-  const b = el("div", "bay " + cls, '<i class="bolt a"></i><i class="bolt b"></i><i class="bolt c"></i><i class="bolt d"></i><div class="zap"><div>SHORT CIRCUIT<br><small>WIPE IT WITH THE CLOTH</small></div></div>', parent);
+  const b = el("div", "bay " + cls, '<i class="bolt a"></i><i class="bolt b"></i><i class="bolt c"></i><i class="bolt d"></i><div class="zap"><svg viewBox="0 0 24 32"><path d="M14 0 L3 18 H11 L8 32 L21 12 H13 Z" fill="#ffe14d" stroke="#fff" stroke-width="1.2"/></svg></div>', parent);
   return b;
 }
 
@@ -173,10 +212,16 @@ function open(opts) {
   const clothEl = el("div", "bz-item cloth", "CLOTH<br>HOLD + DRAG<br>TO WIPE", bomb);
   const phoneEl = el("div", "bz-item phone", "<i>NEW<br>NOTIFICATIONS<br>(tap to scroll)</i>", bomb);
   const sweat = el("div", "bz-sweat", null, bomb);
+  const arcSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); arcSvg.setAttribute("class", "bz-arcs"); arcSvg.setAttribute("viewBox", "0 0 1260 640"); bomb.appendChild(arcSvg);
   const vig = el("div", "bz-vig", null, root);
   const flash = el("div", "bz-flash", null, root);
-  const hand = el("div", "bz-hand", null, root);
+  const hand = el("div", "bz-hand", `<svg viewBox="0 0 44 56" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fsk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6d2b2"/><stop offset="1" stop-color="#d79e76"/></linearGradient></defs>
+<g stroke="#a86f4c" stroke-width="1.4" stroke-linejoin="round"><path d="M6 34 C4 28 10 27 13 30 L40 30 C44 31 44 36 43 41 L41 54 L12 54 C7 50 7 40 6 34Z" fill="url(#fsk)"/>
+<rect x="13" y="3" width="11" height="34" rx="5.5" fill="url(#fsk)"/><path d="M24 31 C30 29 34 31 36 34 M24 38 C30 36 35 38 37 41 M22 45 C28 43 34 45 36 48" fill="none" opacity=".55"/>
+<path d="M13 36 C6 34 2 38 3 43 C4 47 9 48 13 46Z" fill="url(#fsk)"/></g><ellipse cx="18.5" cy="8" rx="3.2" ry="4.2" fill="#f9e6d8" stroke="#c68e6b" stroke-width=".9"/><circle cx="18.5" cy="4" r="1.6" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1"/></svg>`, root);
   const clothHeld = el("div", "bz-clothheld", null, root);
+  const calmFx = el("div", "bz-calmfx", null, root);
+  const calmBadge = el("div", "bz-calmbadge", `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="none" stroke="#43f2a8" stroke-width="2" opacity=".5"/><path d="M20 30 C12 28 8 21 10 14 C16 15 20 19 20 24 C20 19 24 15 30 14 C32 21 28 28 20 30Z" fill="#43f2a8"/></svg><div>CALM MODE<small id="cmT">shaking and sweat paused</small></div>`, root);
 
   /* build modules */
   let level, S;
@@ -221,10 +266,21 @@ function open(opts) {
   const rowS = el("div", "row s", '<label><span>STRESS (METER)</span><b>--</b></label><div class="bar"><i></i></div>', bVit); rowS.style.top = "44px";
   const rowM = el("div", "row f", '<label><span>MIND CLEAR (PHONE)</span><b>0%</b></label><div class="bar"><i style="background:linear-gradient(90deg,#3fd6a0,#7be8ff)"></i></div>', bVit); rowM.style.top = "90px";
   const vNote = el("div", "note", "", bVit);
-  const effect = el("div", "row", '<label><span>HAND TREMOR</span><b id="bzT">0 px</b></label><label style="margin-top:5px"><span>CLOCK SPEED</span><b id="bzC">x1.00</b></label><label style="margin-top:5px"><span>HEART RATE</span><b id="bzH">64 bpm</b></label><label style="margin-top:5px"><span>SWEAT ON BOMB</span><b id="bzW">0</b></label>', bVit); effect.style.top = "138px";
+  const effect = el("div", "row", '<label><span>HAND TREMOR</span><b id="bzT">0 px</b></label><label style="margin-top:5px"><span>CLOCK SPEED</span><b id="bzC">x1.00</b></label><label style="margin-top:5px"><span>HEART RATE</span><b id="bzH">64 bpm</b></label><label style="margin-top:4px"><span>SWEAT ON BOMB</span><b id="bzW">0</b></label><label style="margin-top:4px"><span>CALM MODE</span><b id="bzK">ready</b></label>', bVit); effect.style.top = "138px";
 
   /* manual */
-  const man = el("div", "bz-man", "", root);
+  const manWrap = el("div", "bz-manwrap", null, root);
+  const man = el("div", "bz-man", "", manWrap);
+  const manHand = el("div", "bz-manhand", `<svg viewBox="0 0 230 310" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="hsk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3cfae"/><stop offset="1" stop-color="#d49a72"/></linearGradient><linearGradient id="hsl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4b6d"/><stop offset="1" stop-color="#202a40"/></linearGradient></defs>
+<ellipse cx="98" cy="150" rx="24" ry="48" fill="rgba(0,0,0,.2)" transform="rotate(-18 98 150)"/>
+<path d="M112 196 L170 204 L218 310 L124 310 Z" fill="url(#hsk)" stroke="#b27a58" stroke-width="1.5"/>
+<path d="M120 258 L208 262 L220 310 L126 310 Z" fill="url(#hsl)"/><path d="M118 252 L210 256 L212 266 L120 262 Z" fill="#5a6f9a"/>
+<g fill="url(#hsk)" stroke="#b27a58" stroke-width="1.6"><rect x="138" y="96" width="80" height="21" rx="10.5" transform="rotate(6 178 106)"/><rect x="138" y="119" width="84" height="22" rx="11" transform="rotate(4 180 130)"/><rect x="138" y="143" width="82" height="22" rx="11" transform="rotate(2 180 154)"/><rect x="140" y="167" width="74" height="21" rx="10.5" transform="rotate(0 177 177)"/></g>
+<path d="M98 122 C116 104 152 106 164 134 L172 204 C150 226 108 222 96 198 Z" fill="url(#hsk)" stroke="#b27a58" stroke-width="1.5"/>
+<path d="M104 202 C86 178 56 148 60 118 C62 100 88 98 94 114 C104 138 130 168 138 192 Z" fill="url(#hsk)" stroke="#b27a58" stroke-width="1.6"/>
+<ellipse cx="75" cy="111" rx="8" ry="11" fill="#f8e2d2" stroke="#c68e6b" stroke-width="1.2" transform="rotate(-20 75 111)"/>
+<path d="M112 168 C122 176 132 186 138 196" fill="none" stroke="#b27a58" stroke-width="1.4" opacity=".6"/></svg>`, manWrap);
+  let manKick = 0, blotId = 0;
   man.innerHTML = `<div class="paper"></div>`;
   const paper = man.querySelector(".paper"); const mclose = el("button", "mclose", "PUT DOWN", null); man.insertBefore(mclose, man.firstChild); mclose.onclick = () => toggleManual(false); let blots = [], pdrops = [], pAcc = 0;
 
@@ -238,8 +294,8 @@ function open(opts) {
   let lastScroll = 0;
   feed.addEventListener("scroll", () => {
     const dy = Math.abs(feed.scrollTop - lastScroll); lastScroll = feed.scrollTop;
-    if (S && S.phone && S.state === "running") S.calm = Math.min(T.calmMax, S.calm + dy / T.calmPerPx);
-    if (feed.scrollTop + feed.clientHeight > feed.scrollHeight - 500) addPosts(8);
+    if (S && S.phone && S.state === "running" && !S.feedDone) S.calm = Math.min(T.calmMax, S.calm + dy / T.calmPerPx);
+    if (S && S.phone) { S.atEnd = feed.scrollTop + feed.clientHeight >= feed.scrollHeight - 12; if (S.atEnd) tryCalmMode(); }
   });
   phoneUi.querySelector("#phDown").onclick = () => togglePhone(false);
   const endEl = el("div", "bz-end", "", root);
@@ -255,17 +311,53 @@ function open(opts) {
 
   /* ---------- the service sheet: written for THIS bomb only (rules differ on every bomb) ---------- */
   function renderManual() {
-    const lv = level, esc = x => x;
-    const wr = lv.wires.rules.map((r, i) => `<li>${L.wireRuleText(r, i === 0)}</li>`).join("");
-    const br = lv.button.rules.map((r, i) => `<li>${L.buttonRuleText(r, i === 0)}</li>`).join("");
-    const cols = lv.keypad.columns.map((c, i) => `<div><small>Column ${i + 1}</small>${c.map(x => `<div style="border:0;padding:0">${x}</div>`).join("")}</div>`).join("");
-    paper.innerHTML = `<h2>Service sheet</h2><p><i>Issued for bomb</i> <b style="letter-spacing:.14em;font-family:Menlo,monospace">${lv.serial}</b>. <i>These instructions are only valid for this bomb. Check the serial number on the plate matches. Keep this paper dry.</i></p>
-     <h3>0. Before you start</h3><ol><li>The <b>serial number</b> is on the white plate at the top middle of the bomb. "Odd" or "even" always means its last digit.</li><li>Three strikes or an empty clock and it goes off. Every wrong action is a strike.</li><li>The clock keeps running while you read.</li></ol>
-     <h3>1. Wire panel (${lv.wires.colors.length} wires)</h3><p>Wires are numbered top to bottom. Count the colours first. Use the <b>first rule that fits</b>; cut only the wire it names.</p><ol>${wr}</ol>
-     <h3>2. The button</h3><p>Note the button's colour and the word on it. Use the <b>first rule that fits</b>.</p><ol>${br}</ol><p>${L.stripRuleText(lv.button.stripDigits)}</p>
-     <p><b>Hints:</b> a <i>tap</i> is a quick press and release (under half a second). When holding, the digit can be in any of the four places of the clock, for example 02:41 has a 4.</p>
-     <h3>3. Symbol keypad</h3><p>Find the <b>one column</b> below that contains all four symbols on your keypad. Press them in the order they appear in that column, top to bottom.</p><div class="cols">${cols}</div>
-     <h3>4. Keep calm</h3><p>This prototype reads your stress. When it rises your hands shake and sweat drips on the bomb: wet patches blur what is under them, a press on one slips, and three on a module short it out until you wipe it. Sweat also soaks <b>this paper</b>: wet blotches blur the words, and a dried blotch leaves a stain that is still hard to read. Wipe the bomb by holding the cloth on the table and dragging it over the wet patches; click the cloth while you read to dab the page dry. If your hands are shaking, pick up the phone on the table and scroll for a while: it clears your head, but the clock keeps running. Stay calm.</p>`;
+    const lv = level, HEX = { red: "#e0281c", blue: "#2f78ff", yellow: "#f4cf1a", white: "#eef1f4", black: "#23272b", green: "#2fb37a" };
+    const dot = c => `<span class="dot" style="background:${HEX[c]}"></span>`;
+    /* a tiny five-wire panel: coloured slots are shown, grey dashes are "any"; a scissors marks the wire to cut */
+    const panel = (colors, cut) => {
+      let h = `<svg width="96" height="64" viewBox="0 0 96 64">`;
+      for (let i = 0; i < 5; i++) {
+        const y = 8 + i * 12, c = colors[i];
+        h += c ? `<line x1="6" y1="${y}" x2="70" y2="${y}" stroke="#222" stroke-width="8" stroke-linecap="round"/><line x1="6" y1="${y}" x2="70" y2="${y}" stroke="${HEX[c]}" stroke-width="5" stroke-linecap="round"/>`
+               : `<line x1="6" y1="${y}" x2="70" y2="${y}" stroke="#c9c0a3" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 5"/>`;
+      }
+      if (cut >= 0) h += `<circle cx="80" cy="${8 + cut * 12}" r="9" fill="#b3302a"/><text x="80" y="${8 + cut * 12 + 5}" font-size="13" text-anchor="middle" fill="#fff">✂</text>`;
+      return h + `</svg>`;
+    };
+    const none5 = [null, null, null, null, null];
+    const wireRow = r => {
+      let cond, act;
+      switch (r.type) {
+        case "lastParity": cond = panel([null, null, null, null, r.color], -1) + `<span class="chip"># ${r.parity}</span>`; break;
+        case "oneAndMore": cond = `<span class="chip">1× ${dot(r.a)}</span><span class="chip">2+× ${dot(r.b)}</span>`; break;
+        case "none": cond = `<span class="chip">0× ${dot(r.color)}</span>`; break;
+        case "atLeast": cond = `<span class="chip">${r.n}+× ${dot(r.color)}</span>`; break;
+        case "firstIs": cond = panel([r.color, null, null, null, null], -1); break;
+        default: cond = `<span class="chip">else</span>`;
+      }
+      act = r.type === "atLeast" ? `<span class="chip">✂ last ${dot(r.color)}</span>` : panel(none5, r.cut) + `<span class="num">${r.cut + 1}</span>`;
+      return `<div class="mrow"><div class="cond">${cond}</div><span class="arrow">➜</span><div class="cond" style="flex:none">${act}</div></div>`;
+    };
+    const actIcon = a => a === "hold" ? `<span class="act hold"><i></i>HOLD</span>` : `<span class="act tap"><i></i>TAP</span>`;
+    const btnRow = r => {
+      let cond;
+      switch (r.type) {
+        case "colorLabel": cond = `<span class="chip">${dot(r.color)} ${r.label}</span>`; break;
+        case "color": cond = `<span class="chip">${dot(r.color)}</span>`; break;
+        case "label": cond = `<span class="chip">${r.label}</span>`; break;
+        default: cond = `<span class="chip">else</span>`;
+      }
+      return `<div class="mrow"><div class="cond">${cond}</div><span class="arrow">➜</span>${actIcon(r.action)}</div>`;
+    };
+    const sd = lv.serial, serial = sd.slice(0, -1) + `<u>${sd.slice(-1)}</u>`;
+    const strips = L.STRIP_COLORS.map(c => `<div><span style="background:${HEX[c]}"></span><b>${lv.button.stripDigits[c]}</b></div>`).join("");
+    const cols = lv.keypad.columns.map(c => `<div><small>↓</small>${c.map(x => `<div>${x}</div>`).join("")}</div>`).join("");
+    paper.innerHTML = `<div class="serialbox"><span class="sn">${serial}</span></div>
+     <div class="sec">WIRES</div>${lv.wires.rules.map(wireRow).join("")}
+     <div class="sec">BUTTON</div>${lv.button.rules.map(btnRow).join("")}
+     <div class="sec">HOLD? RELEASE WHEN THE CLOCK SHOWS</div><div class="strips">${strips}</div>
+     <div class="sec">KEYPAD</div><div class="kcols">${cols}</div>
+     <div class="foot">💧 wet? wipe it &nbsp;·&nbsp; 📱 shaky? scroll</div>`;
     bookEl.innerHTML = `<i></i>SERVICE SHEET<br><span style="font-family:Menlo,monospace;letter-spacing:.1em">${lv.serial}</span><small>CLICK TO READ</small>`;
   }
 
@@ -273,12 +365,13 @@ function open(opts) {
   function build(seed) {
     level = L.makeLevel(seed); level.timeLimit = T.timeLimit; level.maxStrikes = T.maxStrikes;
     S = { remaining: level.timeLimit, strikes: 0, state: "running", solved: { wires: false, button: false, keypad: false }, cut: [false, false, false, false, false],
-      pressAt: null, pressItem: null, progress: 0, stressSm: 0, stressSum: 0, stressHi: 0, calm: 0, calmPeak: 0, phoneSec: 0, phone: false, cloth: false, t: 0, nextGlitch: 6, glitchUntil: 0, lastSec: -1, events: [], slips: 0, drops: 0, wipes: 0, blocked: 0, blots: 0, nextSpike: 4, spikeUntil: 0, beat: 0, lastBeat: 0 };
+      pressAt: null, pressItem: null, progress: 0, stressSm: 0, stressSum: 0, stressHi: 0, calm: 0, calmPeak: 0, phoneSec: 0, feedDone: false, atEnd: false, calmUntil: null, calmAt: null, phone: false, cloth: false, t: 0, nextGlitch: 6, glitchUntil: 0, lastSec: -1, events: [], slips: 0, drops: 0, wipes: 0, blocked: 0, blots: 0, nextSpike: 4, spikeUntil: 0, beat: 0, lastBeat: 0 };
     pdrops.forEach(d => d.e.remove()); pdrops = []; blots.forEach(b => b.e.remove()); blots = []; pAcc = 0;
     drops.forEach(d => d.e.remove()); drops = []; smudges.forEach(m => m.e.remove()); smudges = []; sweat.innerHTML = ""; spawnAcc = 0;
     items.length = 0; toggleManual(false); togglePhone(false); clothUp(); bWire.querySelectorAll('.hit').forEach(x => x.remove());
     plate.lastChild.textContent = level.serial;
     ledB.className = ledW.className = ledK.className = "led";
+    feed.innerHTML = ""; calmBadge.style.display = "none"; calmFx.style.opacity = 0; phoneEl.innerHTML = "<i>NEW<br>NOTIFICATIONS<br>(tap to scroll)</i>";
     reg(bookEl, () => toggleManual()); reg(phoneEl, () => togglePhone(true)); reg(clothEl, clothDown, clothUp);
     /* wires */
     wsvg.innerHTML = "";
@@ -394,9 +487,21 @@ function open(opts) {
     pdrops.push({ e: d, x, y: r.top - 10, vy: 40 + Math.random() * 60, ty: r.top + 24 + Math.random() * (r.height - 48) });
   }
   function paperSplat(d) {
-    d.e.remove(); beep(1300 + Math.random() * 500, .04, "sine", .02);
-    const pr = paper.getBoundingClientRect(), R = 22 + Math.random() * 30, e = el("div", "blot wet", null, paper);
-    e.style.cssText = `width:${R * 2}px;height:${R * 1.7}px;left:${d.x - pr.left}px;top:${d.ty - pr.top}px`;
+    d.e.remove(); beep(1300 + Math.random() * 500, .04, "sine", .02); manKick = Math.min(10, manKick + 4);
+    const pr = paper.getBoundingClientRect(), R = 24 + Math.random() * 30, W = R * 2, H = R * 1.8, id = ++blotId, n = 14, pts = [];
+    const ph1 = Math.random() * 6.28, ph2 = Math.random() * 6.28, ph3 = Math.random() * 6.28;
+    for (let i = 0; i < 36; i++) { const a = i / 36 * Math.PI * 2, r = 0.8 + 0.1 * Math.sin(2 * a + ph1) + 0.07 * Math.sin(3 * a + ph2) + 0.04 * Math.sin(5 * a + ph3); pts.push([50 + Math.cos(a) * r * 50, 50 + Math.sin(a) * r * 50]); }
+    const poly = "polygon(" + pts.map(p => p[0].toFixed(1) + "% " + p[1].toFixed(1) + "%").join(",") + ")", path = "M" + pts.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L") + " Z";
+    const x = d.x - pr.left, y = d.ty - pr.top, e = el("div", "blot wet", null, paper);
+    e.style.cssText = `left:${x}px;top:${y}px;width:${W}px;height:${H}px`;
+    e.innerHTML = `<div class="bg"></div><svg viewBox="0 0 100 100" preserveAspectRatio="none"><defs><radialGradient id="rg${id}"><stop class="s0" offset="0"/><stop class="s1" offset=".7"/><stop class="s2" offset=".94"/><stop class="s3" offset="1"/></radialGradient></defs><path d="${path}" fill="url(#rg${id})" class="tide"/><ellipse class="shine" cx="38" cy="32" rx="14" ry="8" transform="rotate(-25 38 32)"/></svg><div class="runs"></div>`;
+    const runs = e.querySelector(".runs");
+    for (let i = 0, nr = 3 + Math.floor(Math.random() * 3); i < nr; i++) {   /* ink runs down the page */
+      const r = el("i", "run", null, runs); r.style.left = 22 + Math.random() * 56 + "%"; r.style.top = 58 + Math.random() * 20 + "%";
+      r.animate([{ height: "0px", opacity: 0 }, { height: 30 + Math.random() * 60 + "px", opacity: 1 }], { duration: 4000 + Math.random() * 5000, easing: "ease-out", fill: "forwards" });
+    }
+    const rp = el("i", "rip", null, paper); rp.style.left = x + "px"; rp.style.top = y + "px";
+    rp.animate([{ transform: "translate(-50%,-50%) scale(.2)", opacity: .6 }, { transform: "translate(-50%,-50%) scale(1.6)", opacity: 0 }], { duration: 700 }).onfinish = () => rp.remove();
     blots.push({ e, wet: true, born: S.t }); S.blots++; if (blots.length > 14) blots.shift().e.remove();
     emit("paper_wet", {});
   }
@@ -414,18 +519,46 @@ function open(opts) {
     S.blocked++; beep(90, .15, "sawtooth", .07); const z = bayOf[key]; if (z) { z.animate([{ transform: "translateX(-4px)" }, { transform: "translateX(4px)" }, { transform: "translateX(0)" }], { duration: 160 }); }
     emit("blocked", { module: key });
   }
+  let arcT = 0;
   function sparks() {
     ["wires", "button", "keypad", "timer"].forEach(key => {
-      if (!shorted(key) || Math.random() > 0.35) return; const bz = bayOf[key], sp = el("i", "spark", null, bz);
-      sp.style.left = 20 + Math.random() * (bz.clientWidth - 40) + "px"; sp.style.top = 20 + Math.random() * (bz.clientHeight - 40) + "px";
-      sp.animate([{ transform: "scale(1.8)", opacity: 1 }, { transform: `translate(${(Math.random() - .5) * 30}px,${(Math.random() - .5) * 30}px) scale(.2)`, opacity: 0 }], { duration: 260 }).onfinish = () => sp.remove();
-      if (Math.random() < 0.3) beep(1800 + Math.random() * 1200, .03, "sawtooth", .02);
+      if (!shorted(key)) return;
+      const bz = bayOf[key], br = bz.getBoundingClientRect();
+      smudges.forEach(m => {
+        if (m.mod !== key || Math.random() > 0.35) return;
+        const mr = m.e.getBoundingClientRect(), sp = el("i", "spark", null, bz);
+        sp.style.left = (mr.left + mr.width / 2 - br.left) / k + "px"; sp.style.top = (mr.top + mr.height / 2 - br.top) / k + "px";
+        sp.animate([{ transform: "scale(2)", opacity: 1 }, { transform: `translate(${(Math.random() - .5) * 46}px,${(Math.random() - .5) * 46}px) scale(.2)`, opacity: 0 }], { duration: 300 }).onfinish = () => sp.remove();
+        if (Math.random() < 0.25) beep(1800 + Math.random() * 1400, .03, "sawtooth", .02);
+      });
     });
+  }
+  /* lightning arcs jump between the wet patches of a shorted module and to the module's edge: the water is the cause, wipe it off */
+  function drawArcs() {
+    if (S.t - arcT < 0.05) return; arcT = S.t;
+    while (arcSvg.firstChild) arcSvg.removeChild(arcSvg.firstChild);
+    const ns = "http://www.w3.org/2000/svg", b0 = bomb.getBoundingClientRect();
+    smudges.forEach(m => m.e.classList.remove("hot"));
+    ["wires", "button", "keypad", "timer"].forEach(key => {
+      if (!shorted(key)) return;
+      const pts = smudges.filter(m => m.mod === key); pts.forEach(m => m.e.classList.add("hot"));
+      const br = bayOf[key].getBoundingClientRect(), E = { l: (br.left - b0.left) / k, r: (br.right - b0.left) / k, t: (br.top - b0.top) / k, b: (br.bottom - b0.top) / k };
+      const bolt = (x1, y1, x2, y2) => {
+        const n = 9, d = Math.hypot(x2 - x1, y2 - y1), nx = -(y2 - y1) / (d || 1), ny = (x2 - x1) / (d || 1), arr = [];
+        for (let i = 0; i <= n; i++) { const f = i / n, j = (i === 0 || i === n) ? 0 : (Math.random() - .5) * Math.min(26, d * .35); arr.push(`${(x1 + (x2 - x1) * f + nx * j).toFixed(1)},${(y1 + (y2 - y1) * f + ny * j).toFixed(1)}`); }
+        [["#7fd6ff", 5, .55], ["#ffffff", 2, 1]].forEach(([c, w, o]) => { const pl = document.createElementNS(ns, "polyline"); pl.setAttribute("points", arr.join(" ")); pl.setAttribute("stroke", c); pl.setAttribute("stroke-width", w); pl.setAttribute("opacity", o); arcSvg.appendChild(pl); });
+      };
+      for (let i = 0; i < pts.length; i++) {
+        const a = pts[i], c = pts[(i + 1) % pts.length]; if (pts.length > 1 && Math.random() < 0.8) bolt(a.x, a.y, c.x, c.y);
+        if (Math.random() < 0.6) { const side = Math.floor(Math.random() * 4), ex = side === 0 ? E.l : side === 1 ? E.r : a.x, ey = side === 2 ? E.t : side === 3 ? E.b : a.y; bolt(a.x, a.y, Math.max(E.l, Math.min(E.r, ex)), Math.max(E.t, Math.min(E.b, ey))); }
+      }
+    });
+    if (!arcSvg.firstChild) smudges.forEach(m => m.e.classList.remove("hot"));
   }
   /* ---------- table objects: manual, cloth, phone ---------- */
   function toggleManual(open) {
     const want = open == null ? man.style.display !== "block" : open;
-    man.style.display = want ? "block" : "none"; bookEl.style.opacity = want ? ".55" : "";
+    man.style.display = want ? "block" : "none"; manWrap.style.display = want ? "block" : "none"; bookEl.style.opacity = want ? ".55" : "";
     if (want) togglePhone(false);
   }
   function clothDown() {
@@ -446,15 +579,44 @@ function open(opts) {
   const FEED_NAMES = ["sam", "juno", "pixel_pal", "mr.toast", "k8", "bean", "moss", "lemon", "dax", "orbit", "nova", "pip"];
   const FEED_TEXT = ["just spilled coffee on my keyboard again", "hot take: cereal is a soup", "my cat has strong opinions about my meetings", "15 reasons to drink more water (number 7 will shock you)", "does anyone else's wifi only work while standing on one leg", "rate my sandwich 9/10", "local pigeon elected mayor of the park", "the moon looks nice tonight", "found $5 in old jeans, we are so back", "why do printers hate me personally", "i have named all my houseplants and they are judging me", "unpopular opinion: socks should come in threes", "this dog wearing sunglasses is the best thing today", "tiny turtle slowly crosses road, internet cheers", "me: i will sleep early. also me at 2am: one more video"];
   const FEED_COL = ["#e0562f", "#2f8de0", "#7a4de0", "#2fb37a", "#d6a21f", "#d9418c"];
-  function addPosts(n) {
-    for (let i = 0; i < n; i++) {
-      const nm = FEED_NAMES[Math.floor(Math.random() * FEED_NAMES.length)], c = FEED_COL[Math.floor(Math.random() * FEED_COL.length)];
-      el("div", "post", `<i style="background:${c}">${nm[0].toUpperCase()}</i><div><b>@${nm}</b><p>${FEED_TEXT[Math.floor(Math.random() * FEED_TEXT.length)]}</p><small>\u2665 ${(Math.random() * 9 + 0.2).toFixed(1)}k &nbsp; \u21BB ${Math.floor(Math.random() * 900)}</small></div>`, feed);
-    }
+  const pick1 = arr => arr[Math.floor(Math.random() * arr.length)];
+  const ANIMALS = [["🐱", "cat meets a cardboard box for the first time", "va-peek"], ["🐶", "puppy hears the word 'walk'", "va-wiggle"], ["🦆", "duck parade, 12 ducklings, zero rules", "va-bounce"], ["🐹", "hamster stuffs one (1) whole carrot", "va-wiggle"], ["🐰", "bunny binky of pure joy", "va-bounce"], ["🦦", "otter holds hands with another otter", "va-spin"], ["🐼", "panda falls off a log, tries again", "va-bounce"], ["🐭", "tiny mouse eats a tiny pizza", "va-peek"]];
+  const PASTEL = ["#ffd6e0", "#d6f0ff", "#e3ffd6", "#fff3c9", "#e8dcff"];
+  const BRAIN = [["SKIBIDI", "RIZZ", "NO CAP"], ["SIGMA", "GYATT", "LOCK IN"], ["AURA +9000", "MOGGED", "BRO WHAT"], ["BRAINROT", "6 7", "CHAT IS THIS REAL"]];
+  const BRAIN_CAP = ["POV: you have 40 seconds left and you are watching this", "me explaining the plot to nobody", "this video has no plot and 4 million views", "sound on (there is no sound)"];
+  function animalCard() {
+    const [em, cap, anim] = pick1(ANIMALS), hearts = [1, 2, 3, 4].map(i => `<span class="ht" style="left:${15 + i * 18}%;bottom:${30 + (i % 2) * 12}%;animation-delay:${i * .5}s">♥</span>`).join("");
+    return `<div class="vid" style="background:linear-gradient(160deg,${pick1(PASTEL)},${pick1(PASTEL)})"><span class="lk">♥ ${(Math.random() * 90 + 10).toFixed(0)}k</span><div class="an ${anim}">${em}</div>${hearts}<div class="cap">${cap}</div><div class="tm" style="background:#ff5d8f"></div></div>`;
+  }
+  function brainCard() {
+    const w = pick1(BRAIN), emo = ["💀", "🗿", "🔥", "🤪"], words = w.map((t, i) => `<div class="w" style="animation-delay:${i * .6}s">${t}</div>`).join("");
+    const emj = [0, 1, 2].map(i => `<div class="e" style="left:${10 + i * 34}%;top:${12 + (i % 2) * 52}%;animation-duration:${.4 + i * .15}s">${pick1(emo)}</div>`).join("");
+    return `<div class="vid vb"><span class="lk">${(Math.random() * 900 + 100).toFixed(0)}k views</span>${emj}${words}<div class="cap">${pick1(BRAIN_CAP)}</div><div class="tm"></div></div>`;
+  }
+  function textPost() {
+    const nm = pick1(FEED_NAMES), c = pick1(FEED_COL);
+    return `<div class="post"><i style="background:${c}">${nm[0].toUpperCase()}</i><div><b>@${nm}</b><p>${pick1(FEED_TEXT)}</p><small>♥ ${(Math.random() * 9 + 0.2).toFixed(1)}k &nbsp; ↻ ${Math.floor(Math.random() * 900)}</small></div></div>`;
+  }
+  /* a FINITE feed: cute animals, brainrot and a few posts. Reaching the end (after watching a while) triggers calm mode, once per bomb. */
+  function buildFeed() {
+    const kinds = ["t", "a", "b", "a", "t", "b", "a", "t", "a", "b", "a", "t"], html = kinds.map(k => k === "a" ? animalCard() : k === "b" ? brainCard() : textPost()).join("");
+    feed.innerHTML = html + `<div class="endcard" id="phEnd"><b>You're all caught up</b><span id="phEndMsg">Scroll to the bottom to clear your head.</span></div>`;
+    lastScroll = 0;
+  }
+  function tryCalmMode() {
+    if (!S || S.feedDone || !S.phone || S.state !== "running") return;
+    const msgEl = feed.querySelector("#phEndMsg");
+    if (S.phoneSec < T.phoneMinSec) { if (msgEl) msgEl.textContent = "Keep watching a little longer..."; return; }
+    S.feedDone = true; S.calmUntil = S.t + T.calmModeSec; S.calmAt = +S.t.toFixed(1);
+    if (msgEl) msgEl.textContent = "Mind cleared. Back to the bomb!";
+    beep(523, .18, "sine", .06); setTimeout(() => beep(659, .18, "sine", .06), 160); setTimeout(() => beep(784, .35, "sine", .06), 320);
+    emit("calm_mode", { seconds: T.calmModeSec });
+    phoneEl.querySelector("i").innerHTML = "ALL<br>CAUGHT UP<br>(battery low)"; phoneEl.querySelector("i").style.animation = "none"; phoneEl.querySelector("i").style.filter = "grayscale(1) brightness(.6)";
+    setTimeout(() => { if (S && S.phone) togglePhone(false); }, 1800);
   }
   function togglePhone(open) {
     if (!S) return; const was = S.phone; S.phone = !!open && S.state === "running"; phoneUi.style.display = S.phone ? "flex" : "none"; phoneEl.style.opacity = S.phone ? ".4" : "";
-    if (S.phone) { toggleManual(false); if (!feed.children.length) addPosts(12); }
+    if (S.phone) { toggleManual(false); if (!feed.children.length) buildFeed(); S.atEnd = false; }
     if (S.phone !== was) emit(S.phone ? "phone_up" : "phone_down", { calm: +S.calm.toFixed(2) });
   }
   function slipAt(x, y) { /* a press on a wet patch slides mostly downward */
@@ -473,14 +635,14 @@ function open(opts) {
     const dur = Math.max(S.t, 0.001);
     return { seed: level.seed, mode, result: S.state, secondsPlayed: +S.t.toFixed(1), clockLeft: +Math.max(S.remaining, 0).toFixed(1), strikes: S.strikes,
       modulesSolved: nSolved(), sweatDrops: S.drops, slips: S.slips, wipes: S.wipes, blockedPresses: S.blocked, paperBlots: S.blots, avgStress: +(S.stressSum / dur).toFixed(3), secondsHighStress: +S.stressHi.toFixed(1),
-      phoneSeconds: +S.phoneSec.toFixed(1), peakMindClear: +S.calmPeak.toFixed(2), events: S.events.slice() };
+      phoneSeconds: +S.phoneSec.toFixed(1), calmModeUsed: S.feedDone, calmModeAtSec: S.calmAt, peakMindClear: +S.calmPeak.toFixed(2), events: S.events.slice() };
   }
   function finish(kind, title, msg) {
     S.state = kind; const sm = summary();
     endEl.innerHTML = `<div class="card ${kind === "won" ? "win" : "lose"}"><h1>${title}</h1><p>${msg}</p><div class="stats">
       <div><span>Time played</span><b>${sm.secondsPlayed} s</b></div><div><span>Clock left</span><b>${sm.clockLeft} s</b></div><div><span>Strikes</span><b>${sm.strikes} / ${level.maxStrikes}</b></div>
       <div><span>Modules solved</span><b>${sm.modulesSolved} / 3</b></div><div><span>Average stress (0-1)</span><b>${sm.avgStress}</b></div><div><span>Seconds under high stress</span><b>${sm.secondsHighStress}</b></div>
-      <div><span>Paper blotches</span><b>${sm.paperBlots}</b></div><div><span>Sweat drops / slips / shorted presses</span><b>${sm.sweatDrops} / ${sm.slips} / ${sm.blockedPresses}</b></div><div><span>Time on the phone</span><b>${sm.phoneSeconds} s</b></div><div><span>Mode</span><b>${mode === "test" ? "manual test (not real data)" : "live (Muse)"}</b></div><div><span>Seed</span><b>${sm.seed}</b></div></div>
+      <div><span>Paper blotches</span><b>${sm.paperBlots}</b></div><div><span>Sweat drops / slips / shorted presses</span><b>${sm.sweatDrops} / ${sm.slips} / ${sm.blockedPresses}</b></div><div><span>Time on the phone / calm mode</span><b>${sm.phoneSeconds} s / ${sm.calmModeUsed ? "used" : "not used"}</b></div><div><span>Mode</span><b>${mode === "test" ? "manual test (not real data)" : "live (Muse)"}</b></div><div><span>Seed</span><b>${sm.seed}</b></div></div>
       <div class="row"><button class="bz-btn" id="bzNew">NEW BOMB</button><button class="bz-btn" id="bzRe">RETRY THIS BOMB</button><button class="bz-btn" id="bzEx">EXIT</button></div></div>`;
     endEl.style.display = "flex";
     endEl.querySelector("#bzNew").onclick = () => build();
@@ -536,9 +698,9 @@ function open(opts) {
     S.stressSm += (target - S.stressSm) * (1 - Math.exp(-dt / T.smoothingSec));
     if (S.state === "running" && !S.phone) S.calm = Math.max(0, S.calm - T.calmDecay * dt);
     S.calmPeak = Math.max(S.calmPeak, S.calm);
-    const s = L.effectiveStress(S.stressSm, S.calm), rate = L.clockRate(s, S.strikes, T), shake = L.handShake(s, T);
+    const forced = L.calmModeFactor(S.t, S.calmUntil, T), calmNow = forced === 0, s = L.effectiveStress(S.stressSm, S.calm, forced), rate = L.clockRate(s, S.strikes, T), shake = L.handShake(s, T);
     if (S.state === "running") {
-      S.t += dt; S.remaining -= dt * rate; S.stressSum += S.stressSm * dt; if (S.stressSm > 0.5) S.stressHi += dt; if (S.phone) S.phoneSec += dt;
+      S.t += dt; S.remaining -= dt * rate; S.stressSum += S.stressSm * dt; if (S.stressSm > 0.5) S.stressHi += dt; if (S.phone) { S.phoneSec += dt; if (S.atEnd && !S.feedDone) tryCalmMode(); }
       const sec = Math.ceil(S.remaining);
       if (sec !== S.lastSec) { S.lastSec = sec; beep(rate > 1.3 ? 1000 : 800, .04, "square", .03); }
       if (S.remaining <= 0) { S.remaining = 0; explode("time"); }
@@ -555,7 +717,7 @@ function open(opts) {
       setDigits(str);
     }
     ["timer", "button", "wires", "keypad"].forEach(key => bayOf[key].classList.toggle("shorted", shorted(key)));
-    sparks();
+    sparks(); drawArcs();
     for (let i = pdrops.length - 1; i >= 0; i--) { const d = pdrops[i]; d.vy += 1100 * dt; d.y += d.vy * dt; d.e.style.transform = `translate(${d.x}px,${d.y}px)`; if (d.y >= d.ty) { pdrops.splice(i, 1); paperSplat(d); } }
     blots.forEach(bl => { if (bl.wet && S.t - bl.born > T.smudgeLife) dryBlot(bl); });
     /* falling sweat, wet patches, heartbeat vignette */
@@ -569,14 +731,23 @@ function open(opts) {
     /* hand shake */
     const tt = now / 1000;
     const sp = S.t < S.spikeUntil ? 1 + 1.2 * Math.sin(Math.PI * (1 - (S.spikeUntil - S.t) / 0.45)) : 1;
-    jit = [shake * sp * k * (Math.sin(tt * 6.3 + 1) + 0.6 * Math.sin(tt * 11.7 + 2)) / 1.6, shake * sp * k * (Math.sin(tt * 5.1 + 3) + 0.6 * Math.sin(tt * 13.1)) / 1.6];
-    if (raw) { handPos = [raw[0] + jit[0], raw[1] + jit[1]]; if (overView) { hand.style.display = "block"; hand.style.transform = `translate(${handPos[0]}px,${handPos[1]}px)`; } }
-    bomb.style.transform = `scale(${k}) rotate(${(s * 0.5 * Math.sin(tt * 1.7)).toFixed(3)}deg)`;
+    const step = Math.floor(tt * 40), nz = (i, sd) => { const x = Math.sin((i + sd * 17.3) * 127.1 + sd * 311.7) * 43758.5453; return (x - Math.floor(x)) * 2 - 1; };   /* 40 Hz hash noise: fast jumps, not a smooth wobble */
+    if (man.style.display === "block") {
+      manKick *= Math.exp(-dt * 6);
+      const a = (shake * 0.42 + 0.35) * (sp > 1 ? 1.8 : 1), rot = nz(step, 7) * (s * 1.1 + 0.12);
+      manWrap.style.transform = `translate(${(nz(step, 5) * a).toFixed(2)}px,${(nz(step, 6) * a + manKick).toFixed(2)}px) rotate(${rot.toFixed(3)}deg)`;
+    }
+    const f60 = Math.floor(tt * 60);
+    jit = [shake * sp * k * (0.7 * nz(f60, 1) + 0.3 * Math.sin(tt * 75)), shake * sp * k * (0.7 * nz(f60, 3) + 0.3 * Math.sin(tt * 66 + 2))];
+    if (raw) { handPos = [raw[0] + jit[0], raw[1] + jit[1]]; if (overView) { hand.style.display = "block"; hand.style.transform = `translate(${handPos[0].toFixed(1)}px,${handPos[1].toFixed(1)}px) rotate(${(nz(f60, 9) * (1 + s * 7)).toFixed(2)}deg)`; } }
+    { const amp = (0.25 + 2.9 * s) * k * (sp > 1 ? 1.7 : 1); bomb.style.transform = `translate(${(nz(step, 2) * amp).toFixed(2)}px,${(nz(step, 4) * amp * 0.7).toFixed(2)}px) scale(${k}) rotate(${(nz(step, 8) * 0.16 * s).toFixed(3)}deg)`; }
     /* vitals */
     rowS.querySelector("b").textContent = noRead ? "--" : Math.round(S.stressSm * 100) + "%"; rowS.querySelector(".bar i").style.width = (S.stressSm * 100) + "%";
     rowM.querySelector("b").textContent = Math.round(S.calm / T.calmMax * 100) + "%"; rowM.querySelector(".bar i").style.width = (S.calm / T.calmMax * 100) + "%";
     phMc.textContent = "MIND CLEAR " + Math.round(S.calm / T.calmMax * 100) + "%"; phBar.style.width = (S.calm / T.calmMax * 100) + "%"; phClock.textContent = clockDigits().replace(/^(..)(..)$/, "$1:$2");
     effect.querySelector("#bzT").textContent = shake.toFixed(1) + " px"; effect.querySelector("#bzC").textContent = "x" + rate.toFixed(2); effect.querySelector("#bzH").textContent = Math.round(L.heartBpm(s)) + " bpm"; effect.querySelector("#bzW").textContent = smudges.length;
+    effect.querySelector("#bzK").textContent = calmNow ? Math.ceil(S.calmUntil - S.t) + " s" : S.feedDone ? "used" : "ready";
+    calmBadge.style.display = calmNow && S.state === "running" ? "flex" : "none"; calmFx.style.opacity = calmNow && S.state === "running" ? 1 : 0; if (calmNow) calmBadge.querySelector("#cmT").textContent = Math.ceil(S.calmUntil - S.t) + " s left: shaking and sweat paused";
     vNote.textContent = mode === "test" ? "MANUAL TEST MODE: stress is set by the slider. Results are not real data." : noRead ? "LIVE MODE: no stress reading yet. Connect the headband and calibrate the stress meter in the panel. Until then there are no stress effects." : "LIVE MODE: driven by the experimental stress meter (heart rate, frontal beta/alpha, face tension). Not a validated stress measure.";
     stEl.textContent = (mode === "test" ? "MANUAL TEST" : "LIVE") + (opts.status ? "  |  " + opts.status() : "");
   }
