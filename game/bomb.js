@@ -766,6 +766,7 @@ function open(opts) {
     vNote.textContent = source === "test" ? "MANUAL TEST MODE: stress is set by the slider. Results are not real data."
       : source === "focus" ? (noRead ? "FOCUS MODE: no focus reading yet. Connect the headband and press Auto Set Baselines in the panel. Until then there are no stress effects." : "FOCUS MODE: stress = 100 minus your focus. Focus 100 means no stress, focus 0 means full stress. Focus is a rough proxy, not a validated measure.")
       : noRead ? "STRESS MODE: no stress reading yet. Connect the headband and calibrate the stress meter in the panel. Until then there are no stress effects." : "STRESS MODE: driven by the experimental stress meter (heart rate, frontal beta/alpha, face tension). Not a validated stress measure.";
+    rowS.querySelector("span").textContent = source === "test" ? "STRESS (MANUAL)" : source === "focus" ? "STRESS (100 - FOCUS)" : "STRESS (METER)";
     stEl.textContent = (source === "test" ? "MANUAL TEST" : source === "focus" ? "FOCUS" : "STRESS METER") + (opts.status ? "  |  " + opts.status() : "");
   }
 
