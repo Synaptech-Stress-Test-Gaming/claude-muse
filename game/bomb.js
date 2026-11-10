@@ -79,6 +79,10 @@ const CSS = `
 .bz-sweat .sp{position:absolute;width:6px;height:6px;border-radius:50%;background:rgba(190,225,255,.85)}
 .bz-sweat .streak{position:absolute;width:5px;border-radius:3px;background:linear-gradient(rgba(190,225,255,.7),rgba(190,225,255,0))}
 .bz-vig{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 42%,rgba(150,0,0,.9) 100%)}
+.bay.shorted{box-shadow:inset 0 0 0 3px #ff9d2e,0 0 18px rgba(255,160,40,.7),0 3px 8px rgba(0,0,0,.5)}
+.bay .zap{position:absolute;inset:0;z-index:4;display:none;align-items:center;justify-content:center;text-align:center;background:rgba(10,14,20,.62);color:#ffcf5a;font:700 13px/1.5 "Segoe UI",Arial;letter-spacing:.18em;pointer-events:none;animation:bzz .18s steps(2) infinite}
+.bay.shorted .zap{display:flex}@keyframes bzz{0%{background:rgba(10,14,20,.62)}50%{background:rgba(40,30,8,.72)}}
+.bay .spark{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff6c2;box-shadow:0 0 8px 3px #ffb52e;z-index:5;pointer-events:none}
 .bz-hand.slip{border-color:#7fc4ff;box-shadow:0 0 0 6px rgba(120,190,255,.45)}
 .bz-end{position:absolute;inset:0;z-index:7;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);cursor:auto}
 .bz-end .card{min-width:360px;max-width:520px;background:#141d26;border:2px solid #3c566d;border-radius:12px;padding:24px 30px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.7)}
@@ -100,7 +104,7 @@ function digitSvg() {
   return `<svg class="dg" viewBox="0 0 40 70">${"abcdefg".split("").map(s => `<polygon class="s" data-s="${s}" points="${SEGP[s]}"/>`).join("")}</svg>`;
 }
 function bay(cls, parent) {
-  const b = el("div", "bay " + cls, '<i class="bolt a"></i><i class="bolt b"></i><i class="bolt c"></i><i class="bolt d"></i>', parent);
+  const b = el("div", "bay " + cls, '<i class="bolt a"></i><i class="bolt b"></i><i class="bolt c"></i><i class="bolt d"></i><div class="zap"><div>SHORT CIRCUIT<br><small>WIPE DRY (SPACE)</small></div></div>', parent);
   return b;
 }
 
@@ -198,7 +202,7 @@ function open(opts) {
    <h3>The button</h3><ol>${L.BUTTON_RULES.map(r => `<li>${r}</li>`).join("")}</ol><p>${L.STRIP_RULES}</p><p><i>Tap</i> = release within half a second.</p>
    <h3>Symbol keypad</h3><p>Find the one column that contains all four symbols on your keypad. Press the symbols in the order they appear in that column, top to bottom.</p>
    <div class="cols">${L.KEY_COLUMNS.map((c, i) => `<div><small>Column ${i + 1}</small>${c.map(s => `<div style="border:0;padding:0">${s}</div>`).join("")}</div>`).join("")}</div>
-   <h3>Stress</h3><p>This is a prototype for the Muse 2 focus meter. When your focus drops, your hands shake, sweat drips onto the bomb, the clock runs faster and the display may glitch. Wet patches blur what is under them, and a press on a wet patch slides downward. Wipe the bomb dry with Space (it costs a few seconds). Stay calm.</p>`;
+   <h3>Stress</h3><p>This is a prototype for the Muse 2 focus meter. When your focus drops, your hands shake, sweat drips onto the bomb, the clock runs faster and the display may glitch. Wet patches blur what is under them, and a press on a wet patch slides downward. Three wet patches on one module SHORT it out: it ignores your touch (the clock display scrambles) until you wipe the bomb dry with Space, which costs a few seconds. Stay calm.</p>`;
 
   /* test tools */
   const tools = el("div", "bz-tools", `<b style="letter-spacing:.2em;color:#e6c46a">MANUAL TEST MODE</b><label>Focus <input type="range" id="bzSl" min="0" max="100" value="50"><b id="bzSv">50</b></label><small>0 = very stressed, 50+ = calm</small><label><input type="checkbox" id="bzNo"> simulate "no reading"</label>`, root);
@@ -206,9 +210,11 @@ function open(opts) {
   sl.addEventListener("input", () => { sv.textContent = sl.value; });
 
   const endEl = el("div", "bz-end", "", root);
+  const bayOf = { timer: bTimer, info: bInfo, button: bBtn, wires: bWire, keypad: bKey, vitals: bVit };
   let mode = opts.mode || (opts.focus ? "live" : "test");
   function setMode(m) {
     mode = m; tools.style.display = m === "test" ? "flex" : "none";
+    const usingStress = !!opts.stress && m === "live"; rowF.style.display = usingStress ? "none" : ""; rowS.firstChild.firstChild.textContent = usingStress ? "STRESS METER" : "STRESS";
     bMode.textContent = m === "test" ? "MODE: MANUAL TEST" : "MODE: LIVE (MUSE)";
     bMode.style.borderColor = m === "test" ? "#e6c46a" : "#43f28a";
     if (S) emit("mode", { mode: m });
@@ -219,7 +225,7 @@ function open(opts) {
   function build(seed) {
     level = L.makeLevel(seed); level.timeLimit = T.timeLimit; level.maxStrikes = T.maxStrikes;
     S = { remaining: level.timeLimit, strikes: 0, state: "running", solved: { wires: false, button: false, keypad: false }, cut: [false, false, false, false, false],
-      pressAt: null, pressItem: null, progress: 0, stressSm: 0, stressSum: 0, stressHi: 0, focusSum: 0, focusN: 0, t: 0, nextGlitch: 6, glitchUntil: 0, lastSec: -1, events: [], slips: 0, drops: 0, wipes: 0, nextSpike: 4, spikeUntil: 0, beat: 0, lastBeat: 0 };
+      pressAt: null, pressItem: null, progress: 0, stressSm: 0, stressSum: 0, stressHi: 0, focusSum: 0, focusN: 0, t: 0, nextGlitch: 6, glitchUntil: 0, lastSec: -1, events: [], slips: 0, drops: 0, wipes: 0, blocked: 0, nextSpike: 4, spikeUntil: 0, beat: 0, lastBeat: 0 };
     drops.forEach(d => d.e.remove()); drops = []; smudges.forEach(m => m.e.remove()); smudges = []; sweat.innerHTML = ""; spawnAcc = 0;
     items.length = 0; bWire.querySelectorAll('.hit').forEach(x => x.remove());
     plate.lastChild.textContent = level.serial;
@@ -281,12 +287,14 @@ function open(opts) {
   function updMods() { modsEl.textContent = "MODULES " + nSolved() + " / 3"; }
   function cutWire(i) {
     if (S.state !== "running" || S.cut[i]) return;
+    if (shorted("wires")) return zapBlocked("wires");
     S.cut[i] = true; drawWire(i, true); beep(1500, .05, "triangle", .06);
     const r = L.judgeWire(level, i);
     if (r === "solved") solveModule("wires", ledW); else strike("wrong wire");
   }
   function pressButton() {
     if (S.state !== "running" || S.solved.button) return;
+    if (shorted("button")) return zapBlocked("button");
     S.pressAt = performance.now(); cap.classList.add("dn"); beep(300, .05, "square", .05);
   }
   function releaseButton() {
@@ -298,6 +306,7 @@ function open(opts) {
   }
   function pressKey(k, sym) {
     if (S.state !== "running" || S.solved.keypad) return;
+    if (shorted("keypad")) return zapBlocked("keypad");
     k.classList.add("dn"); beep(520, .05, "square", .05);
     if (L.judgeKey(level, S.progress, sym) === "ok") {
       k.classList.add("ok"); kLeds.children[S.progress].classList.add("on"); S.progress++;
@@ -315,7 +324,7 @@ function open(opts) {
     d.e.remove(); S.drops++; beep(1500 + Math.random() * 700, .05, "sine", .03);
     const R = 16 + Math.random() * 20, m = el("div", "smudge", null, sweat);
     m.style.cssText = `width:${R * 2}px;height:${R * 2.2}px;left:${d.x - R}px;top:${d.target - R}px`;
-    smudges.push({ e: m, x: d.x, y: d.target, R, born: S.t });
+    smudges.push({ e: m, x: d.x, y: d.target, R, born: S.t, mod: moduleAt(d.x, d.target) });
     while (smudges.length > T.maxSmudges) smudges.shift().e.remove();
     for (let i = 0; i < 6; i++) {
       const p = el("i", "sp", null, sweat), a = Math.random() * Math.PI * 2, dist = 14 + Math.random() * 26;
@@ -326,6 +335,26 @@ function open(opts) {
       const st = el("div", "streak", null, sweat); st.style.left = d.x - 2 + "px"; st.style.top = d.target + R * 0.6 + "px";
       st.animate([{ height: "0px", opacity: .6 }, { height: 50 + Math.random() * 90 + "px", opacity: 0 }], { duration: 1800 + Math.random() * 800, easing: "ease-in" }).onfinish = () => st.remove();
     }
+  }
+  /* which module a point on the bomb (design pixels) falls on */
+  function moduleAt(x, y) {
+    const b = bomb.getBoundingClientRect(), px = b.left + x * k, py = b.top + y * k;
+    for (const key of Object.keys(bayOf)) { const r = bayOf[key].getBoundingClientRect(); if (px >= r.left && px <= r.right && py >= r.top && py <= r.bottom) return key; }
+    return null;
+  }
+  const wetCount = key => smudges.filter(m => m.mod === key).length;
+  const shorted = key => S.state === "running" && L.isShorted(wetCount(key), T);
+  function zapBlocked(key) {
+    S.blocked++; beep(90, .15, "sawtooth", .07); const z = bayOf[key]; if (z) { z.animate([{ transform: "translateX(-4px)" }, { transform: "translateX(4px)" }, { transform: "translateX(0)" }], { duration: 160 }); }
+    emit("blocked", { module: key });
+  }
+  function sparks() {
+    ["wires", "button", "keypad", "timer"].forEach(key => {
+      if (!shorted(key) || Math.random() > 0.35) return; const bz = bayOf[key], sp = el("i", "spark", null, bz);
+      sp.style.left = 20 + Math.random() * (bz.clientWidth - 40) + "px"; sp.style.top = 20 + Math.random() * (bz.clientHeight - 40) + "px";
+      sp.animate([{ transform: "scale(1.8)", opacity: 1 }, { transform: `translate(${(Math.random() - .5) * 30}px,${(Math.random() - .5) * 30}px) scale(.2)`, opacity: 0 }], { duration: 260 }).onfinish = () => sp.remove();
+      if (Math.random() < 0.3) beep(1800 + Math.random() * 1200, .03, "sawtooth", .02);
+    });
   }
   function wipe() {
     if (S.state !== "running" || !smudges.length) return;
@@ -347,7 +376,7 @@ function open(opts) {
   function summary() {
     const dur = Math.max(S.t, 0.001);
     return { seed: level.seed, mode, result: S.state, secondsPlayed: +S.t.toFixed(1), clockLeft: +Math.max(S.remaining, 0).toFixed(1), strikes: S.strikes,
-      modulesSolved: nSolved(), sweatDrops: S.drops, slips: S.slips, wipes: S.wipes, avgStress: +(S.stressSum / dur).toFixed(3), secondsHighStress: +S.stressHi.toFixed(1),
+      modulesSolved: nSolved(), sweatDrops: S.drops, slips: S.slips, wipes: S.wipes, blockedPresses: S.blocked, avgStress: +(S.stressSum / dur).toFixed(3), secondsHighStress: +S.stressHi.toFixed(1),
       avgFocus: S.focusN ? +(S.focusSum / S.focusN).toFixed(1) : null, events: S.events.slice() };
   }
   function finish(kind, title, msg) {
@@ -355,7 +384,7 @@ function open(opts) {
     endEl.innerHTML = `<div class="card ${kind === "won" ? "win" : "lose"}"><h1>${title}</h1><p>${msg}</p><div class="stats">
       <div><span>Time played</span><b>${sm.secondsPlayed} s</b></div><div><span>Clock left</span><b>${sm.clockLeft} s</b></div><div><span>Strikes</span><b>${sm.strikes} / ${level.maxStrikes}</b></div>
       <div><span>Modules solved</span><b>${sm.modulesSolved} / 3</b></div><div><span>Average stress (0-1)</span><b>${sm.avgStress}</b></div><div><span>Seconds under high stress</span><b>${sm.secondsHighStress}</b></div>
-      <div><span>Sweat drops / slips</span><b>${sm.sweatDrops} / ${sm.slips}</b></div><div><span>Average focus</span><b>${sm.avgFocus == null ? "no reading" : sm.avgFocus}</b></div><div><span>Mode</span><b>${mode === "test" ? "manual test (not real data)" : "live (Muse)"}</b></div><div><span>Seed</span><b>${sm.seed}</b></div></div>
+      <div><span>Sweat drops / slips / shorted presses</span><b>${sm.sweatDrops} / ${sm.slips} / ${sm.blockedPresses}</b></div><div><span>Average focus</span><b>${sm.avgFocus == null ? "no reading" : sm.avgFocus}</b></div><div><span>Mode</span><b>${mode === "test" ? "manual test (not real data)" : "live (Muse)"}</b></div><div><span>Seed</span><b>${sm.seed}</b></div></div>
       <div class="row"><button class="bz-btn" id="bzNew">NEW BOMB</button><button class="bz-btn" id="bzRe">RETRY THIS BOMB</button><button class="bz-btn" id="bzEx">EXIT</button></div></div>`;
     endEl.style.display = "flex";
     endEl.querySelector("#bzNew").onclick = () => build();
@@ -405,7 +434,7 @@ function open(opts) {
   function update(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
     const f = focusNow();
-    let target = opts.stress ? opts.stress() : null; if (target == null || !isFinite(target)) target = L.stressFromFocus(f, T);
+    let target = (mode === "live" && opts.stress) ? opts.stress() : null; if (target == null || !isFinite(target)) target = L.stressFromFocus(f, T);
     S.stressSm += (target - S.stressSm) * (1 - Math.exp(-dt / T.smoothingSec));
     const s = S.stressSm, rate = L.clockRate(s, S.strikes, T), shake = L.handShake(s, T);
     if (S.state === "running") {
@@ -421,9 +450,11 @@ function open(opts) {
       if (S.pressAt != null && (performance.now() - S.pressAt) / 1000 > 0.4) { strip.className = "strip on stripc-" + level.button.strip; }
     }
     if (S.state === "running" || S.state === "won") {
-      let str = clockDigits(); if (S.state === "running" && S.t < S.glitchUntil) str = String(Math.floor(Math.random() * 9000 + 1000));
+      let str = clockDigits(); if (S.state === "running" && (S.t < S.glitchUntil || shorted("timer"))) str = String(Math.floor(Math.random() * 9000 + 1000));
       setDigits(str);
     }
+    ["timer", "button", "wires", "keypad"].forEach(key => bayOf[key].classList.toggle("shorted", shorted(key)));
+    sparks();
     /* falling sweat, wet patches, heartbeat vignette */
     for (let i = drops.length - 1; i >= 0; i--) { const d = drops[i]; d.vy += 1100 * dt; d.y += d.vy * dt; d.e.style.transform = `translate(${d.x}px,${d.y}px)`; if (d.y >= d.target) { drops.splice(i, 1); splat(d); } }
     for (let i = smudges.length - 1; i >= 0; i--) { const m = smudges[i], age = S.t - m.born; if (age > T.smudgeLife) { m.e.remove(); smudges.splice(i, 1); } else m.e.style.opacity = Math.min(1, (T.smudgeLife - age) / 4); }
@@ -441,7 +472,7 @@ function open(opts) {
     rowF.querySelector("b").textContent = f == null ? "--" : Math.round(f); rowF.querySelector(".bar i").style.width = (f == null ? 0 : f) + "%";
     rowS.querySelector("b").textContent = Math.round(s * 100) + "%"; rowS.querySelector(".bar i").style.width = (s * 100) + "%";
     effect.querySelector("#bzT").textContent = shake.toFixed(1) + " px"; effect.querySelector("#bzC").textContent = "x" + rate.toFixed(2); effect.querySelector("#bzH").textContent = Math.round(L.heartBpm(s)) + " bpm"; effect.querySelector("#bzW").textContent = smudges.length;
-    vNote.textContent = mode === "test" ? "MANUAL TEST MODE: focus is set by the slider. Results are not real data." : noRead ? "LIVE MODE: no focus reading yet. Connect the headband and press Auto Set Baselines in the panel. Until then there are no stress effects." : "LIVE MODE: driven by the experimental focus meter. Not a validated stress measure.";
+    vNote.textContent = mode === "test" ? "MANUAL TEST MODE: focus is set by the slider. Results are not real data." : noRead ? (opts.stress ? "LIVE MODE: no stress reading yet. Connect the headband and calibrate the stress meter in the panel." : "LIVE MODE: no focus reading yet. Connect the headband and press Auto Set Baselines in the panel.") + " Until then there are no stress effects." : (opts.stress ? "LIVE MODE: driven by the experimental stress meter (heart rate, frontal beta/alpha, face tension). Not a validated stress measure." : "LIVE MODE: driven by the experimental focus meter. Not a validated stress measure.");
     stEl.textContent = (mode === "test" ? "MANUAL TEST" : "LIVE") + (opts.status ? "  |  " + opts.status() : "");
   }
 

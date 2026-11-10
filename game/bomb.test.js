@@ -17,6 +17,8 @@ ok(B.sweatRate(0) === 0 && B.sweatRate(B.TUNING.sweatStart) === 0, "no sweat whi
 ok(near(B.sweatRate(1), B.TUNING.sweatMax, 1e-9) && B.sweatRate(0.5) > 0 && B.sweatRate(0.5) < B.sweatRate(0.8), "sweat rises with stress");
 ok(B.heartBpm(0) === 64 && B.heartBpm(1) === 134, "heart rate 64 calm to 134 stressed");
 
+ok(!B.isShorted(0) && !B.isShorted(2) && B.isShorted(3) && B.isShorted(6), "three wet patches short a module out");
+
 // wire rules
 const S_ODD = "A1B2C3", S_EVEN = "A1B2C4";
 ok(B.wireSolution(["red", "blue", "white", "white", "black"], S_ODD) === 3, "wire rule 1: last black + odd serial -> 4th wire");

@@ -13,11 +13,12 @@ const TUNING = {
   glitchStress: 0.55,    // above this stress the display can glitch
   smoothingSec: 1.0,     // low-pass time constant for the stress signal
   sweatStart: 0.15,      // sweat begins above this stress
-  sweatMax: 1.1,         // sweat drops per second at full stress
+  sweatMax: 0.8,         // sweat drops per second at full stress
   maxSmudges: 16,        // wet patches on the bomb at once
-  smudgeLife: 14,        // seconds before a wet patch dries
+  smudgeLife: 12,        // seconds before a wet patch dries
   slipPx: 28,            // a press on a wet patch slides this far (bomb pixels, mostly downward)
-  wipePenalty: 3         // seconds taken off the clock to wipe the bomb dry
+  wipePenalty: 3,        // seconds taken off the clock to wipe the bomb dry
+  shortAt: 3             // this many wet patches on one module short it out until you wipe
 };
 
 /* ---------- random numbers (seedable, so a level can be replayed) ---------- */
@@ -51,6 +52,8 @@ function sweatRate(stress, T) {
   if (stress <= T.sweatStart) return 0;
   return T.sweatMax * Math.pow((stress - T.sweatStart) / (1 - T.sweatStart), 1.2);
 }
+/* a module is shorted (dead to touch) when it carries enough wet patches */
+function isShorted(wetCount, T) { return wetCount >= (T || TUNING).shortAt; }
 function heartBpm(stress) { return 64 + 70 * clamp01(stress); }
 
 /* ---------- wires module ---------- */
@@ -142,7 +145,7 @@ function judgeButton(level, heldSec, clock) {
 }
 function judgeKey(level, progress, sym) { return sym === level.keypad.order[progress] ? "ok" : "strike"; }
 
-const API = { TUNING, rng, stressFromFocus, clockRate, handShake, sweatRate, heartBpm, WIRE_COLORS, WIRE_RULES, wireSolution,
+const API = { TUNING, rng, stressFromFocus, clockRate, handShake, sweatRate, heartBpm, isShorted, WIRE_COLORS, WIRE_RULES, wireSolution,
   BUTTON_COLORS, BUTTON_LABELS, STRIP_COLORS, STRIP_DIGIT, BUTTON_RULES, STRIP_RULES, buttonSolution, TAP_MAX,
   KEY_COLUMNS, makeSerial, makeLevel, judgeWire, judgeButton, judgeKey };
 if (typeof module !== "undefined" && module.exports) module.exports = API;
