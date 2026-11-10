@@ -24,6 +24,8 @@ In live mode the panel's **stress meter** (`stress.js`) gives stress 0..1 direct
   A press on a wet patch **slips** downward. Patches dry after 12 s.
 - **Short circuit**: 3 wet patches on one module (wires, button, keypad or timer) short it out. It sparks, ignores your touch
   (the clock display scrambles) and stays dead until you **wipe dry with Space**, which clears everything and costs 3 s on the clock.
+- **Soaked manual**: while the manual is open, drops land on the paper. Wet blotches blur the words; dried ones leave a lasting stain.
+  Space dries the page but the stains stay.
 - **Heartbeat**: from 25% stress you hear a heartbeat, and a red vignette pulses with it (64 bpm calm, 134 stressed).
   Above 60% stress the picture blurs slightly on each beat.
 - **Clock speed**: up to x1.6 (plus x0.25 per strike).

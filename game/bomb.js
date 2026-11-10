@@ -69,6 +69,12 @@ const CSS = `
 .bz-glitch .bz-case{animation:bzg .12s steps(2) infinite}@keyframes bzg{0%{filter:hue-rotate(0)}50%{filter:hue-rotate(60deg) brightness(1.25)}100%{filter:hue-rotate(-40deg)}}
 .bz-flash{position:absolute;inset:0;pointer-events:none;background:#ff2a1a;opacity:0;z-index:4}
 .bz-man{position:absolute;right:16px;top:58px;bottom:16px;width:min(470px,46vw);background:#efe8d3;color:#2a2418;border-radius:6px;box-shadow:0 14px 40px rgba(0,0,0,.7);padding:20px 24px;overflow:auto;z-index:6;display:none;font-family:Georgia,"Times New Roman",serif;line-height:1.45;font-size:14px;cursor:auto}
+.bz .bz-man p,.bz .bz-man li,.bz .bz-man b,.bz .bz-man i,.bz .bz-man h2,.bz .bz-man h3{color:#2a2418}.bz .bz-man .cols small{color:#5a4f33}
+.bz-man .paper{position:relative;min-height:100%}
+.bz-man .blot{position:absolute;border-radius:50% 46% 52% 48%;pointer-events:none;transform:translate(-50%,-50%)}
+.bz-man .blot.wet{backdrop-filter:blur(4.5px);-webkit-backdrop-filter:blur(4.5px);background:radial-gradient(rgba(110,140,175,.38),rgba(110,140,175,.12) 70%,rgba(110,140,175,0));box-shadow:inset 0 0 10px rgba(60,90,130,.5)}
+.bz-man .blot.dry{backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);background:radial-gradient(rgba(150,115,60,.34),rgba(150,115,60,.1) 70%,rgba(150,115,60,0))}
+.pdrop{position:fixed;left:0;top:0;width:11px;height:15px;border-radius:50% 50% 50% 50%/70% 70% 30% 30%;background:radial-gradient(circle at 35% 30%,#fff,#9cc9f5 60%,#5b95d3);z-index:8;pointer-events:none}
 .bz-man h2{font-size:20px;margin-bottom:2px}.bz-man h3{margin:16px 0 4px;font-size:15px;border-bottom:1px solid #b9ae8c}.bz-man ol{padding-left:20px}.bz-man li{margin:3px 0}
 .bz-man .cols{display:flex;gap:10px;margin-top:6px}.bz-man .cols div{flex:1;border:1px solid #9a8f6c;padding:6px;text-align:center;font:22px/1.5 "Segoe UI Symbol","Apple Symbols",serif}.bz-man .cols small{display:block;font:11px Georgia}
 .bz-tools{position:absolute;left:14px;bottom:12px;z-index:5;background:rgba(0,0,0,.55);border:1px solid #2b3946;border-radius:8px;padding:8px 12px;font-size:11px;color:#9bb0c2;display:flex;flex-direction:column;gap:5px;cursor:auto}
@@ -197,12 +203,18 @@ function open(opts) {
 
   /* manual */
   const man = el("div", "bz-man", "", root);
-  man.innerHTML = `<h2>Bomb Defusal Handbook</h2><p>Every bomb has a serial number, a wire panel, a big button and a symbol keypad. Three strikes or an empty clock and it goes off.</p>
-   <h3>Wires (5 wires)</h3><ol>${L.WIRE_RULES.map(r => `<li>${r}</li>`).join("")}</ol>
-   <h3>The button</h3><ol>${L.BUTTON_RULES.map(r => `<li>${r}</li>`).join("")}</ol><p>${L.STRIP_RULES}</p><p><i>Tap</i> = release within half a second.</p>
-   <h3>Symbol keypad</h3><p>Find the one column that contains all four symbols on your keypad. Press the symbols in the order they appear in that column, top to bottom.</p>
+  man.innerHTML = `<div class="paper"><h2>Bomb Defusal Handbook</h2><p><i>Field edition. Read the section for the module you are working on. Keep this paper dry.</i></p>
+   <h3>0. Before you start</h3><ol><li>The <b>serial number</b> is on the white plate at the top middle of the bomb.</li><li>Three strikes or an empty clock and it goes off. Every wrong action is a strike.</li><li>The clock keeps running while you read.</li></ol>
+   <h3>1. Wires</h3><p><b>How to read it:</b> there are always 5 wires, listed top to bottom. Count how many of each colour there are first. Then check the rules in order: the <b>first rule that fits</b> is the one to use. Only the wire it names is safe to cut.</p>
+   <ol>${L.WIRE_RULES.map(r => `<li>${r}</li>`).join("")}</ol><p><b>Hints:</b> "last wire" means the bottom one. "Odd" or "even" always means the last digit of the serial number.</p>
+   <h3>2. The button</h3><p><b>How to read it:</b> note the colour of the button and the word on it. Check the rules in order and use the first one that fits. The answer is either a <b>tap</b> or a <b>hold</b>.</p>
+   <ol>${L.BUTTON_RULES.map(r => `<li>${r}</li>`).join("")}</ol><p>${L.STRIP_RULES}</p>
+   <p><b>Hints:</b> a <i>tap</i> is a quick press and release (under half a second). When holding, watch the clock: the digit can be in any of the four places, for example 02:41 has a 4.</p>
+   <h3>3. Symbol keypad</h3><p><b>How to read it:</b> look at the four symbols on your keypad. Find the <b>one column</b> below that contains all four. Press the symbols in the order they appear in that column, top to bottom. A wrong key is a strike.</p>
    <div class="cols">${L.KEY_COLUMNS.map((c, i) => `<div><small>Column ${i + 1}</small>${c.map(s => `<div style="border:0;padding:0">${s}</div>`).join("")}</div>`).join("")}</div>
-   <h3>Stress</h3><p>This is a prototype for the Muse 2 focus meter. When your focus drops, your hands shake, sweat drips onto the bomb, the clock runs faster and the display may glitch. Wet patches blur what is under them, and a press on a wet patch slides downward. Three wet patches on one module SHORT it out: it ignores your touch (the clock display scrambles) until you wipe the bomb dry with Space, which costs a few seconds. Stay calm.</p>`;
+   <p><b>Hint:</b> if two columns share a symbol, use another symbol to tell them apart. Only one column holds all four.</p>
+   <h3>4. Keep calm</h3><p>This prototype reads your stress. When it rises your hands shake and sweat drips on the bomb: wet patches blur what is under them, a press on one slips, and three on a module short it out until you dry it. Sweat also soaks <b>this paper</b>: wet blotches blur the words, and a dried blotch leaves a stain that is still hard to read. Press Space to dry the bomb and the page (it costs a few seconds). Stay calm.</p></div>`;
+  const paper = man.firstChild; let blots = [], pdrops = [], pAcc = 0;
 
   /* test tools */
   const tools = el("div", "bz-tools", `<b style="letter-spacing:.2em;color:#e6c46a">MANUAL TEST MODE</b><label>Focus <input type="range" id="bzSl" min="0" max="100" value="50"><b id="bzSv">50</b></label><small>0 = very stressed, 50+ = calm</small><label><input type="checkbox" id="bzNo"> simulate "no reading"</label>`, root);
@@ -225,7 +237,8 @@ function open(opts) {
   function build(seed) {
     level = L.makeLevel(seed); level.timeLimit = T.timeLimit; level.maxStrikes = T.maxStrikes;
     S = { remaining: level.timeLimit, strikes: 0, state: "running", solved: { wires: false, button: false, keypad: false }, cut: [false, false, false, false, false],
-      pressAt: null, pressItem: null, progress: 0, stressSm: 0, stressSum: 0, stressHi: 0, focusSum: 0, focusN: 0, t: 0, nextGlitch: 6, glitchUntil: 0, lastSec: -1, events: [], slips: 0, drops: 0, wipes: 0, blocked: 0, nextSpike: 4, spikeUntil: 0, beat: 0, lastBeat: 0 };
+      pressAt: null, pressItem: null, progress: 0, stressSm: 0, stressSum: 0, stressHi: 0, focusSum: 0, focusN: 0, t: 0, nextGlitch: 6, glitchUntil: 0, lastSec: -1, events: [], slips: 0, drops: 0, wipes: 0, blocked: 0, blots: 0, nextSpike: 4, spikeUntil: 0, beat: 0, lastBeat: 0 };
+    pdrops.forEach(d => d.e.remove()); pdrops = []; blots.forEach(b => b.e.remove()); blots = []; pAcc = 0;
     drops.forEach(d => d.e.remove()); drops = []; smudges.forEach(m => m.e.remove()); smudges = []; sweat.innerHTML = ""; spawnAcc = 0;
     items.length = 0; bWire.querySelectorAll('.hit').forEach(x => x.remove());
     plate.lastChild.textContent = level.serial;
@@ -336,6 +349,21 @@ function open(opts) {
       st.animate([{ height: "0px", opacity: .6 }, { height: 50 + Math.random() * 90 + "px", opacity: 0 }], { duration: 1800 + Math.random() * 800, easing: "ease-in" }).onfinish = () => st.remove();
     }
   }
+  /* ---------- sweat on the manual: wet blotches blur the words, dried ones leave a stain ---------- */
+  function spawnPaperDrop() {
+    const r = man.getBoundingClientRect(), d = el("div", "pdrop", null, root);
+    d.style.display = "block"; const x = r.left + 24 + Math.random() * (r.width - 48);
+    pdrops.push({ e: d, x, y: r.top - 10, vy: 40 + Math.random() * 60, ty: r.top + 24 + Math.random() * (r.height - 48) });
+  }
+  function paperSplat(d) {
+    d.e.remove(); beep(1300 + Math.random() * 500, .04, "sine", .02);
+    const pr = paper.getBoundingClientRect(), R = 22 + Math.random() * 30, e = el("div", "blot wet", null, paper);
+    e.style.cssText = `width:${R * 2}px;height:${R * 1.7}px;left:${d.x - pr.left}px;top:${d.ty - pr.top}px`;
+    blots.push({ e, wet: true, born: S.t }); S.blots++; if (blots.length > 14) blots.shift().e.remove();
+    emit("paper_wet", {});
+  }
+  function dryBlot(bl) { if (!bl.wet) return; bl.wet = false; bl.e.className = "blot dry"; }
+
   /* which module a point on the bomb (design pixels) falls on */
   function moduleAt(x, y) {
     const b = bomb.getBoundingClientRect(), px = b.left + x * k, py = b.top + y * k;
@@ -357,8 +385,8 @@ function open(opts) {
     });
   }
   function wipe() {
-    if (S.state !== "running" || !smudges.length) return;
-    smudges.forEach(m => m.e.remove()); smudges = []; S.wipes++; S.remaining -= T.wipePenalty;
+    if (S.state !== "running" || !(smudges.length || blots.some(b => b.wet))) return;
+    smudges.forEach(m => m.e.remove()); smudges = []; blots.forEach(dryBlot); S.wipes++; S.remaining -= T.wipePenalty;
     beep(300, .12, "triangle", .05); emit("wipe", { penaltySec: T.wipePenalty });
   }
   function slipAt(x, y) { /* a press on a wet patch slides mostly downward */
@@ -376,7 +404,7 @@ function open(opts) {
   function summary() {
     const dur = Math.max(S.t, 0.001);
     return { seed: level.seed, mode, result: S.state, secondsPlayed: +S.t.toFixed(1), clockLeft: +Math.max(S.remaining, 0).toFixed(1), strikes: S.strikes,
-      modulesSolved: nSolved(), sweatDrops: S.drops, slips: S.slips, wipes: S.wipes, blockedPresses: S.blocked, avgStress: +(S.stressSum / dur).toFixed(3), secondsHighStress: +S.stressHi.toFixed(1),
+      modulesSolved: nSolved(), sweatDrops: S.drops, slips: S.slips, wipes: S.wipes, blockedPresses: S.blocked, paperBlots: S.blots, avgStress: +(S.stressSum / dur).toFixed(3), secondsHighStress: +S.stressHi.toFixed(1),
       avgFocus: S.focusN ? +(S.focusSum / S.focusN).toFixed(1) : null, events: S.events.slice() };
   }
   function finish(kind, title, msg) {
@@ -384,7 +412,7 @@ function open(opts) {
     endEl.innerHTML = `<div class="card ${kind === "won" ? "win" : "lose"}"><h1>${title}</h1><p>${msg}</p><div class="stats">
       <div><span>Time played</span><b>${sm.secondsPlayed} s</b></div><div><span>Clock left</span><b>${sm.clockLeft} s</b></div><div><span>Strikes</span><b>${sm.strikes} / ${level.maxStrikes}</b></div>
       <div><span>Modules solved</span><b>${sm.modulesSolved} / 3</b></div><div><span>Average stress (0-1)</span><b>${sm.avgStress}</b></div><div><span>Seconds under high stress</span><b>${sm.secondsHighStress}</b></div>
-      <div><span>Sweat drops / slips / shorted presses</span><b>${sm.sweatDrops} / ${sm.slips} / ${sm.blockedPresses}</b></div><div><span>Average focus</span><b>${sm.avgFocus == null ? "no reading" : sm.avgFocus}</b></div><div><span>Mode</span><b>${mode === "test" ? "manual test (not real data)" : "live (Muse)"}</b></div><div><span>Seed</span><b>${sm.seed}</b></div></div>
+      <div><span>Paper blotches</span><b>${sm.paperBlots}</b></div><div><span>Sweat drops / slips / shorted presses</span><b>${sm.sweatDrops} / ${sm.slips} / ${sm.blockedPresses}</b></div><div><span>Average focus</span><b>${sm.avgFocus == null ? "no reading" : sm.avgFocus}</b></div><div><span>Mode</span><b>${mode === "test" ? "manual test (not real data)" : "live (Muse)"}</b></div><div><span>Seed</span><b>${sm.seed}</b></div></div>
       <div class="row"><button class="bz-btn" id="bzNew">NEW BOMB</button><button class="bz-btn" id="bzRe">RETRY THIS BOMB</button><button class="bz-btn" id="bzEx">EXIT</button></div></div>`;
     endEl.style.display = "flex";
     endEl.querySelector("#bzNew").onclick = () => build();
@@ -444,6 +472,7 @@ function open(opts) {
       if (S.remaining <= 0) { S.remaining = 0; explode("time"); }
       if (s > T.glitchStress && S.t > S.nextGlitch) { S.glitchUntil = S.t + 0.7; S.nextGlitch = S.t + 6 + Math.random() * 6; beep(70, .5, "sawtooth", .05); root.classList.add("bz-glitch"); setTimeout(() => root.classList.remove("bz-glitch"), 700); }
       spawnAcc += L.sweatRate(s, T) * dt; while (spawnAcc >= 1) { spawnAcc -= 1; spawnDrop(); }
+      if (man.style.display === "block") { pAcc += L.sweatRate(s, T) * 0.7 * dt; while (pAcc >= 1) { pAcc -= 1; spawnPaperDrop(); } }
       if (s > 0.5 && S.t > S.nextSpike) { S.spikeUntil = S.t + 0.45; S.nextSpike = S.t + 3 + Math.random() * 3; }
       S.beat += dt * L.heartBpm(s) / 60;
       if (Math.floor(S.beat) > S.lastBeat) { S.lastBeat = Math.floor(S.beat); if (s > 0.25) { beep(60, .12, "sine", .09); setTimeout(() => beep(52, .1, "sine", .06), 210); } }
@@ -455,6 +484,8 @@ function open(opts) {
     }
     ["timer", "button", "wires", "keypad"].forEach(key => bayOf[key].classList.toggle("shorted", shorted(key)));
     sparks();
+    for (let i = pdrops.length - 1; i >= 0; i--) { const d = pdrops[i]; d.vy += 1100 * dt; d.y += d.vy * dt; d.e.style.transform = `translate(${d.x}px,${d.y}px)`; if (d.y >= d.ty) { pdrops.splice(i, 1); paperSplat(d); } }
+    blots.forEach(bl => { if (bl.wet && S.t - bl.born > T.smudgeLife) dryBlot(bl); });
     /* falling sweat, wet patches, heartbeat vignette */
     for (let i = drops.length - 1; i >= 0; i--) { const d = drops[i]; d.vy += 1100 * dt; d.y += d.vy * dt; d.e.style.transform = `translate(${d.x}px,${d.y}px)`; if (d.y >= d.target) { drops.splice(i, 1); splat(d); } }
     for (let i = smudges.length - 1; i >= 0; i--) { const m = smudges[i], age = S.t - m.born; if (age > T.smudgeLife) { m.e.remove(); smudges.splice(i, 1); } else m.e.style.opacity = Math.min(1, (T.smudgeLife - age) / 4); }
