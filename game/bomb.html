@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Defuse prototype</title>
+<style>body{margin:0;background:#0d1217;color:#cfe0ee;font-family:"Segoe UI",system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:14px}
+button{background:#1b2630;border:1px solid #34495c;color:#dbe7f2;border-radius:6px;padding:12px 28px;font-size:15px;letter-spacing:.12em;cursor:pointer}button:hover{border-color:#6fb1ff}p{max-width:520px;text-align:center;color:#8ea1b3;font-size:13px;line-height:1.6}</style></head>
+<body><h2 style="letter-spacing:.3em;font-weight:400">DEFUSE (PROTOTYPE)</h2>
+<p>Standalone test page. Use the "TEST: override focus" slider in the game to simulate a calm or stressed player. Add <code>?seed=42</code> for a repeatable bomb.</p>
+<button id="go">START</button>
+<script src="bomb-logic.js"></script><script src="bomb.js"></script>
+<script>
+const seed=new URLSearchParams(location.search).get("seed");
+document.getElementById("go").onclick=()=>BombUI.open({seed:seed==null?undefined:+seed,status:()=>"standalone test"});
+if(new URLSearchParams(location.search).get("auto")==="1")document.getElementById("go").click();
+</script></body></html>
