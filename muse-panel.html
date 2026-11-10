@@ -791,7 +791,7 @@ function sendGame(p){
   const now=Date.now();
   if(gameBusy||now-gameLast<(gameOk?230:2000))return;
   gameLast=now;gameBusy=true;
-  const opt=S.connected?{method:"POST",mode:"cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({focus:p==null?null:Math.round(p*10)/10})}:{method:"GET",mode:"cors"};
+  const opt=S.connected?{method:"POST",mode:"cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({focus:p==null?null:Math.round(p*10)/10,sensors:S.pct.map(v=>v==null?null:Math.round(v))})}:{method:"GET",mode:"cors"};
   fetch(GAME_URL,opt).then(r=>{gameOk=r.ok;}).catch(()=>{gameOk=false;}).finally(()=>{
     gameBusy=false;const e=$("gameLink");
     e.textContent=gameOk?"GAME: LINKED":"GAME: OFF";e.style.color=gameOk?"#35e6ff":"#6f82c4";});

@@ -96,3 +96,7 @@ One program you open with a double-click. It shows a navy and silver art deco co
 - Controls: arrows or WASD, Shift to drift (release for mini-turbo), Space for item (hold down to throw behind).
 - Files: game/mkds.js (engine), game/mkds-render.js (view, HUD, overlay), game/mkds.test.js (run: node game/mkds.test.js). Keep the game folder next to muse-panel.html.
 - Approximations (not extracted game data): physics numbers, mini-turbo timings (3 stages: blue, orange, purple), AI behavior, track shape (the real crossing is a bridge; here it is flat). Item odds are the real MKDS Grand Prix table from the Super Mario Wiki. All art is drawn in code.
+
+## Added: Python port of the Mario Kart game
+- `game-py/` holds a pygame version: `mkds.py` (engine, matches the JavaScript engine to 1e-12 in a seeded test), `mario_kart.py` (window and renderer), `link.py` (receives focus from the panel on 127.0.0.1:8765).
+- The panel now also sends the four sensor percentages with the focus score. The game starts its race only once the panel reports a live focus score.
