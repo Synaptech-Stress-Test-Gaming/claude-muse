@@ -86,7 +86,7 @@ slips, shorted presses, paper blotches, wipes and the event log. This is the hoo
 Events also include `dab`, `phone_up`, `phone_down`. (A `focus()` option still exists for old callers: `stress = clamp((50 - focus) / 50)`.)
 
 ## 5. Tests and what was verified
-- `game/bomb.test.js` (21 checks) and `stress.test.js` (35 checks): rules, 2,000 generated bombs all solvable, sweat and
+- `game/bomb.test.js` (25 checks) and `stress.test.js` (35 checks): rules, 2,000 generated bombs all solvable, sweat and
   short-circuit numbers, FFT band placement, baseline and scoring maths. Run with Node (`node game/bomb.test.js`) or open
   the `*-test.html` pages. **Node is not installed on the Mac this was built on, so they were run in the browser.**
 - Played in a browser: wrong wire = strike; defused with the correct actions; sweat blurs and slips; a shorted module
