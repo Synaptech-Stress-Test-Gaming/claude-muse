@@ -145,3 +145,9 @@ touches `muse-panel.html` is listed here so a merge is mechanical:
 `S.artUntil` (blink/jaw flag), `heartRate()` reads `PL.bpm`, `ppgWindow()` reads `PL.bp`. Our files (`stress.js`, `game/bomb*.js`, tests,
 docs, the Mac launcher) are new, so they cannot conflict. If his filter removes blinks upstream, the stress meter's own artifact pause
 becomes less important but is harmless.
+
+## 9. Merge log
+- 2026-11-09: merged `origin/main` (Julian's commits 4fdd4b3 and 714effa: Python/pygame port of the Mario Kart game in `game-py/`, the panel now also
+  sends the four sensor percentages to the game link, `.gitignore` for Python caches) into `feat/experiment-protocols`. No conflicts. The panel still
+  posts the focus score to `127.0.0.1:8765`, so `game-py` keeps working; our **B** button replaced the Mario Kart launcher inside the panel only.
+  No blink/head-movement filter was in that update yet; when it lands, see section 8 for the four callbacks to re-check.

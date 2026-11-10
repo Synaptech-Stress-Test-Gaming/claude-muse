@@ -6,6 +6,7 @@ This README covers the panel and the project files. The games have their own REA
 
 - [game/README.md](game/README.md): Mario Kart DS style race whose speed follows your focus (opens from the panel)
 - [game-py/README.md](game-py/README.md): the same Mario Kart game ported to Python (pygame), fed by the panel's focus score
+- [game/BOMB.md](game/BOMB.md): the stress-driven bomb defusal game (opens from the panel's red **B** button): a level-specific service sheet, a sweating, shaking player, and a phone to calm down
 - [game-link/README.md](game-link/README.md): the earlier Animal Stacker prototype that can read the focus score
 
 ## What you need
@@ -75,6 +76,9 @@ CSV columns: `time_s, TP9, AF7, AF8, TP10` (microvolts), the five band signals, 
 | `cosmic-bg.jpg` | The artwork behind the panel. Keep it next to `muse-panel.html` |
 | `game/` | The Mario Kart game (see its README) |
 | `game-py/` | The Python version of the Mario Kart game (see its README) |
+| `stress.js` | The experimental stress meter (heart rate, HRV, frontal beta/alpha, face tension; two-phase calibration) |
+| `docs/DETAILED_README.md` | Detailed status: how everything works, what is tested, open work, how to merge |
+| `Open Muse Panel (Mac).command` | Mac launcher (serves the folder on localhost and opens Chrome) |
 | `game-link/` | The Animal Stacker prototype (see its README) |
 | `Claude outputs/` | An earlier copy of the panel kept for reference |
 | `PLAN.md` | Running plan and change log for the panel and game |
