@@ -395,7 +395,7 @@ html[data-look="clean"]{
   <div class="g" id="gFocus"><div class="cov dark" style="left:290px;top:686px;width:252px;height:68px"></div>
   <div class="fname t" style="left:298px;top:688px">FOCUS</div>
   <div class="fform t" id="fform" style="left:300px;top:716px">LEGACY ln(&beta;&divide;&alpha;)</div>
-  <div id="fmode" role="group" aria-label="Which focus score is shown" style="left:396px;top:714px"><button type="button" id="fmL" class="on">LEGACY</button><button type="button" id="fmC">CORRECTED</button><button type="button" id="fmG">GATE</button><button type="button" id="fmLoad" title="Load calibration.json">CAL</button></div>
+  <div id="fmode" role="group" aria-label="Which focus score is shown" style="left:396px;top:714px"><button type="button" id="fmL" class="on">LEGACY</button><button type="button" id="fmC">CORRECTED</button><button type="button" id="fmG">GATE</button><button type="button" id="fmLoad" title="Muscle calibration: 20 s relaxed, then 3 jaw clenches (Shift-click loads a calibration.json file)">CAL</button></div>
   <input type="file" id="calFile" accept=".json,application/json" hidden>
   <div id="fnote" style="left:300px;top:733px">Connect to use focus</div>
   <div id="gameLink" class="t" style="left:420px;top:694px;font-size:9.5px;letter-spacing:.14em;color:#6f82c4" data-state="off">GAME: OFF</div></div>
@@ -1109,6 +1109,7 @@ function evalWin(st,f,C,subtract){ // st = state (fc or fg); subtract=true -> co
   if(focus.cal)focus.cal[st===fc?"valsC":"valsG"].push(st.fast);
 }
 function corrStep(){
+  if(QC&&S.connected)qcStep([chanBands(1),chanBands(2)]);
   if(!S.connected||!CAL){for(const s of [fc,fg]){s.st=0;s.valid=false;}return;}
   const t=S.emitted/FS,C=CAL,f=[chanBands(1),chanBands(2)];
   for(const s of [fc,fg]){s.t=t;s.raw=NaN;s.ratio=NaN;s.rem=NaN;s.valid=false;}
@@ -1118,6 +1119,60 @@ function corrStep(){
   else if(t<S.holdUntil)early=6;                                               // 3. hold-off
   if(early){fc.st=fg.st=early;return;}
   evalWin(fc,f,C,true);evalWin(fg,f,C,false);
+}
+/* ============ quick muscle calibration (CAL button): 20 s relaxed, then 3 jaw clenches. Fits rest levels and the muscle gain in the panel. ============ */
+let QC=null;
+const QC_REPS=3,QC_END=20+10*QC_REPS;
+function startQuickCal(){
+  if(!S.connected){toast("Connect the headband first, then press CAL.","info");return;}
+  if(QC||focus.cal)return;
+  QC={rest:[],clench:[],msg(){const t=S.emitted/FS-QC.t0;
+    if(t<20)return "CAL 1/2: relax your face, eyes open ("+Math.ceil(20-t)+"s)";
+    const k=Math.floor((t-20)/10),u=(t-20)%10;
+    return u<6?"CAL 2/2: clench your jaw, slowly harder (rep "+(k+1)+" of "+QC_REPS+", "+Math.ceil(6-u)+"s)":"CAL: relax (rep "+(k+1)+" of "+QC_REPS+")";},t0:S.emitted/FS};
+  renderFocus();
+}
+function theilSen(x,y){const sl=[],n=x.length,st=Math.max(1,Math.floor(n/150));
+  for(let i=0;i<n;i+=st)for(let j=i+1;j<n;j+=st)if(x[j]!==x[i])sl.push((y[j]-y[i])/(x[j]-x[i]));
+  if(!sl.length)return null;sl.sort((a,b)=>a-b);const g=sl[sl.length>>1];
+  const ic=[];for(let i=0;i<n;i++)ic.push(y[i]-g*x[i]);ic.sort((a,b)=>a-b);return {g,b0:ic[ic.length>>1]};}
+const meanOf=a=>a.reduce((p,q)=>p+q,0)/a.length,sdOf=a=>{const m=meanOf(a);return Math.sqrt(meanOf(a.map(v=>(v-m)**2)));};
+const quant=(a,q)=>{const s=[...a].sort((x,y)=>x-y);return s[Math.min(s.length-1,Math.floor(q*(s.length-1)))];};
+function qcStep(f){
+  const t=S.emitted/FS-QC.t0;
+  if(S.emitted-S.gapAt<CWIN)return;
+  if(t>=5&&t<20)QC.rest.push(f);
+  else if(t>=20&&t<QC_END&&(t-20)%10<6)QC.clench.push(f);
+  if(t>=QC_END){const q=QC;QC=null;finishQuickCal(q);}
+}
+function finishQuickCal(q){
+  const fail=m=>{toast("Calibration failed: "+m,"info",9000);focus.result="Calibration failed: "+m;renderFocus();};
+  if(q.rest.length<20||q.clench.length<30)return fail("not enough clean data (contact lost?). Try again.");
+  const rest={},gains={},r2={};let ratios=[];
+  const pp=q.clench.map(w=>Math.max(w[0].p2p,w[1].p2p)).filter(v=>v<300);
+  const p2pLim=Math.max(100,Math.min(300,1.2*(pp.length?quant(pp,.9):100)));
+  for(let c=0;c<2;c++){
+    const nm=c?"AF8":"AF7",R=q.rest.map(w=>w[c]);
+    const r={emg:meanOf(R.map(w=>w.emg)),alpha:meanOf(R.map(w=>w.alpha)),beta:meanOf(R.map(w=>w.beta))};
+    r.margin=2*sdOf(R.map(w=>w.emg));rest[nm]=r;
+    const use=[...q.rest.map(w=>w[c]),...q.clench.map(w=>w[c])].filter(w=>w.p2p<300);
+    const x=use.map(w=>Math.max(w.emg-r.emg-r.margin,0)),y=use.map(w=>w.beta);
+    const nex=x.filter(v=>v>0).length;
+    if(nex<20)return fail("no muscle response seen on "+nm+". Clench your jaw harder and try again.");
+    const fit=theilSen(x,y);if(!fit||!(fit.g>0))return fail("beta did not rise with muscle on "+nm+" (gain not positive). Try again with a firmer clench.");
+    const my=meanOf(y),pred=x.map(v=>fit.b0+fit.g*v);
+    r2[nm]=1-y.reduce((a,v,i)=>a+(v-pred[i])**2,0)/y.reduce((a,v)=>a+(v-my)**2,0);
+    if(!(r2[nm]>=0.2))return fail("muscle explains too little of beta on "+nm+" (R² "+r2[nm].toFixed(2)+"). Try again.");
+    gains[nm]=fit.g;
+    ratios=ratios.concat(q.clench.map(w=>w[c].emg/r.emg).filter(v=>v>1));
+  }
+  const Th=Math.max(3,Math.min(20,ratios.length?quant(ratios,.75):5));
+  const c={version:1,fingerprint:PIPE_FP,source:"quick-panel-calibration",created:new Date().toISOString(),rest,gains,r2,T_heavy:Th,T_gate_only:3,floor:0.2,max_removed_frac:0.6,max_hold_s:3,p2p_limit_uV:p2pLim};
+  const why=setCal(c);
+  if(why)return fail(why);
+  try{localStorage.setItem(CKEY,JSON.stringify(c));}catch(e){}
+  focus.result="Calibration done (R² "+r2.AF7.toFixed(2)+" / "+r2.AF8.toFixed(2)+"). Press Auto Set Baselines, then pick Corrected or Gate.";
+  toast("Muscle calibration done. Corrected and Gate-only are now available.","info",8000);renderFocus();
 }
 function baseOf(src){ // same baseline recipe as the legacy score (outliers out, 10th/90th percentile, minimum span)
   if(src.length<12)return null;
@@ -1136,7 +1191,8 @@ function renderFocus(){
   $("fmC").disabled=!corrOK();$("fmC").title=corrOK()?"Muscle-corrected score (a proxy, not validated focus)":"Corrected unavailable: "+CAL_WHY;
   $("fform").innerHTML=em==="legacy"?"LEGACY ln(&beta;&divide;&alpha;)":em==="gate"?"GATE-ONLY (proxy)":"CORRECTED (proxy)";
   let note;
-  if(focus.cal)note=focus.cal.msg();
+  if(QC)note=QC.msg();
+  else if(focus.cal)note=focus.cal.msg();
   else if(!S.connected)note="Connect to use focus";
   else if(S.usable===0)note="No sensor contact";
   else if(sh.lo==null||sh.hi==null)note=focus.result||"Press the button to set baselines";
@@ -1147,7 +1203,7 @@ function renderFocus(){
     b.className=sh.st===1||sh.st===2?"":sh.st===6?"hold":"rej";b.textContent=nm+(sh.st?(sh.valid?" · valid":" · invalid"):"");
     fn.appendChild(b);
   }
-  fn.appendChild(document.createTextNode(note+(MODE_PREF!=="legacy"&&!corrOK()?" "+MODE_NAME[MODE_PREF]+" unavailable: "+CAL_WHY+". Showing Legacy.":(!corrOK()?" (Corrected and Gate-only off: "+CAL_WHY+")":""))));
+  fn.appendChild(document.createTextNode(note+(MODE_PREF!=="legacy"&&!corrOK()?" "+MODE_NAME[MODE_PREF]+" unavailable: "+CAL_WHY+". Showing Legacy.":(!corrOK()?" (Corrected and Gate-only off: "+CAL_WHY+". Press CAL)":""))));
   $("btnCal").disabled=!(S.connected&&!focus.cal);
   $("btnCal").classList.toggle("on",sh.lo!=null&&sh.hi!=null&&!focus.cal);
   if(S.pip){S.pip.num.textContent=txt;[...S.pip.bar.children].forEach((s,i)=>s.classList.toggle("lit",p!=null&&i<Math.round(p/100*FSEG)));S.pip.note.textContent=p==null?(S.connected?(sh.lo==null?"Set baselines in the panel":em.toUpperCase()+": no valid reading"):"Not connected"):em.toUpperCase();}
@@ -1185,7 +1241,7 @@ function sendGame(p){
     e.textContent=gameOk?"GAME: LINKED":"GAME: OFF";e.style.color=gameOk?"#35e6ff":"#6f82c4";e.dataset.state=gameOk?"on":"off";});
 }
 function startCal(){
-  if(!S.connected||focus.cal)return;const t0=Date.now();focus.result="";
+  if(!S.connected||focus.cal||QC)return;const t0=Date.now();focus.result="";
   focus.cal={t0,vals:[],all:[],valsC:[],valsG:[],msg(){const left=Math.max(0,CAL_SEC-(Date.now()-t0)/1000);return "RECORDING "+Math.ceil(left)+"s. Drift from relaxed to concentrating";}};
   renderFocus();
 }
@@ -1204,7 +1260,7 @@ function finishCal(){
 setInterval(()=>{
   const a=BANDS[2],b=BANDS[3],ok=a.n2>=20&&b.n2>=20;
   const am=ok?a.e2/a.n2:0,bm=ok?b.e2/b.n2:0;a.e2=a.n2=b.e2=b.n2=0;
-  if(!S.connected){focus.ema=null;focus.fast=null;focus.cal=null;focus.raw=null;for(const s of [fc,fg]){s.ema=s.fast=null;s.valid=false;s.st=0;s.lastValidT=-1e9;}renderFocus();return;}
+  if(!S.connected){QC=null;focus.ema=null;focus.fast=null;focus.cal=null;focus.raw=null;for(const s of [fc,fg]){s.ema=s.fast=null;s.valid=false;s.st=0;s.lastValidT=-1e9;}renderFocus();return;}
   if(ok&&S.usable>0){
     const F=Math.log((bm+1e-3)/(am+1e-3));focus.raw=F;
     focus.ema=focus.ema==null?F:focus.ema+0.08*(F-focus.ema);
@@ -1218,7 +1274,7 @@ $("btnCal").addEventListener("click",startCal);
 $("fmL").addEventListener("click",()=>setMode("legacy"));
 $("fmC").addEventListener("click",()=>setMode("corrected"));
 $("fmG").addEventListener("click",()=>setMode("gate"));
-$("fmLoad").addEventListener("click",()=>$("calFile").click());
+$("fmLoad").addEventListener("click",e=>{if(e.shiftKey)$("calFile").click();else startQuickCal();});
 $("calFile").addEventListener("change",e=>{
   const f=e.target.files[0];e.target.value="";if(!f)return;
   f.text().then(txt=>{

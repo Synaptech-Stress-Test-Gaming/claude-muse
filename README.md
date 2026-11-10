@@ -61,9 +61,9 @@ Corrected and Gate-only are **proxies, not validated focus measures**. Beta over
 
 Rejected windows are drawn as **gaps** (`--`, no lit bar), never as a held old value. The game keeps your last speed during a gap. After 3 seconds without a valid window, the recorded smoothed value goes blank.
 
-**Calibration needed.** Corrected and Gate-only stay greyed out, with the reason shown, until you load a `calibration.json` made from your own recording with `CAL`. If the file was made with different panel settings (its fingerprint does not match), it is refused. Calibration tooling (cue prompter, `calibrate.py`) is **not written yet**; see [docs/focus-correction-plan.md](docs/focus-correction-plan.md) for what is done and what waits on a recording session.
+**Calibration needed.** Corrected and Gate-only stay greyed out, with the reason shown, until you do a muscle calibration. This is separate from Auto Set Baselines. Connect the headband and press **CAL** next to the switch: relax your face for 20 seconds, then clench your jaw three times, slowly harder each time (about 50 seconds in all). The panel measures your resting levels, fits how much your muscle noise raises beta, and enables both modes. It refuses a poor fit and tells you why (for example, clench harder). The result is kept in your browser. **Shift-click CAL** loads a `calibration.json` file instead, which is refused if its settings fingerprint does not match the panel. This quick calibration is simpler than the full plan (no cross-validation, no frown or blink segments); see [docs/focus-correction-plan.md](docs/focus-correction-plan.md).
 
-After loading a calibration, press **Auto Set Baselines** once; it sets the range for all three scores. Your choice of score is remembered between visits.
+After calibrating, press **Auto Set Baselines** once; it sets the range for all three scores. Your choice of score is remembered between visits.
 
 ## Accuracy rules
 

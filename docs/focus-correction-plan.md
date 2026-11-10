@@ -23,6 +23,7 @@ Per forehead channel, in linear power: `excess = max(emg - emg_rest - margin, 0)
 | Legacy / Corrected / Gate-only switch, all computed continuously, both scores recorded | Done |
 | Logic tested on synthetic signals in Node (not validation) | Done |
 | Golden legacy test against a real recording | Waiting on a recording |
+| Quick in-panel muscle calibration (CAL button: 20 s rest + 3 clenches, Theil-Sen gain, refuses poor fits) | Done (tested on synthetic data only) |
 | Cue prompter, `CALIBRATION.md`, `calibrate.py` (leave-one-repetition-out fit, fingerprint, `calibration.json`) | Not started |
 | Baseline leakage report, three-arm comparison, validation report (criteria 1-9) | Waiting on a recording |
 
