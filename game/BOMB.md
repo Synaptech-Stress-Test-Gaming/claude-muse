@@ -17,7 +17,7 @@ and the keypad column order. Esc closes the sheet, then the game.
 The end screen says which mode a run used. Manual-test runs are not real data.
 
 ## What stress does
-In live mode the panel's **stress meter** (`stress.js`) gives stress 0..1 directly. In manual test mode the slider is focus and
+In live mode the panel's **stress meter** (`stress.js`) gives stress 0..1 directly (the arousal model in `arousal.js`: heart rate, HRV and beta/alpha against a personal 2-minute baseline; press "Arousal baseline" on the stress card once, it is remembered). In manual test mode the slider is focus and
 `stress = clamp((50 - focus) / 50)`: calm at focus 50 or more, full stress at 0. Stress is smoothed over 1 s, then:
 - **Hand tremor**: your pointer jitters up to 16 px, with sudden spikes above 50% stress, so small targets are harder to hit.
 - **Sweat**: drops fall onto the bomb (up to about 0.8 per second) and leave water-lens patches that blur what is under them.

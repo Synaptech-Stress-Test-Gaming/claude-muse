@@ -10,7 +10,7 @@ function resetStream(){
   S.hp.forEach(h=>{h.x=0;h.y=0;});S.rms=[null,null,null,null];S.pct=[null,null,null,null];S.rmsAcc.forEach(a=>{a.s=0;a.n=0;});
   S.gapAt=-1e9;S.holdUntil=0;
   S.raw.forEach(a=>a.fill(0));S.rawPos=0;BANDS.forEach(b=>{b.buf.fill(0);b.pos=0;b.scale=null;makeFilters(b);});
-  ppgFullReset();
+  ppgFullReset();resetMotion();
 }
 function handlePacket(ch,seq,vals){
   S.cnt+=vals.length;
@@ -52,10 +52,11 @@ function emit(vals,idx){
     const v=b.f2.p(b.f1.p(x));b.buf[b.pos]=v;b.pos=(b.pos+1)%BUF_LEN;
     b.energy+=v*v;b.eN++;b.e2+=v*v;b.n2++;bv.push(v);
   }
+  if(S.emitted>=FS*3&&(S.emitted-FS*2)%64===0)motionStep();
   if(S.rec){S.rec.samples++;recPush(idx,ys,bv);}
 }
 /* every aligned reading is kept while recording: 4 sensors, 5 band signals, sensors in use, focus */
-const REC_COLS=14,REC_MAX_SEC=600; // columns 0-13 are the original ones, unchanged; nothing is appended
+const REC_COLS=14+MOTION_REC_COLNAMES.length,REC_MAX_SEC=600; // columns 0-13 are the original ones, unchanged; the rest are the motion columns (panel/motion.js)
 function recPush(idx,ys,bv){
   const r=S.rec;
   if(r.n>=r.cap){if(!r.full){r.full=true;setTimeout(()=>stopRec(true,"The 10 minute limit was reached."),0);}return;}
@@ -65,6 +66,7 @@ function recPush(idx,ys,bv){
   for(let b=0;b<5;b++)r.d[o+4+b]=bv[b];
   r.d[o+9]=S.usable;r.d[o+10]=focus.ema==null?NaN:focus.ema;const p=pctOf(focus);r.d[o+11]=p==null?NaN:p; // always the LEGACY score, whichever is displayed
   r.d[o+12]=PL.bpm==null?NaN:PL.bpm;r.d[o+13]=PL.pct==null?NaN:PL.pct; // heart rate updates once per second
+  motionRecFill(r.d,o+14);   // last 3 columns: accelerometer / gyroscope features and the motion gate state (panel/motion.js)
 }
 const fmt=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
 function sessMsg(t){const e=$("sessM");e.textContent=t;e.removeAttribute("data-idle");}
@@ -95,10 +97,11 @@ setInterval(()=>{
     b.power=b.eN?Math.sqrt(b.energy/b.eN):0;b.energy=0;b.eN=0;
     $("rd"+i).textContent=S.connected&&S.emitted>FS*2?b.power.toFixed(1)+" µV RMS"+(b.muted?" (muted)":""):"--";
   });
-  ppgAnalyse();hrUi();
+  ppgAnalyse();hrUi();motionUi();
   if(S.rec){
     S.rec.contactN++;for(let c=0;c<4;c++)S.rec.contactSum[c]+=S.pct[c]==null?0:S.pct[c];
     if(Date.now()<S.artUntil)S.rec.artSec++;
+    if(S.mot&&S.mot.bad)S.rec.motSec++;
     setSess(true);
   }
 },1000);

@@ -22,7 +22,7 @@ function sendGame(p){
   const now=Date.now();
   if(gameBusy||now-gameLast<(gameOk?230:2000))return;
   gameLast=now;gameBusy=true;
-  const opt=S.connected?{method:"POST",mode:"cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({focus:p==null?null:Math.round(p*10)/10,mode:effMode(),sensors:S.pct.map(v=>v==null?null:Math.round(v))})}:{method:"GET",mode:"cors"};
+  const opt=S.connected?{method:"POST",mode:"cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({focus:p==null?null:Math.round(p*10)/10,mode:effMode(),sensors:S.pct.map(v=>v==null?null:Math.round(v)),motion:S.mot?S.mot.status:null,stale:motionHeld()})}:{method:"GET",mode:"cors"};
   fetch(GAME_URL,opt).then(r=>{gameOk=r.ok;}).catch(()=>{gameOk=false;}).finally(()=>{
     gameBusy=false;const e=$("gameLink");
     e.textContent=gameOk?"GAME: LINKED":"GAME: OFF";e.style.color=gameOk?"#35e6ff":"#6f82c4";e.dataset.state=gameOk?"on":"off";});
@@ -47,7 +47,7 @@ setInterval(()=>{
   const a=BANDS[2],b=BANDS[3],ok=a.n2>=20&&b.n2>=20;
   const am=ok?a.e2/a.n2:0,bm=ok?b.e2/b.n2:0;a.e2=a.n2=b.e2=b.n2=0;
   if(!S.connected){focus.ema=null;focus.fast=null;focus.cal=null;focus.raw=null;renderFocus();return;}
-  if(ok&&S.usable>0){
+  if(ok&&S.usable>0&&!(S.mot&&S.mot.bad)){ // movement gate: no new legacy window is accepted while moving (the last value is held)
     const F=Math.log((bm+1e-3)/(am+1e-3));focus.raw=F;
     focus.ema=focus.ema==null?F:focus.ema+0.08*(F-focus.ema);
     focus.fast=focus.fast==null?F:focus.fast+0.22*(F-focus.fast);
@@ -57,4 +57,5 @@ setInterval(()=>{
   renderFocus();
 },250);
 $("btnCal").addEventListener("click",startCal);
+$("stMot").addEventListener("click",startMotionCal);
 initFocusSwitch();loadBaselines();renderFocus();

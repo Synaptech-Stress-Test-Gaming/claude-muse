@@ -24,6 +24,8 @@ Changes on branch `feat/experiment-protocols`: the game button opens the bomb ga
 variable; `stress.js` is loaded at the bottom of the page; the Mac launcher was added.
 
 ## 3. Stress meter (`stress.js`): EXPERIMENTAL, NOT A VALIDATED STRESS MEASURE
+
+> **Update:** the score now comes from `arousal.js`: F = 100·clip(0.40 H + 0.35 V + 0.25 E), H = heart-rate rise, V = HRV (RMSSD) drop, E = median beta/alpha rise, each against a personal 2-minute sit-still baseline (saved in the browser). Heart rate/HRV are rejected while the accelerometer flags movement; missing signals give a partial score with renormalised weights, never zero; stale scores are marked. High/low references are starting estimates (HR +40 bpm, HRV x0.5, ratio x1.75). `StressMeter.value()` and `.ready()` now return this score. The older description below (effect-size, two-phase calibration) is the previous model, kept in the code but unused.
 EEG cannot read stress directly. The meter blends three signals that tend to rise with arousal, each compared with
 the player's own calm baseline:
 

@@ -15,6 +15,11 @@ function decodePPG(dv){ // 6 readings of 24 bits each, after the 2-byte packet c
   const out=[];for(let i=0;i<PPG_PKT;i++){const b=2+i*3;out.push((dv.getUint8(b)<<16)|(dv.getUint8(b+1)<<8)|dv.getUint8(b+2));}
   return out;
 }
+function decodeMotion(dv,kind){ // 3 readings of x,y,z (signed 16 bit, big-endian) after the 2-byte counter -> g (accelerometer) or deg/s (gyroscope)
+  const sc=kind==="acc"?0.0000610352:0.0074768,out=[];
+  for(let i=0;i<9;i++)out.push(dv.getInt16(2+i*2)*sc);
+  return out;
+}
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function linkOnce(dev){
   const server=await dev.gatt.connect();
@@ -28,6 +33,9 @@ async function linkOnce(dev){
   if(!PL.fallback){try{const p=await svc.getCharacteristic(PPG_IR);
     p.addEventListener("characteristicvaluechanged",e=>{const dv=e.target.value;if(dv.byteLength>=2+PPG_PKT*3)onPpg(dv.getUint16(0),decodePPG(dv));});
     await p.startNotifications();}catch(e){console.warn("pulse sensor not available",e);}}
+  for(const [u,kind] of [[ACC,"acc"],[GYRO,"gyro"]]){try{const c=await svc.getCharacteristic(u);
+    c.addEventListener("characteristicvaluechanged",e=>{const dv=e.target.value;if(dv.byteLength>=20)onMotion(kind,dv.getUint16(0),decodeMotion(dv,kind));});
+    await c.startNotifications();}catch(e){console.warn("motion sensor "+kind+" not available",e);}}
   await ctrl.writeValueWithoutResponse(enc("h"));await ctrl.writeValueWithoutResponse(enc(PL.fallback?"p21":"p50"));
   await ctrl.writeValueWithoutResponse(enc("s"));await ctrl.writeValueWithoutResponse(enc("d"));
 }
@@ -84,7 +92,7 @@ function setBattery(p){
 }
 
 /* ============ simulated headband (testing only: add ?demo=1 to the address) ============ */
-let demoT=null,demoN=0,demoP=0;window.demoAlpha=28;window.demoBeta=14;window.demoHr=72;window.demoGamma=6;
+let demoT=null,demoN=0,demoP=0,demoMA=0,demoMS=0;window.demoAlpha=28;window.demoBeta=14;window.demoHr=72;window.demoGamma=6;
 function startDemo(){
   resetStream();S.connected=true;S.connecting=false;setStatus("on","Simulated data");setBattery(87);setButtons();
   demoT=setInterval(()=>{
@@ -102,6 +110,12 @@ function startDemo(){
         arr.push(Math.round(60000+700*Math.sin(2*Math.PI*0.25*t)+900*(Math.sin(2*Math.PI*f*t)+0.35*Math.sin(4*Math.PI*f*t+1))+(Math.random()-.5)*80));}
       onPpg(demoP&0xffff,arr);
     }
+    demoMA+=47;if(demoMA>=1000*3/MOT.PKT_FS){demoMA-=1000*3/MOT.PKT_FS;demoMS++;  // simulated motion: still, with a 3 s head movement every 20 s (from 15 s to 18 s)
+      const tt=n*PKT/FS,mv=window.demoMove!==false&&tt%20>15&&tt%20<18,acc=[],gy=[];
+      for(let k=0;k<3;k++){const t=tt+k/MOT.PKT_FS,w=mv?0.15*Math.sin(2*Math.PI*2*t):0;
+        acc.push((Math.random()-.5)*.004,(Math.random()-.5)*.004+w,1+(Math.random()-.5)*.004);
+        gy.push(1+(Math.random()-.5),mv?60*Math.sin(2*Math.PI*2*t):0,(Math.random()-.5));}
+      onMotion("acc",demoMS&0xffff,acc);onMotion("gyro",demoMS&0xffff,gy);}
     if(n%2===0)demoP++;
   },47);
 }

@@ -161,7 +161,13 @@ function makeMeter(cfg) {
   return M;
 }
 
-const API = { fft, bandPowers, eegFeatures, faa, findBeats, ibisFromBeats, rmssd, makeMeter, makeTask, COMPS, FS, WIN, MIN_D };
+/* Spec model (arousal.js): beta/alpha per usable channel, then the median across channels. null when no channel is usable. */
+function medianBetaAlpha(windows) {
+  const A = root.Arousal; if (!A || !windows.length) return null;
+  return A.medianRatio(Array.from(windows, w => { const p = bandPowers(w); return A.betaAlpha(p.alpha, p.beta); }));
+}
+
+const API = { medianBetaAlpha, fft, bandPowers, eegFeatures, faa, findBeats, ibisFromBeats, rmssd, makeMeter, makeTask, COMPS, FS, WIN, MIN_D };
 
 /* ---------- panel attachment (browser only) ---------- */
 const TICK_MS = 250;                 // score updates 4 times per second
@@ -181,14 +187,19 @@ function attach(cfg) {
 #stressCard button{background:#16215a;border:1px solid #4a6adf;color:#e9f1ff;border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer;margin:6px 6px 0 0}#stressCard button:disabled{opacity:.45;cursor:default}
 #stressCard small{display:block;color:#7f93c9;line-height:1.4;margin-top:6px;font-size:10px}#stressCard .demo{margin-top:6px;border-top:1px solid #2d3c6a;padding-top:6px}#stressCard .demo label{display:flex;justify-content:space-between;gap:8px;align-items:center;color:#9fb2e6}
 #stressCard .task{display:none;margin-top:6px}#stressCard .task .q{font-size:22px;font-weight:300;margin:2px 0}#stressCard .task input{width:90px;background:#050a26;border:1px solid #4a6adf;color:#fff;border-radius:4px;padding:4px 6px;font-size:16px}
-#stressCard .ok{color:#6fe7a8}#stressCard .no{color:#ff9db0}#stressCard .tg{background:none;border:0;color:#9fb2e6;cursor:pointer;font-size:12px;padding:0 2px;margin:0}#stressCard.min>*:not(.hd):not(.st):not(.row){display:none}`;
+#stressCard .ok{color:#6fe7a8}#stressCard .no{color:#ff9db0}#stressCard .tg{background:none;border:0;color:#9fb2e6;cursor:pointer;font-size:12px;padding:0 2px;margin:0}#stressCard .ar{margin-top:8px;border-top:1px solid #2d3c6a;padding-top:6px}#stressCard .ar .arow{display:flex;gap:10px;align-items:baseline}#stressCard .ar .n2{font-size:28px;font-weight:300;min-width:56px}#stressCard .ar .stale{opacity:.5}#stressCard #stCal,#stressCard #stSkip,#stressCard #stMsg,#stressCard #stHint,#stressCard #stTask,#stressCard .sig[data-k],#stressCard .ar .arow,#stressCard .ar>.bar{display:none!important}#stressCard.min>*:not(.hd):not(.st):not(.row){display:none}`;
   document.head.appendChild(css);
   const card = document.createElement("div"); card.id = "stressCard";
   const sigRows = KEYS.map(k => `<div class="sig" data-k="${k}"><i></i><span>${COMPS[k].label}</span><span class="m"><u></u></span><em>--</em></div>`).join("");
-  card.innerHTML = `<div class="hd"><b class="t">STRESS METER (EXPERIMENTAL)</b><button class="tg" id="stTg" title="Collapse">&#9662;</button></div><div class="st"><i id="stDot"></i><span id="stState">NOT CALIBRATED</span></div>
+  card.innerHTML = `<div class="hd"><b class="t">AROUSAL / STRESS (EXPERIMENTAL)</b><button class="tg" id="stTg" title="Collapse">&#9662;</button></div><div class="st"><i id="stDot"></i><span id="stState">NOT CALIBRATED</span></div>
    <div class="row"><div class="n" id="stN">--</div><canvas id="stCv" width="400" height="92"></canvas></div><div class="bar"><i id="stBar"></i></div>
    ${sigRows}
    <div class="task" id="stTask"><small id="stTaskMsg"></small><div class="q" id="stQ"></div><input id="stIn" inputmode="numeric" autocomplete="off"><span id="stFb" style="margin-left:6px"></span></div>
+   <div class="ar" id="arBox"><b class="t">AROUSAL (SPEC MODEL)</b><div class="arow"><span class="n2" id="arN">--</span><span id="arLbl">no baseline</span></div><div id="arLbl2" style="font-size:11px;color:#9fb2e6"></div>
+    <div class="bar"><i id="arBar"></i></div><div class="sig" style="grid-template-columns:70px 1fr 42px"><span>HEART</span><span class="m"><u id="arH"></u></span><em id="arHv">--</em></div>
+    <div class="sig" style="grid-template-columns:70px 1fr 42px"><span>HRV DROP</span><span class="m"><u id="arV"></u></span><em id="arVv">--</em></div>
+    <div class="sig" style="grid-template-columns:70px 1fr 42px"><span>EEG B/A</span><span class="m"><u id="arE"></u></span><em id="arEv">--</em></div>
+    <button id="arCal">Arousal baseline (2 min, sit still)</button><small id="arMsg">F = 100 &middot; clip(0.40 H + 0.35 V + 0.25 E). Estimates arousal, not fear. Missing or movement-rejected signals are left out, never counted as zero.</small></div>
    <button id="stCal">Calibrate (calm, then a short task)</button><button id="stSkip" style="display:none">Skip task</button><div id="stMsg"></div>
    <small id="stHint">Quick check: clench your jaw (muscle tension jumps), hold a slow breath, then do mental arithmetic. Green dots = that signal is arriving; bars = how far each has moved from your calm level.</small>
    <small>Not a validated stress measure. EEG cannot read stress directly.</small>`;
@@ -203,6 +214,7 @@ function attach(cfg) {
   }
 
   const DEFAULT_MSG = `<small>Step 1: sit still and relax with your eyes open for ${CAL_SEC} s. Step 2: a ${TASK_SEC} s arithmetic task. The meter learns which of your signals respond.</small>`;
+  const AR = root.Arousal ? root.Arousal.makeArousalMeter({ minSamples: 30 }) : null, AR_SEC = +(cfg.arSec || 120); let arT0 = 0;
   let noSigMsg = false, phase = null, phaseT0 = 0, task = null, feat = {}, lastRatio = null, lastSigAt = Date.now(), lastPush = 0, tickN = 0;
   let beats = [], absPos = 0, lastPos = null, lastFilled = 0, hist = [], lastArt = 0;
   const say = html => { msg.innerHTML = html; noSigMsg = false; };
@@ -222,6 +234,28 @@ function attach(cfg) {
     return { hr: hrFast, hrv: rmssd(ibisFromBeats(beats.filter(t => t > tEnd - 30))) };
   }
 
+  /* spec model: heart rate and HRV are rejected while the headband moves, the EEG ratio on any artifact (movement or blink). One reading per second. */
+  const ARKEY = "muse2panel.arousalbase";
+  try { const j = JSON.parse(localStorage.getItem(ARKEY) || "null"); if (AR && j && j.base && j.refs) AR.setBaseline(j.base, j.refs); } catch (e) {}
+  let arLast = 0;
+  function arTick(pu, wins, art) {
+    const now = Date.now(); if (now - arLast < 1000) return; arLast = now;
+    const mv = cfg.motionBad ? cfg.motionBad() : art;
+    const f = { hr: mv ? null : feat.hr, hrv: mv ? null : feat.hrv, ratio: art ? null : API.medianBetaAlpha(wins), motionOk: !mv };
+    if (AR.recording()) {
+      AR.pushBaseline(f); const left = Math.max(0, AR_SEC - (now - arT0) / 1000);
+      $("arMsg").textContent = `Baseline: sit still and relax... ${Math.ceil(left)} s (${AR.baselineCount()} clean readings)`;
+      if (left <= 0) { const okb = AR.finishBaseline(); if (okb) try { localStorage.setItem(ARKEY, JSON.stringify({ base: AR.base, refs: AR.refs })); } catch (e) {} $("arCal").disabled = false; $("arCal").textContent = "Arousal baseline (2 min, sit still)"; $("arMsg").textContent = okb ? `Baseline saved: ${Object.keys(AR.base).map(k => k + " " + AR.base[k].toFixed(2)).join(", ")}. References are starting estimates.` : AR.error; }
+    } else if (AR.ready()) AR.update(f, now);
+    arRender();
+  }
+  function arRender() {
+    if (!AR) return; const r = AR.result(), c = r.components, has = r.stress_score != null;
+    $("arN").textContent = has ? Math.round(r.stress_score) : "--"; $("arBar").style.width = (has ? r.stress_score : 0) + "%";
+    $("arLbl2").textContent = $("arLbl").textContent = !AR.ready() ? (AR.recording() ? "recording baseline" : "no baseline") : !has ? "waiting for valid signal" : r.label + (r.stale ? " (stale)" : r.partial ? " (partial, " + Math.round(r.confidence * 100) + "% confidence)" : "");
+    $("arN").className = "n2" + (r.stale ? " stale" : "");
+    [["arH", "arHv", c.heart_rate], ["arV", "arVv", c.hrv_decrease], ["arE", "arEv", c.eeg]].forEach(([b, t, v]) => { $(b).style.width = (v == null ? 0 : v * 100) + "%"; $(t).textContent = v == null ? "--" : Math.round(v * 100) + "%"; });
+  }
   function tick() {
     tickN++;
     if (!cfg.connected()) { feat = {}; beats = []; lastPos = null; if (phase) abort("Headband disconnected. Calibration cancelled."); render(); return; }
@@ -230,6 +264,7 @@ function attach(cfg) {
     const pu = pulse();
     feat = { hr: pu.hr != null ? pu.hr : cfg.heartRate(), hrv: pu.hrv, ratio: e.ratio != null ? e.ratio : lastRatio, tension: wins.length ? e.tension : null,
       faa: (!art && wins.af7 && wins.af8) ? faa(wins.af7, wins.af8) : null };
+    if (AR) arTick(pu, wins, art);
     if (feat.hr != null || wins.length) lastSigAt = Date.now();
     const sec = Date.now(), oneHz = sec - lastPush >= 1000; if (oneHz) lastPush = sec;
     if (phase) {
@@ -238,7 +273,7 @@ function attach(cfg) {
       if (phase === "calm") say(`<small>Step 1 of 2: stay relaxed and still... ${Math.ceil(left)} s</small>`);
       else say(`<small>Step 2 of 2: keep going, faster! ${Math.ceil(left)} s. Mistakes send you back to the start.</small>`);
       if (left <= 0) endPhase();
-    } else { meter.score(feat); if (meter.value != null) { hist.push(meter.value); if (hist.length > 240) hist.shift(); } }
+    } else { meter.score(feat); if (AR && AR.value != null && AR.ready()) { hist.push(AR.value); if (hist.length > 240) hist.shift(); } }
     render();
   }
   function startCal() { meter.startCal(); phase = "calm"; phaseT0 = Date.now(); hist = []; $("stCal").disabled = true; $("stSkip").style.display = "none"; $("stTask").style.display = "none"; }
@@ -269,7 +304,7 @@ function attach(cfg) {
     if (!cfg.connected()) return ["NO HEADBAND", "#6a7391"];
     if (Date.now() - lastSigAt > 5000) return ["NO SIGNAL", "#ff453a"];
     if (phase) return ["CALIBRATING", "#4da3ff"];
-    if (!meter.ready()) return ["NOT CALIBRATED", "#ffd166"];
+    if (!(AR ? AR.ready() : meter.ready())) return ["NOT CALIBRATED", "#ffd166"];
     return ["LIVE", "#43f28a"];
   }
   function drawSpark() {
@@ -282,10 +317,10 @@ function attach(cfg) {
   function render() {
     const [stateTxt, col] = status(), live = stateTxt === "LIVE";
     $("stState").textContent = stateTxt; $("stState").style.color = col; $("stDot").style.background = col; $("stDot").style.boxShadow = live && tickN % 2 ? `0 0 8px ${col}` : "none";
-    const v = (cfg.connected() && live) ? meter.value : null;
+    const v = (cfg.connected() && live && AR && AR.ready()) ? AR.value : null;
     $("stN").textContent = v == null ? "--" : Math.round(v); $("stBar").style.width = (v == null ? 0 : v) + "%";
     const z = meter.z || {}, used = {}; (meter.report || []).forEach(r => used[r.key] = r);
-    card.querySelectorAll(".sig").forEach(row => {
+    card.querySelectorAll(".sig[data-k]").forEach(row => {
       const k = row.dataset.k, have = feat[k] != null && isFinite(feat[k]) && cfg.connected(), pos = (meter.ready() && z[k] != null) ? z[k] : null;
       row.querySelector("i").className = have ? "on" : "";
       const two = meter.model && meter.model.mode === "two-point", u = row.querySelector("u");
@@ -305,10 +340,11 @@ function attach(cfg) {
     const ok = task.answer($("stIn").value); $("stFb").textContent = ok ? "correct" : "WRONG, back to " + task.start; $("stFb").style.color = ok ? "#6fe7a8" : "#ff6b6b";
     $("stQ").textContent = task.prompt() + " = ?"; $("stIn").value = "";
   });
+  $("arCal").addEventListener("click", () => { if (!AR || !cfg.connected()) return; AR.startBaseline(); arT0 = Date.now(); $("arCal").disabled = true; $("arCal").textContent = "Recording baseline..."; });
   card.addEventListener("keydown", e => e.stopPropagation());
   setInterval(tick, TICK_MS);
   render();
-  return { value: () => (cfg.connected() && meter.ready() && Date.now() - lastSigAt <= 5000) ? meter.value : null, ready: () => meter.ready(), meter, task: () => task, _tick: tick, _startCal: startCal, _startTask: startTask, _skip: () => $("stSkip").click(), _feat: () => feat };
+  return { arousal: AR, value: () => (cfg.connected() && AR && AR.ready() && Date.now() - lastSigAt <= 5000) ? AR.value : null, ready: () => !!(AR && AR.ready()), meter, task: () => task, _tick: tick, _startCal: startCal, _startTask: startTask, _skip: () => $("stSkip").click(), _feat: () => feat };
 }
 
 API.attach = attach;

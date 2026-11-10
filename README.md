@@ -92,7 +92,8 @@ There is one row per reading, 256 rows per second, and dropped readings stay as 
 | `game-py/` | The Python version of the Mario Kart game (see its README) |
 | `game/menu.js` | The game menu (round button on the panel). Add new games with one `GameMenu.register(...)` call |
 | `panel/` | The panel's code split by category (UI, signal path, Bluetooth, focus meter, recording, games, stress link). See `panel/README.md` |
-| `stress.js` | The experimental stress meter (heart rate, HRV, frontal beta/alpha, face tension; two-phase calibration) |
+| `arousal.js` | The stress / arousal score everything uses: F = 100·clip(0.40 H + 0.35 V + 0.25 E) from heart rate, HRV (RMSSD) and median beta/alpha, with a personal 2-minute baseline. Tests: `node arousal.test.js` |
+| `stress.js` | The stress card (UI) that runs the arousal model and feeds it the panel's signals; the older effect-size meter still runs inside but is no longer shown or used |
 | `docs/DETAILED_README.md` | Detailed status: how everything works, what is tested, open work, how to merge |
 | `Open Muse Panel (Mac).command` | Mac launcher (serves the folder on localhost and opens Chrome) |
 | `game-link/` | The Animal Stacker prototype (see its README) |

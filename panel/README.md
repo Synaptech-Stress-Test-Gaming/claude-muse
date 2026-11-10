@@ -10,13 +10,14 @@ order is set in `muse-panel.html` and matters.
 | `ui.js` | **UI** | builds the stage, toasts, status lamp, buttons, view switch, canvas drawing | UI |
 | `core.js` | shared | constants, `S` (shared state), `?demo=1`, band filters | rarely |
 | `pulse.js` | signal | heart-rate estimate from the pulse sensor | signal |
+| `motion.js` | signal | accelerometer/gyro motion gate: pauses focus while the head moves (test: `node panel/motion.test.js`) | signal |
 | `dsp.js` | **signal path** | packet alignment, offset removal, band filtering, contact quality (**blink / head-movement filter goes here**) | signal |
 | `ble.js` | **data in** | Muse Bluetooth connect/retry, battery, simulated headband (`?demo=1`) | hardware |
 | `focus.js` | **focus meter** | focus score, baselines, floating meter | focus |
 | `recording.js` | **recording** | record, report, CSV | recording |
 | `gamelink.js` | **games** | hands live signals to the game menu; feeds external games | games |
 | `main.js` | start-up | wiring, must load last | rarely |
-| `stress-link.js` | **stress meter** | hands `../stress.js` the panel's signals | stress |
+| `stress-link.js` | **stress meter** (arousal model, see `../arousal.js`) | hands `../stress.js` the panel's signals | stress |
 
 Not in this folder (already separate): `../stress.js` (stress meter), `../game/*` (games and the game menu), `../focus/*` (Legacy / Corrected / Gate-only focus scores, the CAL calibration and the extra recording columns; see `../focus/README.md`).
 

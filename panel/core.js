@@ -10,6 +10,7 @@ const U = n => "273e" + n + "-4c4d-454d-96be-f03bac821358";
 const CTRL = U("0001"), TELE = U("000b");
 const EEG = [U("0003"), U("0004"), U("0005"), U("0006")];
 const PPG_IR = U("0010"); // pulse sensor, infrared channel (muse-js: 000f ambient, 0010 infrared, 0011 red)
+const GYRO = U("0009"), ACC = U("000a"); // motion sensors (muse-js: 0009 gyroscope, 000a accelerometer), 52 Hz, 3 readings per packet
 const PPG_FS = 64, PPG_PKT = 6;
 const SENSORS = ["TP9","AF7","AF8","TP10"];
 const SENSOR_SUB = ["Left ear","Left forehead","Right forehead","Right ear"];
