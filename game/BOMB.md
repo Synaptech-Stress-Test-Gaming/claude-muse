@@ -36,9 +36,9 @@ The focus score is an experimental beta/alpha index, not a validated stress meas
 ## Connecting your own signal
 ```js
 BombUI.open({
-  mode: "live",                 // or "test"
-  focus: () => 0..100 | null,   // required for live mode
-  stress: () => 0..1 | null,    // optional: overrides the focus mapping (for a future stress algorithm)
+  source: "focus",              // "stress" | "focus" | "test" (the player can switch in the top bar)
+  focus: () => 0..100 | null,   // FOCUS source: stress = 1 - focus/100 (focus 100 = no stress, 0 = full stress)
+  stress: () => 0..1 | null,    // STRESS source: the stress meter
   status: () => "text for the top bar",
   seed: 42,                     // optional: repeatable bomb
   onEvent: (type, data) => {},  // start, mode, strike, module_solved, slip, blocked, wipe, defused, explode, finish

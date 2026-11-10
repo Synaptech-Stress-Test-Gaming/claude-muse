@@ -69,5 +69,8 @@ ok(distinctSheets.size > 1990, "almost every bomb has a different rule sheet (" 
 ok(wiresCovered.size === 5 && actions.size === 2, "all five wires and both button actions occur across bombs");
 ok(condWire === 2000 && condBtn === 2000, "a conditional rule (not the fallback) always decides the wires and the button");
 
+ok(B.stressFromFocusLinear(100) === 0 && B.stressFromFocusLinear(0) === 1 && Math.abs(B.stressFromFocusLinear(25) - 0.75) < 1e-12, "focus 100 = stress 0, focus 0 = stress 1, linear in between");
+ok(B.stressFromFocusLinear(null) === 0 && B.stressFromFocusLinear(150) === 0 && B.stressFromFocusLinear(-10) === 1, "focus mapping handles no reading and out-of-range values");
+
 if (typeof document !== "undefined") { document.body.style.cssText = "font:14px monospace;white-space:pre;padding:16px;background:#111;color:#ddd"; document.body.textContent = out.join("\n") + "\n\n" + (fails ? fails + " FAILED" : "ALL PASSED"); }
 else { console.log(out.join("\n")); console.log(fails ? fails + " FAILED" : "ALL PASSED"); process.exit(fails ? 1 : 0); }

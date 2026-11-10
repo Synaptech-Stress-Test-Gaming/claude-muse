@@ -10,9 +10,11 @@ function effMode(){return MODE_PREF!=="legacy"&&corrOK()?MODE_PREF:"legacy";}
 const MODE_NAME={legacy:"Legacy",corrected:"Corrected",gate:"Gate-only"};
 function shown(){const m=effMode();return m==="corrected"?fc:m==="gate"?fg:focus;}
 function focusPct(){
-  if(effMode()!=="legacy"){const s=shown();return s.valid?pctOf(s):null;} // an invalid window is a gap (no number), never a held value
+  if(effMode()!=="legacy"){const s=shown();return s.valid||s.st===8?pctOf(s):null;} // an invalid window is a gap (no number); only a movement pause keeps the last valid value, flagged HELD in the note and to the game
   return pctOf(focus);
 }
+function motionHeld(){return !!(S.mot&&S.mot.bad);}
+function motionWhy(){return S.mot&&S.mot.status==="NO_MOTION_DATA"?"no motion data":"movement";}
 function setMode(m){
   MODE_PREF=m;try{localStorage.setItem(MKEY,m);}catch(e){}
   if(m!=="legacy"&&!corrOK())toast(MODE_NAME[m]+" is unavailable: "+CAL_WHY,"info");
@@ -35,10 +37,11 @@ function renderFocusSwitch(){
   const fn=$("fnote");fn.textContent="";
   if(em!=="legacy"){
     const nm=CST_NAMES[sh.st]||"warming up",b=document.createElement("b");b.id="cstat";
-    b.className=sh.st===1||sh.st===2?"":sh.st===6?"hold":"rej";b.textContent=nm+(sh.st?(sh.valid?" \u00b7 valid":" \u00b7 invalid"):"");
+    b.className=sh.st===1||sh.st===2?"":sh.st===6||sh.st===8?"hold":"rej";b.textContent=sh.st===8?"HELD \u00b7 "+motionWhy():nm+(sh.st?(sh.valid?" \u00b7 valid":" \u00b7 invalid"):"");
     fn.appendChild(b);
   }
-  fn.appendChild(document.createTextNode(note+(MODE_PREF!=="legacy"&&!corrOK()?" "+MODE_NAME[MODE_PREF]+" unavailable: "+CAL_WHY+". Showing Legacy.":(!corrOK()?" (Corrected and Gate-only off: "+CAL_WHY+". Press CAL)":""))));
+  if(em==="legacy"&&motionHeld()){const b=document.createElement("b");b.id="cstat";b.className="hold";b.textContent="HELD \u00b7 "+motionWhy();fn.appendChild(b);}
+  fn.appendChild(document.createTextNode(note+(MODE_PREF!=="legacy"&&!corrOK()?" "+MODE_NAME[MODE_PREF]+" unavailable: "+CAL_WHY+". Showing Legacy.":(!corrOK()?(CAL_WHY==="No calibration loaded"?" Press CAL to enable Corrected and Gate.":" Corrected and Gate off: "+CAL_WHY+"."):""))));
 }
 function initFocusSwitch(){
   $("fmL").addEventListener("click",()=>setMode("legacy"));

@@ -46,6 +46,11 @@ function stressFromFocus(focus, T) {
   if (focus == null || !isFinite(focus)) return 0;
   return clamp01((T.neutralFocus - focus) / T.neutralFocus);
 }
+/* focus 100 -> stress 0, focus 0 -> stress 1 (straight line). Used by the FOCUS source in the game. */
+function stressFromFocusLinear(focus) {
+  if (focus == null || !isFinite(focus)) return 0;
+  return clamp01(1 - focus / 100);
+}
 function clockRate(stress, strikes, T) {
   T = T || TUNING;
   return 1 + stress * (T.clockMax - 1) + strikes * T.strikeSpeedup;
@@ -218,7 +223,7 @@ function judgeButton(level, heldSec, clock) {
 }
 function judgeKey(level, progress, sym) { return sym === level.keypad.order[progress] ? "ok" : "strike"; }
 
-const API = { TUNING, rng, stressFromFocus, clockRate, handShake, sweatRate, heartBpm, isShorted, effectiveStress, calmModeFactor,
+const API = { TUNING, rng, stressFromFocus, stressFromFocusLinear, clockRate, handShake, sweatRate, heartBpm, isShorted, effectiveStress, calmModeFactor,
   WIRE_COLORS, BUTTON_COLORS, BUTTON_LABELS, STRIP_COLORS, SYMBOLS, ORD, TAP_MAX,
   wireRuleMatch, wireRuleText, evalWireRules, buttonRuleMatch, buttonRuleText, evalButtonRules, stripRuleText,
   makeSerial, makeLevel, judgeWire, judgeButton, judgeKey };

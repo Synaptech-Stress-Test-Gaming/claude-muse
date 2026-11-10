@@ -7,11 +7,11 @@
 /* ============ CORRECTED focus (muscle-corrected ln(beta/alpha); a PROXY, not validated focus) ============
    Runs on every 250 ms window whichever score is shown, with its own smoothing and baselines (fc), so switching is instant.
    Per channel AF7/AF8, linear power from one 256-point Hann periodogram: excess = max(emg - emg_rest - margin, 0); beta_neural = beta - g * excess.
-   Decision order (first match wins): rejected_gap, rejected_blink (+0.5 s holdoff), holdoff, rejected_emg_heavy, corrected_emg, ok.
+   Decision order (first match wins): no_contact, rejected_motion (accelerometer/gyro gate, panel/motion.js), rejected_gap, rejected_blink (+0.5 s holdoff), holdoff, rejected_emg_heavy, corrected_emg, ok.
    Needs calibration.json (from tools/calibrate.py) whose pipeline fingerprint equals PIPE_FP; otherwise the option is disabled and says why. */
 const CWIN=256,CHOP=64;
 const PIPE_FP="fs=256;win=256;hop=64;taper=hann;psd=onesided-density;hp=0.995;ch=AF7,AF8;avg=meanpower;log=ln;bands=delta1-4,theta4-8,alpha8-13,beta13-30,beta_lo13-20,emg30-40";
-const CST_NAMES=["","ok","corrected_emg","rejected_emg_heavy","rejected_blink","rejected_gap","holdoff","no_contact"];
+const CST_NAMES=["","ok","corrected_emg","rejected_emg_heavy","rejected_blink","rejected_gap","holdoff","no_contact","rejected_motion"];
 const chanOK=c=>S.pct[c]!=null&&S.pct[c]>=40; // a forehead sensor with usable skin contact (1 = AF7, 2 = AF8)
 const CHIDX={AF7:1,AF8:2};
 let CAL=null,CAL_WHY="No calibration loaded";
@@ -86,6 +86,7 @@ function corrStep(){
   for(const s of [fc,fg]){s.t=t;s.raw=NaN;s.ratio=NaN;s.rem=NaN;s.valid=false;}
   let early=0;
   if(!used.length)early=7;                                                     // no forehead sensor has skin contact
+  else if(S.mot&&S.mot.bad)early=8;                                            // 0. head movement / missing motion data (panel/motion.js): no new window is accepted
   else if(S.emitted-S.gapAt<CWIN)early=5;                                           // 1. packet gap inside the window
   else if(f.some(w=>w.p2p>C.p2p_limit_uV)){early=4;S.holdUntil=t+0.5;} // 2. blink / big swing (+0.5 s hold-off)
   else if(t<S.holdUntil)early=6;                                               // 3. hold-off
