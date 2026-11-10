@@ -1,0 +1,477 @@
+From 51cd6d56b8443e19b8893eaf82e3453b80db9f8a Mon Sep 17 00:00:00 2001
+From: Julian Seasholtz <julian.seasholtz@gmail.com>
+Date: Mon, 2 Nov 2026 21:04:03 -0800
+Subject: [PATCH] Drive focus from the Muse 2 panel, keep F key as fallback
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_014GTxoUE1S3sgBwnTC1AXsb
+---
+ README.md                           |  13 +++
+ __pycache__/stacker.cpython-313.pyc | Bin 0 -> 27664 bytes
+ stacker.py                          | 118 ++++++++++++++++++++++++++--
+ 3 files changed, 123 insertions(+), 8 deletions(-)
+ create mode 100644 __pycache__/stacker.cpython-313.pyc
+
+diff --git a/README.md b/README.md
+index 8b13789..14da67c 100644
+--- a/README.md
++++ b/README.md
+@@ -1 +1,14 @@
++# Animal Stacker prototype
+ 
++Run: `py stacker.py` (needs `py -m pip install pygame pymunk`).
++
++Controls: SPACE / click drops the sprite, R resets, ESC quits, hold F for keyboard focus.
++
++## Headband focus (Muse 2)
++
++1. Start the game.
++2. Open the Muse 2 control panel, connect the headband, and press Auto Set Baselines.
++3. The panel's focus meter now drives the game's focus bar. The panel shows `GAME: LINKED`.
++
++If no headband is linked, or the panel stops sending for 2 seconds, the F key works as before.
++The link only listens on this computer (127.0.0.1, port 8765).
+diff --git a/__pycache__/stacker.cpython-313.pyc b/__pycache__/stacker.cpython-313.pyc
+new file mode 100644
+index 0000000000000000000000000000000000000000..22674915f80d1394a080091acb0ce9629c543bcc
+GIT binary patch
+literal 27664
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/stacker.py b/stacker.py
+index 662c464..9178c38 100644
+--- a/stacker.py
++++ b/stacker.py
+@@ -3,16 +3,25 @@ Animal Stacker prototype (single file).
+ 
+ Controls
+     SPACE / left click  drop the hovering sprite (and replay on the game-over screen)
+-    F (hold)            raise mock "focus" (stand-in for an EEG signal)
++    F (hold)            raise "focus" by keyboard (used when no headband is linked)
+     R                   reset at any time
+     ESC                 quit
+ 
++Headband focus
++    Open the Muse 2 control panel next to the game. Once its focus baselines are set,
++    the panel sends its 0-100 focus meter to this game and the game's focus follows it.
++    If the panel goes quiet for LINK_TIMEOUT seconds the F key takes over again.
++
+ Requires: pygame, pymunk   (py -m pip install pygame pymunk)
+ """
+ 
++import json
+ import math
+ import random
+ import sys
++import threading
++import time
++from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 
+ import pygame
+ import pymunk
+@@ -33,8 +42,12 @@ HOVER_MARGIN = 120              # how far past the platform edges the sprite swi
+ SPEED_AT_ZERO_FOCUS = 900.0     # px / s
+ SPEED_AT_FULL_FOCUS = 180.0     # px / s
+ 
+-FOCUS_RISE = 0.6                # per second while F is held
+-FOCUS_DECAY = 0.25              # per second otherwise
++FOCUS_RISE = 0.6                # per second while F is held / while following a higher headband reading
++FOCUS_DECAY = 0.25              # per second otherwise / while following a lower headband reading
++
++LINK_HOST = "127.0.0.1"         # only this computer can talk to the game
++LINK_PORT = 8765
++LINK_TIMEOUT = 2.0              # s without a headband reading before the F key takes over again
+ 
+ REST_LIN_VEL = 4.0              # px / s, below this counts as "stopped"
+ REST_ANG_VEL = 0.05             # rad / s
+@@ -107,6 +120,77 @@ class Template:
+         return body, shape
+ 
+ 
++# --- Headband link --------------------------------------------------------------
++class HeadbandLink:
++    """Receives the Muse 2 panel's focus meter over a tiny local-only web server.
++
++    The panel POSTs a small JSON body such as {"focus": 63.2} (0-100) about 4 times a
++    second, or {"focus": null} while its baselines are not set yet.
++    """
++
++    def __init__(self, host=LINK_HOST, port=LINK_PORT):
++        self.lock = threading.Lock()
++        self.value = None           # latest focus, 0-1, or None when the panel has none
++        self.stamp = 0.0            # time of the latest message
++        self.server = None
++        link = self
++
++        class Handler(BaseHTTPRequestHandler):
++            def _reply(self, code=200, body=b'{"ok":true}'):
++                self.send_response(code)
++                self.send_header("Access-Control-Allow-Origin", "*")
++                self.send_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
++                self.send_header("Access-Control-Allow-Headers", "Content-Type")
++                self.send_header("Content-Type", "application/json")
++                self.send_header("Content-Length", str(len(body)))
++                self.end_headers()
++                self.wfile.write(body)
++
++            def do_OPTIONS(self):
++                self._reply(204, b"")
++
++            def do_GET(self):
++                self._reply()
++
++            def do_POST(self):
++                try:
++                    n = min(int(self.headers.get("Content-Length", "0")), 512)
++                    data = json.loads(self.rfile.read(n) or b"{}")
++                    raw = data.get("focus")
++                    value = None
++                    if isinstance(raw, (int, float)) and not isinstance(raw, bool) and math.isfinite(raw):
++                        value = max(0.0, min(1.0, raw / 100.0))
++                    link.push(value)
++                    self._reply()
++                except Exception:
++                    self._reply(400, b'{"ok":false}')
++
++            def log_message(self, *args):
++                pass
++
++        try:
++            self.server = ThreadingHTTPServer((host, port), Handler)
++            self.server.daemon_threads = True
++            threading.Thread(target=self.server.serve_forever, daemon=True).start()
++        except OSError:
++            self.server = None      # port busy: the game still works with the F key
++
++    def push(self, value):
++        with self.lock:
++            self.value = value
++            self.stamp = time.monotonic()
++
++    def read(self):
++        """Return (state, value). state is 'off', 'waiting' (panel talking, no baselines yet) or 'live'."""
++        with self.lock:
++            value, stamp = self.value, self.stamp
++        if stamp == 0.0 or time.monotonic() - stamp > LINK_TIMEOUT:
++            return "off", None
++        if value is None:
++            return "waiting", None
++        return "live", value
++
++
+ # --- Game -----------------------------------------------------------------------
+ class Game:
+     def __init__(self, screen):
+@@ -115,6 +199,8 @@ class Game:
+         self.font = pygame.font.SysFont("segoeui,arial", 30)
+         self.big_font = pygame.font.SysFont("segoeui,arial", 84, bold=True)
+         self.focus = 0.0
++        self.link = HeadbandLink()
++        self.focus_source = "keyboard"
+         self.reset()
+ 
+     # ---- state ----
+@@ -175,10 +261,20 @@ class Game:
+ 
+     # ---- update ----
+     def update(self, dt, f_held):
+-        if f_held:
+-            self.focus += FOCUS_RISE * dt
++        state, target = self.link.read()
++        if state == "live":
++            # Glide toward the headband's focus at the same speeds the F key uses.
++            self.focus_source = "headband"
++            if self.focus < target:
++                self.focus = min(target, self.focus + FOCUS_RISE * dt)
++            else:
++                self.focus = max(target, self.focus - FOCUS_DECAY * dt)
+         else:
+-            self.focus -= FOCUS_DECAY * dt
++            self.focus_source = "headband-waiting" if state == "waiting" else "keyboard"
++            if f_held:
++                self.focus += FOCUS_RISE * dt
++            else:
++                self.focus -= FOCUS_DECAY * dt
+         self.focus = max(0.0, min(1.0, self.focus))
+ 
+         if self.game_over:
+@@ -282,8 +378,14 @@ class Game:
+         if self.focus > 0:
+             pygame.draw.rect(s, col, (x, y, max(4, int(w * self.focus)), h), border_radius=6)
+         s.blit(self.font.render(f"Focus  {self.focus:.2f}", True, TEXT), (x + w + 20, y - 8))
+-
+-        hint = "SPACE / click: drop    hold F: focus    R: reset    ESC: quit"
++        label = {
++            "headband": "Headband linked",
++            "headband-waiting": "Headband linked: press Auto Set Baselines in the panel (F key works meanwhile)",
++            "keyboard": "Keyboard focus (no headband linked)",
++        }[self.focus_source]
++        s.blit(self.font.render(label, True, DIM), (x, y + 38))
++
++        hint = "SPACE / click: drop    hold F: focus (no headband)    R: reset    ESC: quit"
+         s.blit(self.font.render(hint, True, DIM), (40, self.H - 60))
+ 
+     def draw_game_over(self):
+-- 
+2.43.0
+
