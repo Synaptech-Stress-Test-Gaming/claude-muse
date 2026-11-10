@@ -11,7 +11,7 @@ function marioReady(){return focusReady();}   // kept for older callers
 function updateMarioBtn(){}                    // renderFocus() still calls this; the menu needs no per-frame update
 addEventListener("load",()=>GameMenu.attach({button:$("btnMario"),note:null,
   ctx:()=>({stage:$("stage"),connected:S.connected,focusReady:focusReady(),stressLive:stressLive(),
-    focus:()=>S.connected?focusPct():null,
+    focus:()=>S.connected?pctOf(focus):null, // games always get the focus score, even when the panel shows stress
     stress:()=>{const v=window.StressMeter&&StressMeter.value();return v==null?0:v/100;},
     sensors:()=>SENSORS.map((nm,i)=>{const p=S.connected&&S.emitted>0&&S.pct[i]!=null?Math.round(S.pct[i]):null;return{txt:p==null?"--":p+"%",cls:p==null?"":p>=70?"good":p>=40?"fair":"poor"};}),
     status:()=>S.connected?(S.emitted>0?"Muse live":"Muse waiting"):"Muse not connected"})}));
@@ -28,8 +28,8 @@ function sendGame(p){
     e.textContent=gameOk?"GAME: LINKED":"GAME: OFF";e.style.color=gameOk?"#35e6ff":"#6f82c4";e.dataset.state=gameOk?"on":"off";});
 }
 function startCal(){
-  if(!S.connected||focus.cal||QC)return;const t0=Date.now();focus.result="";
-  focus.cal={t0,vals:[],all:[],valsC:[],valsG:[],msg(){const left=Math.max(0,CAL_SEC-(Date.now()-t0)/1000);return "RECORDING "+Math.ceil(left)+"s. Drift from relaxed to concentrating";}};
+  if(!S.connected||focus.cal)return;const t0=Date.now();focus.result="";
+  focus.cal={t0,vals:[],all:[],msg(){const left=Math.max(0,CAL_SEC-(Date.now()-t0)/1000);return "RECORDING "+Math.ceil(left)+"s. Drift from relaxed to concentrating";}};
   renderFocus();
 }
 function finishCal(){
@@ -40,14 +40,13 @@ function finishCal(){
   const inl=s.filter(v=>v>=q1-1.5*iqr&&v<=q3+1.5*iqr);
   let lo=quantile(inl,.10),hi=quantile(inl,.90),note="Baselines set. Focus is live.";
   if(hi-lo<MIN_SPAN){const mid=(lo+hi)/2;lo=mid-MIN_SPAN/2;hi=mid+MIN_SPAN/2;note="Baselines set (small change seen). Press again and shift your focus more for a wider range.";}
-  focus.lo=lo;focus.hi=hi;focus.result=note;
-  if(CAL){for(const [s,v,nm] of [[fc,c.valsC,"Corrected"],[fg,c.valsG,"Gate-only"]]){const b=baseOf(v);if(b){s.lo=b.lo;s.hi=b.hi;}else{s.lo=s.hi=null;focus.result+=" "+nm+": too few valid windows, so its baselines were not set (muscle or blinks?). Press again.";}}}
+  focus.lo=lo;focus.hi=hi;focus.result=note;saveBaselines();
   renderFocus();
 }
 setInterval(()=>{
   const a=BANDS[2],b=BANDS[3],ok=a.n2>=20&&b.n2>=20;
   const am=ok?a.e2/a.n2:0,bm=ok?b.e2/b.n2:0;a.e2=a.n2=b.e2=b.n2=0;
-  if(!S.connected){QC=null;focus.ema=null;focus.fast=null;focus.cal=null;focus.raw=null;for(const s of [fc,fg]){s.ema=s.fast=null;s.valid=false;s.st=0;s.lastValidT=-1e9;}renderFocus();return;}
+  if(!S.connected){focus.ema=null;focus.fast=null;focus.cal=null;focus.raw=null;renderFocus();return;}
   if(ok&&S.usable>0){
     const F=Math.log((bm+1e-3)/(am+1e-3));focus.raw=F;
     focus.ema=focus.ema==null?F:focus.ema+0.08*(F-focus.ema);
@@ -58,4 +57,4 @@ setInterval(()=>{
   renderFocus();
 },250);
 $("btnCal").addEventListener("click",startCal);
-initFocusSwitch();initFocusCalibration();loadSavedCal();renderFocus();
+initFocusSwitch();loadBaselines();renderFocus();

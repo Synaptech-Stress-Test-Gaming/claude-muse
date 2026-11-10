@@ -22,7 +22,7 @@ function renderFocus(){
   $("btnCal").disabled=!(S.connected&&!focus.cal);
   $("btnCal").classList.toggle("on",sh.lo!=null&&sh.hi!=null&&!focus.cal);
   if(S.pip){S.pip.num.textContent=txt;[...S.pip.bar.children].forEach((s,i)=>s.classList.toggle("lit",p!=null&&i<Math.round(p/100*FSEG)));S.pip.note.textContent=p==null?(S.connected?(sh.lo==null?"Set baselines in the panel":em.toUpperCase()+": no valid reading"):"Not connected"):em.toUpperCase();}
-  sendGame(p);
+  sendGame(pctOf(focus)); // external games always get the focus score
   updateMarioBtn();
 }
 /* ============ floating focus meter (small always-on-top window) ============ */

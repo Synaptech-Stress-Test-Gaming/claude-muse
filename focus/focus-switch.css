@@ -1,34 +1,23 @@
-/* Focus mode controls (Legacy / Corrected / Gate-only buttons, Calibrate button, status badge).
-   Loaded by muse-panel.html after panel/ui.css, so these rules win ties. Positions for the neon look are at the end. */
-#fctl{display:flex;align-items:center;gap:12px;white-space:nowrap}
+/* Focus / stress buttons and the movement badge. Loaded by muse-panel.html after panel/ui.css, so these rules win ties. */
+#fctl{display:flex;align-items:center;white-space:nowrap}
 #fmode{display:flex;gap:8px;position:static!important}
-#fmode button,#fmLoad{position:static!important;width:auto!important;height:24px!important;min-width:92px;padding:0 10px;font-family:inherit;font-weight:600;font-size:10px;line-height:1;letter-spacing:.08em;
+#fmode button{position:static!important;width:auto!important;height:24px!important;min-width:92px;padding:0 10px;font-family:inherit;font-weight:600;font-size:10px;line-height:1;letter-spacing:.08em;
   border:1px solid rgba(140,160,255,.55);border-radius:5px;background:rgba(20,30,110,.6);color:#bcd0ff;cursor:pointer;transition:background .15s,box-shadow .15s}
-#fmode button:hover:not(:disabled),#fmLoad:hover{background:rgba(60,80,200,.65);color:#fff}
+#fmode button:hover{background:rgba(60,80,200,.65);color:#fff}
 #fmode button.on{background:#3fd6ff;color:#001040;border-color:#bff;box-shadow:0 0 9px rgba(63,214,255,.65)}
-#fmode button:disabled{opacity:.4;cursor:not-allowed}
-#fmLoad{min-width:96px;border-color:#b79bff;color:#e2d6ff;background:rgba(70,40,150,.45)}
-#fmLoad.ok::before{content:"";display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:#43f28a;box-shadow:0 0 6px #43f28a;vertical-align:middle}
-#fnote{width:396px;font-size:10px;line-height:1.25}
-#cstat{display:inline-block;font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:3px;margin-right:6px;background:rgba(80,220,140,.25);color:#8fffc0}
-#cstat.rej{background:rgba(255,90,90,.25);color:#ff9a9a}
-#cstat.hold{background:rgba(255,200,80,.25);color:#ffd98a}
+#fnote{width:236px;font-size:10px;line-height:1.25}
+#cstat{display:inline-block;font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:3px;margin-right:6px;background:rgba(255,200,80,.25);color:#ffd98a}
 /* clean look */
 [data-look="clean"] #fctl{width:100%}
-[data-look="clean"] #fmode{flex:1}
-[data-look="clean"] #fmode button,[data-look="clean"] #fmLoad{height:28px!important;min-width:0;font-family:var(--font-clean);font-size:10.5px;border-color:var(--line);background:var(--panel);color:var(--muted)}
-[data-look="clean"] #fmode button{flex:1}
-[data-look="clean"] #fmode button:hover:not(:disabled),[data-look="clean"] #fmLoad:hover{background:#efece2;color:var(--ink)}
+[data-look="clean"] #fmode{flex:1;max-width:320px}
+[data-look="clean"] #fmode button{flex:1;min-width:0;height:28px!important;font-family:var(--font-clean);font-size:10.5px;border-color:var(--line);background:var(--panel);color:var(--muted)}
+[data-look="clean"] #fmode button:hover{background:#efece2;color:var(--ink)}
 [data-look="clean"] #fmode button.on{background:var(--green);color:#fff;border-color:var(--green);box-shadow:none}
-[data-look="clean"] #fmLoad{border-color:var(--green);color:var(--green)}
-[data-look="clean"] #fmLoad.ok::before{background:var(--green);box-shadow:none}
-[data-look="clean"] #cstat{background:#e3efe8;color:var(--green)}
-[data-look="clean"] #cstat.rej{background:#f6dcd6;color:var(--red)}
-[data-look="clean"] #cstat.hold{background:#f7ecd0;color:#8a6410}
+[data-look="clean"] #cstat{background:#f7ecd0;color:#8a6410}
 /* neon look */
-[data-look="neon"] #fctl{left:352px!important;top:690px!important;gap:5px}
-[data-look="neon"] #fmode{gap:5px}
-[data-look="neon"] #fmode button,[data-look="neon"] #fmLoad{min-width:0;height:22px!important;padding:0 6px;font-size:8.5px;letter-spacing:.04em}
+[data-look="neon"] #fctl{left:352px!important;top:690px!important}
+[data-look="neon"] #fmode{gap:6px}
+[data-look="neon"] #fmode button{min-width:0;height:22px!important;padding:0 10px;font-size:9px;letter-spacing:.06em}
 /* the stress meter card (stress.js) is hidden unless the address has ?stress=1 */
 #stressCard{display:none!important}
 .show-stress #stressCard{display:block!important}

@@ -4,7 +4,7 @@ A single-page control panel that shows the live brainwave data from a **Muse 2**
 
 This README covers the panel and the project files. The games have their own READMEs:
 
-- [focus/README.md](focus/README.md): the Legacy / Corrected / Gate-only focus scores, the CAL calibration and the extra recording columns (loaded by the panel; keep the `focus` folder next to it)
+- [focus/README.md](focus/README.md): the FOCUS / STRESS display switch and remembered baselines (loaded by the panel; keep the `focus` folder next to it)
 - [game/README.md](game/README.md): Mario Kart DS style race whose speed follows your focus (opens from the panel)
 - [game-py/README.md](game-py/README.md): the same Mario Kart game ported to Python (pygame), fed by the panel's focus score
 - [game/BOMB.md](game/BOMB.md): the stress-driven bomb defusal game (opens from the panel's red **B** button): a level-specific service sheet, a sweating, shaking player, and a phone to calm down
@@ -40,32 +40,16 @@ No headband? Open `muse-panel.html?demo=1` (add `?demo=1` to the address) and pr
 
 Baselines are kept only while the panel is open. Clenching your jaw or forehead muscles fakes a high reading, so stay relaxed in the face.
 
-## Three focus scores (the switch next to FOCUS)
+## Focus or stress display (the two buttons under FOCUS)
 
-Clenching your jaw or frowning adds muscle noise that looks like beta waves and fakes a high focus score. The switch lets you choose which score drives the number, the bar, the floating meter and the game. **All three are computed all the time**, each with its own smoothing and baselines, so switching is instant. What gets recorded does not depend on the switch.
+- **FOCUS** shows the focus meter described above.
+- **STRESS** shows `100 - focus`: focus 100 means stress 0, focus 0 means stress 100. It uses the same baselines, so there is nothing extra to calibrate.
 
-| Option | What it is |
-|---|---|
-| **LEGACY** | The original `ln(beta / alpha)` score. Its code is untouched. This is the default. |
-| **CORRECTED** | Uses only the forehead sensors (AF7, AF8). Measures muscle noise at 30 to 40 Hz, subtracts the part of beta power it explains, and throws away windows where the muscle noise is too large to fix. |
-| **GATE** | Same measurements and the same throw-away rules, but with no subtraction. Shows what you get from simply rejecting bad windows. |
+The title above the buttons changes to match, so a screenshot always says which one you are looking at. Your choice is remembered. External games and the game menu always receive the **focus** number (the bomb game has its own source selector and does its own `100 - focus` mapping). Both are rough proxies, not validated measures.
 
-Corrected and Gate-only are **proxies, not validated focus measures**. Beta over alpha is itself only a rough stand-in for attention.
+**Baselines.** The only calibration is the normal 10 second **Auto Set Baselines**. The low and high it finds are remembered in the browser, so next time the panel starts with the baselines from last time until you press the button again.
 
-**Window status** (shown as a badge in Corrected and Gate-only; Legacy has none). The first matching rule wins:
-
-1. `rejected_gap`: a data packet was lost inside the window.
-2. `rejected_blink`: a swing too big to be brain signal (blink, movement). Triggers a 0.5 second hold-off.
-3. `holdoff`: still inside that 0.5 seconds.
-4. `rejected_emg_heavy`: too much muscle noise to correct (Gate-only uses a simpler 3x limit).
-5. `corrected_emg`: muscle noise was found and subtracted (valid).
-6. `ok`: nothing to fix (valid).
-
-Rejected windows are drawn as **gaps** (`--`, no lit bar), never as a held old value. The game keeps your last speed during a gap. After 3 seconds without a valid window, the recorded smoothed value goes blank.
-
-**Calibration needed.** Corrected and Gate-only stay greyed out, with the reason shown, until you do a muscle calibration. This is separate from Auto Set Baselines. Connect the headband and press **CAL**: relax your face for 8 seconds, then twice clench your jaw **and** scrunch your forehead as hard as you can for 4 seconds (about 20 seconds in all). The panel measures your resting levels, fits how much your muscle noise raises beta, and enables both modes. Only forehead sensors with skin contact are used: if one is dead (for example AF7 at 0%), it is skipped and the score runs on the other. It refuses a poor fit and tells you why (for example, clench harder). The result is kept in your browser. **Shift-click CALIBRATE** loads a `calibration.json` file instead, which is refused if its settings fingerprint does not match the panel. This quick calibration is simpler than the full plan (no cross-validation, no frown or blink segments); see [focus/README.md](focus/README.md) and [docs/focus-correction-plan.md](docs/focus-correction-plan.md).
-
-After calibrating, press **Auto Set Baselines** once; it sets the range for all three scores. Your choice of score is remembered between visits.
+A muscle-corrected focus score (with its own calibration) was tried and taken out of the interface until a better system exists. Its code is kept, not loaded, in [focus/experimental/](focus/experimental/).
 
 ## Accuracy rules
 
@@ -79,16 +63,7 @@ After calibrating, press **Auto Set Baselines** once; it sets the range for all 
 
 **Start Recording** keeps every reading; **Stop Recording** shows a report and downloads a CSV to your Downloads folder. Recordings stop by themselves at 10 minutes.
 
-CSV columns, in order: `time_s`, `TP9_uV, AF7_uV, AF8_uV, TP10_uV`, the five band signals, `sensors_in_use`, `focus_index_ln_beta_over_alpha` and `focus_0_to_100` (both always the **Legacy** score), then the two heart-rate columns. These first columns never change.
-
-Appended after them (new, nothing renamed):
-
-| Columns | Meaning |
-|---|---|
-| `focus_corrected_raw_ln`, `focus_corrected_ema_ln`, `focus_corrected_0_to_100`, `corrected_status`, `corrected_valid`, `corrected_emg_ratio`, `corrected_beta_removed_frac` | The Corrected score, written on every row. Blank when the window was invalid. |
-| `focus_displayed` | Which score drove the panel: `legacy`, `corrected` or `gate-only`. |
-| `focus_legacy_raw_ln` | Legacy score before smoothing. |
-| `focus_gateonly_raw_ln`, `focus_gateonly_ema_ln`, `focus_gateonly_0_to_100`, `gateonly_status`, `gateonly_valid` | The Gate-only score. |
+CSV columns, in order: `time_s`, `TP9_uV, AF7_uV, AF8_uV, TP10_uV`, the five band signals, `sensors_in_use`, `focus_index_ln_beta_over_alpha` and `focus_0_to_100` (always the focus score, whichever display is selected), then the two heart-rate columns. The accelerometer/gyroscope columns come after these when that feature is present.
 
 There is one row per reading, 256 rows per second, and dropped readings stay as gaps in `time_s`. The report also lists signal levels per sensor and wave type and how long focus stayed above 50 and 75. Nothing is saved unless you press Stop.
 

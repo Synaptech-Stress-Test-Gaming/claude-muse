@@ -4,6 +4,8 @@ Goal: make the focus score ignore muscle noise (jaw clench, frown) and, later, b
 
 This file summarizes Plan v2 (muscle) and its blink/head-movement addendum, and records what is built. The full plan texts are kept outside the repo.
 
+**Update: the Corrected / Gate-only modes and their calibration were removed from the panel UI and parked, unloaded, in `focus/experimental/` until a better system exists. The panel now has a FOCUS / STRESS display switch (stress = 100 - focus) and the normal 10 second baselines, remembered between visits. The status table below describes the parked code.**
+
 ## Decisions already made
 - The live score runs in `muse-panel.html` (JavaScript). The plan's Python `muse_focus.py` never existed. Calibration and analysis tools will be Python (NumPy and SciPy) reading the panel's recording CSVs.
 - Raw 256 Hz data is available, so the plan's "band powers only" stop condition does not apply.

@@ -52,11 +52,10 @@ function emit(vals,idx){
     const v=b.f2.p(b.f1.p(x));b.buf[b.pos]=v;b.pos=(b.pos+1)%BUF_LEN;
     b.energy+=v*v;b.eN++;b.e2+=v*v;b.n2++;bv.push(v);
   }
-  if(S.emitted>=FS*3&&(S.emitted-FS*2)%CHOP===0)corrStep(); // corrected score: always computed, whichever score is shown
   if(S.rec){S.rec.samples++;recPush(idx,ys,bv);}
 }
 /* every aligned reading is kept while recording: 4 sensors, 5 band signals, sensors in use, focus */
-const REC_COLS=14+FOCUS_REC_COLNAMES.length,REC_MAX_SEC=600; // columns 0-13 are the original ones, unchanged; the rest come from focus/focus-recording.js
+const REC_COLS=14,REC_MAX_SEC=600; // columns 0-13 are the original ones, unchanged; nothing is appended
 function recPush(idx,ys,bv){
   const r=S.rec;
   if(r.n>=r.cap){if(!r.full){r.full=true;setTimeout(()=>stopRec(true,"The 10 minute limit was reached."),0);}return;}
@@ -66,7 +65,6 @@ function recPush(idx,ys,bv){
   for(let b=0;b<5;b++)r.d[o+4+b]=bv[b];
   r.d[o+9]=S.usable;r.d[o+10]=focus.ema==null?NaN:focus.ema;const p=pctOf(focus);r.d[o+11]=p==null?NaN:p; // always the LEGACY score, whichever is displayed
   r.d[o+12]=PL.bpm==null?NaN:PL.bpm;r.d[o+13]=PL.pct==null?NaN:PL.pct; // heart rate updates once per second
-  focusRecFill(r.d,o);                                 // extra columns 14+: Corrected and Gate-only scores, displayed mode (focus/focus-recording.js)
 }
 const fmt=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
 function sessMsg(t){const e=$("sessM");e.textContent=t;e.removeAttribute("data-idle");}
