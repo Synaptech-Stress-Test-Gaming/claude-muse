@@ -132,3 +132,45 @@ input[type=range]:focus{outline:none}
 #toast svg{width:24px;height:24px;flex:none;color:var(--poor)}
 #toast.info{border-color:var(--cyan);color:#e6faff;background:linear-gradient(90deg,rgba(10,50,100,.96),rgba(20,20,70,.96));box-shadow:0 0 22px rgba(56,225,255,.45)}
 #toast.info svg{color:var(--cyan)}
+
+/* ---------- arousal meter (compact box under the heart rate, and its details window) ---------- */
+#arBox{cursor:pointer}
+.arname{font-size:10.5px;letter-spacing:.26em;color:#ffb347;white-space:nowrap}
+#arNum{font-size:36px;font-weight:300;color:#ffb347;text-shadow:0 0 14px rgba(255,170,60,.9),0 0 3px rgba(255,210,150,.9);line-height:1;white-space:nowrap}
+#arState{font-size:9.5px;letter-spacing:.14em;color:#ffd9a6;white-space:nowrap}
+.arbar{height:11px;border:1px solid rgba(255,170,70,.75);background:rgba(50,25,0,.6);padding:1px}
+.arbar i{position:static;display:block;height:100%;width:0;background:linear-gradient(90deg,#3fd6ff,#ffd166 55%,#ff453a);box-shadow:0 0 10px rgba(255,170,60,.8);transition:width .25s}
+.arsig{display:flex;justify-content:space-between;font-size:8.5px;letter-spacing:.1em;color:#6f7fb4}
+.arsig span{display:flex;align-items:center;gap:4px}.arsig i{width:8px;height:8px;border-radius:50%;background:#2b345c;display:inline-block}
+.arsig span.rest{color:#ffd166}.arsig span.rest i{background:#ffd166}
+.arsig span.on{color:#dfe8ff}.arsig span.on i{background:#37ffb6;box-shadow:0 0 calc(4px + 8px*var(--lv,0)) #37ffb6}
+#arDetails{position:fixed;inset:0;z-index:99980;background:rgba(2,4,24,.82);display:none;align-items:center;justify-content:center;font-family:var(--font);color:var(--text)}
+#arDetails .box{width:min(760px,92vw);max-height:90vh;overflow:auto;background:linear-gradient(180deg,#0a1260,#050a34);border:1.5px solid rgba(255,170,70,.8);border-radius:12px;padding:22px 26px;box-shadow:0 0 40px rgba(255,150,40,.25)}
+#arDetails h2{font-weight:300;letter-spacing:.4em;font-size:22px;color:#ffb347}#arDetails .sub{color:var(--dim);font-size:12.5px;margin:4px 0 14px;line-height:1.5}
+#arDetails .x{float:right;background:#16215a;border:1px solid #4a6adf;color:var(--text);border-radius:6px;padding:7px 12px;font-size:11px;letter-spacing:.14em;cursor:pointer}
+#arDetails .top{display:flex;gap:16px;align-items:stretch}#arDetails .num{font-size:72px;font-weight:200;color:#ffb347;min-width:150px;text-align:center;line-height:110px;text-shadow:0 0 18px rgba(255,170,60,.7)}
+#arDetails canvas{flex:1;height:110px;background:#050a26;border-radius:6px;box-shadow:inset 0 0 0 1px #2d3c6a;min-width:0}
+#arDetails .rows{margin-top:14px}#arDetails .r{display:grid;grid-template-columns:12px 150px 150px 1fr;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(90,120,220,.25);font-size:12px}
+#arDetails .r i{width:10px;height:10px;border-radius:50%;background:#2b345c}#arDetails .r.rest i{background:#ffd166}#arDetails .r.on i{background:#37ffb6;box-shadow:0 0 8px #37ffb6}
+#arDetails .r b{letter-spacing:.14em;font-weight:600;font-size:11.5px}#arDetails .r .val{color:#ffd9a6}#arDetails .r.off .val{color:#6f7fb4}
+#arDetails .r .m{height:10px;background:#050a26;border-radius:5px;overflow:hidden;box-shadow:inset 0 0 0 1px #2d3c6a}#arDetails .r u{display:block;height:100%;width:0;background:linear-gradient(90deg,#3fd6ff,#ffd166 60%,#ff453a);transition:width .25s;text-decoration:none}
+#arDetails .r em{grid-column:2 / 5;font-style:normal;color:#7f93c9;font-size:11px;margin-top:-4px}
+#arDetails .btns{display:flex;align-items:center;gap:14px;margin-top:14px}#arDetails .btns button{background:#2a5bd6;border:1px solid #4a6adf;color:#fff;border-radius:6px;padding:9px 14px;font-size:11.5px;letter-spacing:.12em;cursor:pointer}
+#arDetails #arMsg{font-size:12px;color:#ffd9a6}
+#arDetails .demo{margin-top:14px;border-top:1px solid #2d3c6a;padding-top:10px;font-size:12px;color:var(--dim)}#arDetails .demo b{letter-spacing:.2em;font-size:10px;display:block;margin-bottom:6px}
+#arDetails .demo label{display:grid;grid-template-columns:110px 1fr 40px;gap:10px;align-items:center;margin:4px 0}
+#arDetails .note{margin-top:14px;font-size:11px;color:#7f93c9;line-height:1.55}
+
+/* ---------- setup guide ---------- */
+#guide{position:fixed;inset:0;z-index:99985;background:rgba(2,4,24,.84);display:none;align-items:center;justify-content:center;font-family:var(--font);color:var(--text)}
+#guide .box{width:min(760px,92vw);max-height:92vh;overflow:auto;background:linear-gradient(180deg,#0a1260,#050a34);border:1.5px solid rgba(90,174,255,.85);border-radius:12px;padding:22px 26px;box-shadow:0 0 40px rgba(60,120,255,.35)}
+#guide h2{font-weight:300;letter-spacing:.4em;font-size:22px}#guide .sub{color:var(--dim);font-size:12.5px;margin:4px 0 12px}
+#guide .x{float:right;background:#16215a;border:1px solid #4a6adf;color:var(--text);border-radius:6px;padding:7px 12px;font-size:11px;letter-spacing:.14em;cursor:pointer}
+#guide .step{display:flex;gap:14px;align-items:center;padding:12px;margin-top:8px;border:1px solid rgba(110,150,255,.3);border-radius:10px;background:rgba(8,16,80,.5);opacity:.75}
+#guide .step.cur{opacity:1;border-color:#35e6ff;box-shadow:0 0 14px rgba(53,230,255,.25)}#guide .step.done{opacity:1;border-color:rgba(55,255,182,.6)}
+#guide .n{flex:none;width:38px;height:38px;border-radius:50%;border:2px solid #6a8cff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600}
+#guide .step.done .n{background:#37ffb6;border-color:#37ffb6;color:#02103a}#guide .step.done .n::after{content:"\2713";position:absolute;font-size:0}
+#guide .b{flex:1;min-width:0}#guide h3{font-size:14.5px;font-weight:600;letter-spacing:.06em;margin-bottom:3px}#guide p{font-size:12px;color:#b9c8f5;line-height:1.5}
+#guide .live{font-size:12px;margin-top:6px;color:#ffd9a6;min-height:16px;line-height:1.5}#guide .ok{color:#37ffb6}#guide .mid{color:#ffd166}#guide .bad{color:#ff5c7a}
+#guide .step>button{flex:none;background:#2a5bd6;border:1px solid #4a6adf;color:#fff;border-radius:6px;padding:9px 12px;font-size:11px;letter-spacing:.12em;cursor:pointer;min-width:150px}#guide .step>button:disabled{opacity:.45;cursor:default}
+#guide .again{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:12px;color:var(--dim)}

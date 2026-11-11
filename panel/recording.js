@@ -11,7 +11,7 @@ function startRec(){
     startIdx:null,contactSum:[0,0,0,0],contactN:0,artSec:0,lost0:S.lostSamples,pLost0:PL.lost,fLo:focus.lo,fHi:focus.hi,full:false};
   setButtons();$("btnStart").classList.add("on");setSess(true);
 }
-const COLNAMES=["TP9_uV","AF7_uV","AF8_uV","TP10_uV","delta_uV","theta_uV","alpha_uV","beta_uV","gamma_uV","sensors_in_use","focus_index_ln_beta_over_alpha","focus_0_to_100","heart_rate_bpm","heart_signal_pct"];
+const COLNAMES=["TP9_uV","AF7_uV","AF8_uV","TP10_uV","delta_uV","theta_uV","alpha_uV","beta_uV","gamma_uV","sensors_in_use","focus_index_ln_beta_over_alpha","focus_0_to_100","heart_rate_bpm","heart_signal_pct","arousal_0_to_100"];
 function pad2(n){return String(n).padStart(2,"0");}
 function stamp(d){return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+"_"+pad2(d.getHours())+"-"+pad2(d.getMinutes())+"-"+pad2(d.getSeconds());}
 function colStats(r,c){let cnt=0,sum=0,sq=0,mn=Infinity,mx=-Infinity;
@@ -56,7 +56,7 @@ function reportText(R){
 function csvOf(r){
   const rows=["time_s,"+COLNAMES.join(",")];
   for(let i=0;i<r.n;i++){const o=i*REC_COLS;let line=r.t[i].toFixed(4);
-    for(let c=0;c<REC_COLS;c++){const v=r.d[o+c];line+=","+(v!==v?"":(c===9?String(v):c===12?v.toFixed(1):c===13?v.toFixed(0):v.toFixed(3)));}
+    for(let c=0;c<REC_COLS;c++){const v=r.d[o+c];line+=","+(v!==v?"":(c===9?String(v):c===12?v.toFixed(1):c===13?v.toFixed(0):c===14?v.toFixed(1):v.toFixed(3)));}
     rows.push(line);}
   return rows.join("\r\n");
 }

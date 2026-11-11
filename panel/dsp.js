@@ -54,7 +54,7 @@ function emit(vals,idx){
   if(S.rec){S.rec.samples++;recPush(idx,ys,bv);}
 }
 /* every aligned reading is kept while recording: 4 sensors, 5 band signals, sensors in use, focus */
-const REC_COLS=14,REC_MAX_SEC=600;
+const REC_COLS=15,REC_MAX_SEC=600;
 function recPush(idx,ys,bv){
   const r=S.rec;
   if(r.n>=r.cap){if(!r.full){r.full=true;setTimeout(()=>stopRec(true,"The 10 minute limit was reached."),0);}return;}
@@ -63,7 +63,8 @@ function recPush(idx,ys,bv){
   for(let c=0;c<4;c++)r.d[o+c]=ys[c];
   for(let b=0;b<5;b++)r.d[o+4+b]=bv[b];
   r.d[o+9]=S.usable;r.d[o+10]=focus.ema==null?NaN:focus.ema;const p=focusPct();r.d[o+11]=p==null?NaN:p;
-  r.d[o+12]=PL.bpm==null?NaN:PL.bpm;r.d[o+13]=PL.pct==null?NaN:PL.pct; // heart rate updates once per second
+  r.d[o+12]=PL.bpm==null?NaN:PL.bpm;r.d[o+13]=PL.pct==null?NaN:PL.pct;
+  {const av=window.ArousalMeter?ArousalMeter.value():null;r.d[o+14]=av==null?NaN:av;} // arousal 0-100 (body activation vs rest) // heart rate updates once per second
 }
 const fmt=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
 function setSess(running){
