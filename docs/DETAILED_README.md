@@ -180,5 +180,5 @@ teammates' research (confirmed, see `docs/RESEARCH_AROUSAL.md`) says a headband 
   (WIRES / BUTTON / KEYPAD, keys 1-3), numbered "first line that fits" rules with pictures and short labels, a tick on solved tabs. Sweat still lands on
   it; drag the cloth over a wet blot to remove it, a blot left to dry becomes a stain. The sheet trembles only slightly so it stays readable.
 - **Briefing screen** before the clock starts (Enter to start). Wording in the game is "arousal" throughout.
-- Tests: `arousal.test.js` (24 checks) plus the existing `game/bomb.test.js` (25). `stress.test.js` (35) still passes for the legacy file.
+- Tests: `arousal.test.js` (23 checks) plus the existing `game/bomb.test.js` (24). `stress.test.js` (34) still passes for the legacy file. (Earlier sections over-counted each file by one.)
 - **Not verified:** everything on a real Muse 2, especially the accelerometer packets, real heart-rate quality, and whether the thresholds feel right.
