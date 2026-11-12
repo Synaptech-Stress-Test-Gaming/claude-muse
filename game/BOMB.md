@@ -4,7 +4,7 @@ One-level bomb defusal game in the browser, with a hand-drawn look inspired by c
 All art is drawn in code. Open it from the panel with the red **B** button, or on its own: `game/bomb.html`.
 
 ## Play
-Solve three modules before the 3:00 clock ends or you get 3 strikes. The rules differ on every bomb and are printed only on that bomb's **service sheet**: click the booklet on the table to read it.
+Solve three modules before the 3:00 clock ends or you get 3 strikes. The rules differ on every bomb and are printed only on that bomb's **service sheet**: click the booklet on the table (or press M) to pick it up. While it is up it covers the bomb, which you can neither see nor touch, and the clock keeps running. Put it down with M, Esc, or a click anywhere else. You cannot pick it up while holding the button.
 It tells you which wire to cut (by colours and the serial number), whether to tap or hold the button and which clock digit to release on,
 and the keypad column order. Esc closes the sheet, then the game.
 

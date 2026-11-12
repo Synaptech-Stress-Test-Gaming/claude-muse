@@ -16,11 +16,14 @@ order is set in `muse-panel.html` and matters.
 | `recording.js` | **recording** | record, report, CSV | recording |
 | `gamelink.js` | **games** | hands live signals to the game menu; feeds external games | games |
 | `main.js` | start-up | wiring, must load last | rarely |
-| `stress-link.js` | **stress meter** | hands `../stress.js` the panel's signals | stress |
+| `motion.js` | signal | head movement from the accelerometer (`motionLevel()`) | signal |
+| `arousal-link.js` | **arousal meter** | reads heart rate, forehead tension and movement for `../arousal.js`; draws the AROUSAL box and its details window | arousal |
+| `guide.js` | **UI** | the setup guide overlay | UI |
+| `stress-link.js` | legacy | old stress-meter glue, no longer loaded | - |
 
 Not in this folder (already separate): `../stress.js` (stress meter), `../game/*` (games and the game menu).
 
-Load order: `game/bomb-logic.js`, `game/bomb.js`, `game/menu.js`, then `core, pulse, ui, dsp, ble, focus, recording, gamelink, main`, then `stress.js`, `stress-link.js`.
+Load order: `game/bomb-logic.js`, `game/bomb.js`, `game/menu.js`, then `core, pulse, ui, dsp, ble, focus, recording, gamelink, main`, then `arousal.js`, `arousal-link.js`, `guide.js` (`motion.js` loads right after `pulse.js`).
 
 ## Where the old `muse-panel.html` sections went
 constants + state -> `core.js` · pulse (heart rate) -> `pulse.js` · build UI on the stage + drawing -> `ui.js` · stream handling -> `dsp.js` ·

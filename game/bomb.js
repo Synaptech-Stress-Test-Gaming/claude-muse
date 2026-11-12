@@ -20,7 +20,7 @@ const CSS = `
 .bz-view{position:absolute;left:0;right:0;top:46px;bottom:0;cursor:none;display:flex;align-items:center;justify-content:center}
 .bz-room{position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(#7d5a46,#4a3328);box-shadow:0 -20px 40px rgba(0,0,0,.5) inset}
 .bz-wrap{position:relative}
-.bz-bomb{position:absolute;left:0;top:0;width:1260px;height:640px;transform-origin:0 0}
+.bz-bomb{position:absolute;left:0;top:0;width:1264px;height:640px;transform-origin:0 0}
 .bz-case{position:absolute;left:150px;top:10px;width:960px;height:620px;border-radius:26px;background:linear-gradient(160deg,#c9d6e2,#8397aa 55%,#6a7f93);padding:24px;box-shadow:0 30px 60px rgba(0,0,0,.65),inset 0 2px 0 #eaf2f9,inset 0 -4px 0 rgba(0,0,0,.25)}
 .bz-in{position:absolute;inset:24px;border-radius:14px;background:#1a2530;box-shadow:inset 0 0 0 4px #3f5367,inset 0 8px 18px rgba(0,0,0,.7);padding:14px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:12px}
 .bay{position:relative;border-radius:10px;background:linear-gradient(160deg,#dbe3ea,#a9b6c2);box-shadow:inset 0 2px 0 #fff,inset 0 -3px 0 rgba(0,0,0,.25),0 3px 8px rgba(0,0,0,.5);overflow:hidden}
@@ -49,6 +49,9 @@ const CSS = `
 .c-red{background:radial-gradient(circle at 40% 30%,#ff8478,#d8261b 60%,#8d140d);color:#fff}.c-blue{background:radial-gradient(circle at 40% 30%,#8fc0ff,#2c6fe0 60%,#1a3f8c);color:#fff}
 .c-white{background:radial-gradient(circle at 40% 30%,#fff,#dfe3e8 60%,#a5adb6);color:#222}.c-yellow{background:radial-gradient(circle at 40% 30%,#fff3a0,#f1c40f 60%,#a7840a);color:#222}.c-green{color:#43f28a}
 .c-black{background:#15191d;color:#fff}
+.btnbay .btip{position:absolute;left:8px;right:8px;bottom:6px;min-height:30px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 11px/1.25 "Segoe UI",Arial;letter-spacing:.04em;color:#1c2630;background:rgba(255,255,255,.72);border-radius:6px;padding:3px 6px;opacity:0;transition:opacity .15s;pointer-events:none}
+.btnbay .btip.show{opacity:1}.btnbay .btip.bad{background:#ffd9d4;color:#8d140d}
+.sh-strips div.lit{outline:3px solid #b3302a;outline-offset:4px;border-radius:6px;animation:shlit .6s infinite alternate}@keyframes shlit{from{outline-color:#b3302a}to{outline-color:transparent}}
 .stripc-blue{color:#3d8bff}.stripc-white{color:#f4f7fa}.stripc-yellow{color:#f7d21e}.stripc-green{color:#43f28a}
 .wirebay svg{position:absolute;left:14px;top:34px}
 .wirebay .hit{position:absolute;left:14px;width:262px;height:30px}
@@ -65,7 +68,27 @@ const CSS = `
 .vit .note{position:absolute;left:18px;right:18px;bottom:14px;font-size:10px;line-height:1.5;color:#6d8294;text-align:center}
 .bz-glitch .bz-case{animation:bzg .12s steps(2) infinite}@keyframes bzg{0%{filter:hue-rotate(0)}50%{filter:hue-rotate(60deg) brightness(1.25)}100%{filter:hue-rotate(-40deg)}}
 .bz-flash{position:absolute;inset:0;pointer-events:none;background:#ff2a1a;opacity:0;z-index:4}
-.bz-man{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.07),transparent 7%,transparent 93%,rgba(0,0,0,.08)),repeating-linear-gradient(0deg,rgba(120,100,60,.04) 0 1px,transparent 1px 3px),linear-gradient(180deg,#f2ebd6,#e8dfc6);color:#2a2418;border-radius:3px 3px 10px 3px;box-shadow:0 14px 40px rgba(0,0,0,.7),inset 0 0 40px rgba(120,95,50,.22);padding:20px 24px 120px;overflow:auto;display:none;font-family:Georgia,"Times New Roman",serif;line-height:1.45;font-size:14px;cursor:auto}
+.bz-man{position:absolute;left:14px;right:14px;top:38px;bottom:14px;background:linear-gradient(90deg,rgba(0,0,0,.06),transparent 6%,transparent 94%,rgba(0,0,0,.07)),repeating-linear-gradient(0deg,rgba(120,100,60,.035) 0 1px,transparent 1px 3px),linear-gradient(180deg,#f4eedb,#ebe3cb);color:#22201a;border-radius:3px;box-shadow:0 3px 8px rgba(0,0,0,.45),inset 0 0 30px rgba(120,95,50,.18);overflow:hidden;font-family:"Segoe UI",-apple-system,Arial,sans-serif}
+.bz-clip{position:absolute;left:50%;top:6px;width:150px;height:44px;margin-left:-75px;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,#e3e8ee,#8e9aa8);box-shadow:0 3px 5px rgba(0,0,0,.5),inset 0 2px 0 #fff;z-index:2}
+.bz-clip::after{content:"";position:absolute;left:55px;top:8px;width:40px;height:14px;border-radius:7px;background:#3a4450;box-shadow:inset 0 2px 3px rgba(0,0,0,.6)}
+.sh-tabs{display:flex;gap:4px;padding:22px 10px 0}.sh-tab{flex:1;height:36px;border-radius:7px 7px 0 0;background:#d5cbb0;color:#6a5f42;font:700 12px/36px "Segoe UI",Arial;letter-spacing:.14em;text-align:center;border:1.5px solid #a89c78;border-bottom:none}
+.sh-tab.on{background:#fbf7ea;color:#22201a;box-shadow:0 -2px 0 #b3302a inset}.sh-tab.ok::after{content:" ✓";color:#1f8f4e}
+.sh-page{position:absolute;left:10px;right:10px;top:58px;bottom:8px;background:#fbf7ea;border:1.5px solid #a89c78;border-radius:0 0 4px 4px;padding:8px 10px}
+.sh-sn{display:flex;align-items:center;justify-content:space-between;font:700 11px "Segoe UI",Arial;letter-spacing:.2em;color:#6a5f42;border-bottom:1.5px dashed #b9ae8c;padding-bottom:6px;margin-bottom:6px}
+.sh-sn b{font:700 22px Menlo,Consolas,monospace;letter-spacing:.14em;color:#22201a}.sh-sn b u{color:#b3302a;text-underline-offset:4px}
+.sh-h{font:600 12.5px/1.35 "Segoe UI",Arial;color:#3a3120;margin:2px 0 6px}
+.sh-row{display:flex;align-items:center;gap:6px;padding:6px 2px;border-bottom:1px solid #d9d0b6;min-height:86px}.sh-row:last-child{border-bottom:none}
+.sh-n{flex:none;width:24px;height:24px;border-radius:50%;background:#22201a;color:#fbf7ea;font:700 13px/24px "Segoe UI",Arial;text-align:center}
+.sh-if{flex:1;display:flex;align-items:center;gap:6px;min-width:0}.sh-do{flex:none;display:flex;align-items:center;gap:4px}
+.sh-t{font:600 12.5px/1.4 "Segoe UI",Arial;color:#22201a}.sh-t small{font:600 10.5px "Segoe UI",Arial;color:#7a6b43;letter-spacing:.06em}.sh-t b{color:#b3302a}
+.sh-ar{flex:none;font-size:20px;color:#7a6b43}.sh-ord{font:800 20px "Segoe UI",Arial;color:#b3302a;min-width:38px;text-align:center}
+.sh-dot{display:inline-block;width:15px;height:15px;border-radius:50%;border:1.5px solid #222;vertical-align:-3px}
+.sh-btn{flex:none;width:58px;height:58px;border-radius:50%;border:2px solid #222;display:flex;align-items:center;justify-content:center;font:800 10px "Segoe UI",Arial;letter-spacing:.04em;box-shadow:0 3px 0 rgba(0,0,0,.35)}.sh-btn.any{background:repeating-linear-gradient(45deg,#e6dfc8 0 5px,#d3cab0 5px 10px);color:#22201a;border-style:dashed}
+.sh-act{font:800 13px "Segoe UI",Arial;letter-spacing:.1em;border-radius:18px;padding:7px 12px;display:inline-flex;align-items:center;gap:6px;color:#fff;min-width:84px;justify-content:center}.sh-act.tap{background:#2f7d4f}.sh-act.hold{background:#b3302a}
+.sh-act i{width:12px;height:12px;border-radius:50%;background:#fff}.sh-act.hold i{box-shadow:0 0 0 3px rgba(255,255,255,.45)}
+.sh-strips{display:flex;justify-content:space-around;margin-top:6px}.sh-strips div{display:flex;flex-direction:column;align-items:center;gap:2px}.sh-strips span{width:18px;height:40px;border-radius:4px;border:1.5px solid #222}.sh-strips b{font:800 24px "Segoe UI",Arial;color:#22201a}
+.sh-cols{display:flex;gap:10px;margin-top:8px}.sh-cols>div{flex:1;border:1.5px solid #5a4f33;border-radius:8px;background:#f3ecd6;padding:6px 0;text-align:center;font:30px/1.6 "Segoe UI Symbol","Apple Symbols",serif;color:#22201a}.sh-cols small{display:block;font:800 16px "Segoe UI",Arial;color:#7a6b43;line-height:1.1}
+.sh-blots{position:absolute;inset:0;pointer-events:none;z-index:3}
 .bz .bz-man p,.bz .bz-man li,.bz .bz-man b,.bz .bz-man i,.bz .bz-man h2,.bz .bz-man h3{color:#2a2418}.bz .bz-man .cols small{color:#5a4f33}
 .bz-man .paper{position:relative;min-height:100%}
 .bz .bz-man .sec{font:700 11px Georgia,serif;letter-spacing:.3em;color:#7a6b43;margin:16px 0 2px;border-bottom:2px solid #9a8f6c;padding-bottom:3px}
@@ -79,19 +102,22 @@ const CSS = `
 .bz-man .strips{display:flex;gap:10px;justify-content:space-around;margin-top:8px}.bz-man .strips div{display:flex;flex-direction:column;align-items:center;gap:3px}.bz-man .strips span{width:16px;height:46px;border-radius:4px;border:1.5px solid #222}.bz-man .strips b{font:700 24px Georgia,serif;color:#2a2418}
 .bz-man .kcols{display:flex;gap:10px;margin-top:8px}.bz-man .kcols>div{flex:1;border:1.5px solid #5a4f33;border-radius:8px;background:#f6efd8;padding:6px 0;text-align:center;font:24px/1.55 "Segoe UI Symbol","Apple Symbols",serif;color:#2a2418}.bz-man .kcols small{display:block;font:700 18px Georgia,serif;color:#7a6b43;line-height:1}
 .bz-man .foot{margin-top:16px;text-align:center;font:13px Georgia,serif;color:#5a4f33}
-.bz-manwrap{position:absolute;right:16px;top:58px;bottom:128px;width:min(470px,46vw);z-index:6;display:none;transform-origin:50% 100%}
-.bz-manhand{position:absolute;right:-70px;bottom:-150px;width:230px;height:310px;pointer-events:none;z-index:3;filter:drop-shadow(0 12px 10px rgba(0,0,0,.5))}
+.bz-manwrap{display:none;position:absolute;left:424px;top:14px;width:416px;height:612px;z-index:7;transform-origin:50% 100%;border-radius:10px;background:linear-gradient(160deg,#9a6a3f,#6d4526);box-shadow:0 8px 0 #4a2f19,0 14px 18px rgba(0,0,0,.55),inset 0 2px 0 rgba(255,255,255,.2)}
+.bz-manwrap.open{display:block}
+.bz-mandim{display:none;position:absolute;left:138px;top:0;width:984px;height:640px;z-index:6;border-radius:20px;background:rgba(6,8,12,.74);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.bz-mandim.open{display:block}
+.bz-manput{position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);z-index:5;white-space:nowrap;background:#2a2418;color:#f1e7c6;border-radius:14px;padding:5px 14px;font:700 11px "Segoe UI",Arial;letter-spacing:.12em;box-shadow:0 3px 6px rgba(0,0,0,.5)}
+.bz-manhand{position:absolute;right:-92px;bottom:-196px;width:200px;height:270px;pointer-events:none;z-index:4;filter:drop-shadow(0 12px 10px rgba(0,0,0,.5))}
 .bz-man .mclose{position:sticky;top:0;float:right;z-index:3;background:#d9cfae;border:1px solid #9a8f6c;color:#2a2418;border-radius:5px;padding:4px 10px;font:12px Georgia,serif;cursor:pointer}
-.bz-man .blot{position:absolute;transform:translate(-50%,-50%);pointer-events:none}
-.bz-man .blot .bg{position:absolute;inset:0;transition:backdrop-filter .8s;border-radius:50%;-webkit-mask-image:radial-gradient(closest-side,#000 62%,rgba(0,0,0,0) 100%);mask-image:radial-gradient(closest-side,#000 62%,rgba(0,0,0,0) 100%)}
-.bz-man .blot.wet .bg{backdrop-filter:blur(2.6px) brightness(.96);-webkit-backdrop-filter:blur(2.6px) brightness(.96)}
-.bz-man .blot.dry .bg{backdrop-filter:blur(1.1px);-webkit-backdrop-filter:blur(1.1px)}
-.bz-man .blot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.bz-man .blot .tide{stroke-linejoin:round;vector-effect:non-scaling-stroke}
-.bz-man .blot.wet .tide{stroke:rgba(60,85,120,.4);stroke-width:1}.bz-man .blot.wet .s0{stop-color:rgba(100,130,170,.16)}.bz-man .blot.wet .s1{stop-color:rgba(100,130,170,.12)}.bz-man .blot.wet .s2{stop-color:rgba(75,100,140,.20)}.bz-man .blot.wet .s3{stop-color:rgba(60,85,120,.38)}
-.bz-man .blot.dry .tide{stroke:rgba(140,100,45,.7);stroke-width:2.2}.bz-man .blot.dry .s0{stop-color:rgba(170,135,80,.05)}.bz-man .blot.dry .s1{stop-color:rgba(170,135,80,.10)}.bz-man .blot.dry .s2{stop-color:rgba(150,110,55,.35)}.bz-man .blot.dry .s3{stop-color:rgba(130,90,40,.55)}
-.bz-man .blot .shine{fill:rgba(255,255,255,.4)}.bz-man .blot.dry .shine{display:none}
-.bz-man .blot .runs{position:absolute;inset:0}.bz-man .blot .run{position:absolute;width:2.5px;border-radius:2px;height:0;background:linear-gradient(rgba(40,55,100,.5),rgba(40,55,100,0))}.bz-man .blot.dry .run{background:linear-gradient(rgba(110,80,40,.45),rgba(110,80,40,0))}
-.bz-man .rip{position:absolute;width:90px;height:90px;border-radius:50%;border:2px solid rgba(80,110,150,.5);pointer-events:none}
+.sh-blots .blot{position:absolute;transform:translate(-50%,-50%);pointer-events:none}
+.sh-blots .blot .bg{position:absolute;inset:0;transition:backdrop-filter .8s;border-radius:50%;-webkit-mask-image:radial-gradient(closest-side,#000 62%,rgba(0,0,0,0) 100%);mask-image:radial-gradient(closest-side,#000 62%,rgba(0,0,0,0) 100%)}
+.sh-blots .blot.wet .bg{backdrop-filter:blur(2.6px) brightness(.96);-webkit-backdrop-filter:blur(2.6px) brightness(.96)}
+.sh-blots .blot.dry .bg{backdrop-filter:blur(1.1px);-webkit-backdrop-filter:blur(1.1px)}
+.sh-blots .blot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.sh-blots .blot .tide{stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.sh-blots .blot.wet .tide{stroke:rgba(60,85,120,.4);stroke-width:1}.sh-blots .blot.wet .s0{stop-color:rgba(100,130,170,.16)}.sh-blots .blot.wet .s1{stop-color:rgba(100,130,170,.12)}.sh-blots .blot.wet .s2{stop-color:rgba(75,100,140,.20)}.sh-blots .blot.wet .s3{stop-color:rgba(60,85,120,.38)}
+.sh-blots .blot.dry .tide{stroke:rgba(140,100,45,.7);stroke-width:2.2}.sh-blots .blot.dry .s0{stop-color:rgba(170,135,80,.05)}.sh-blots .blot.dry .s1{stop-color:rgba(170,135,80,.10)}.sh-blots .blot.dry .s2{stop-color:rgba(150,110,55,.35)}.sh-blots .blot.dry .s3{stop-color:rgba(130,90,40,.55)}
+.sh-blots .blot .shine{fill:rgba(255,255,255,.4)}.sh-blots .blot.dry .shine{display:none}
+.sh-blots .blot .runs{position:absolute;inset:0}.sh-blots .blot .run{position:absolute;width:2.5px;border-radius:2px;height:0;background:linear-gradient(rgba(40,55,100,.5),rgba(40,55,100,0))}.sh-blots .blot.dry .run{background:linear-gradient(rgba(110,80,40,.45),rgba(110,80,40,0))}
+.sh-blots .rip{position:absolute;width:90px;height:90px;border-radius:50%;border:2px solid rgba(80,110,150,.5);pointer-events:none}
 .pdrop{position:fixed;left:0;top:0;width:11px;height:15px;border-radius:50% 50% 50% 50%/70% 70% 30% 30%;background:radial-gradient(circle at 35% 30%,#fff,#9cc9f5 60%,#5b95d3);z-index:8;pointer-events:none}
 .bz-man h2{font-size:20px;margin-bottom:2px}.bz-man h3{margin:16px 0 4px;font-size:15px;border-bottom:1px solid #b9ae8c}.bz-man ol{padding-left:20px}.bz-man li{margin:3px 0}
 .bz-man .cols{display:flex;gap:10px;margin-top:6px}.bz-man .cols div{flex:1;border:1px solid #9a8f6c;padding:6px;text-align:center;font:22px/1.5 "Segoe UI Symbol","Apple Symbols",serif}.bz-man .cols small{display:block;font:11px Georgia}
@@ -142,7 +168,7 @@ const CSS = `
 .bay.shorted>*:not(.zap):not(.spark){animation:bzdim .16s steps(2) infinite}@keyframes bzdim{0%{filter:brightness(1)}50%{filter:brightness(.55) saturate(.6)}}
 .bay .zap{position:absolute;left:50%;top:-2px;transform:translateX(-50%);z-index:5;display:none;pointer-events:none;width:30px;height:40px;filter:drop-shadow(0 0 6px #ffe14d);animation:bzbolt .3s ease-in-out infinite alternate}
 .bay .zap svg{width:100%;height:100%}.bay.shorted .zap{display:block}@keyframes bzbolt{from{transform:translateX(-50%) scale(.9)}to{transform:translateX(-50%) scale(1.25)}}
-.bz-arcs{position:absolute;left:0;top:0;width:1260px;height:640px;pointer-events:none;z-index:4;overflow:visible}
+.bz-arcs{position:absolute;left:0;top:0;width:1264px;height:640px;pointer-events:none;z-index:4;overflow:visible}
 .bz-arcs polyline{fill:none;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px #6fd0ff) drop-shadow(0 0 8px #3aa8ff)}
 .smudge.hot{animation:bzhot .2s steps(2) infinite}@keyframes bzhot{0%{box-shadow:inset 0 -4px 6px rgba(0,0,0,.3),0 0 16px 6px rgba(110,210,255,.95)}50%{box-shadow:inset 0 -4px 6px rgba(0,0,0,.3),0 0 26px 10px rgba(255,245,170,.95)}}
 .bay .spark{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff6c2;box-shadow:0 0 8px 3px #ffb52e;z-index:5;pointer-events:none}
@@ -208,11 +234,10 @@ function open(opts) {
   el("div", "bz-table", null, bomb);
   const cs = el("div", "bz-case", null, bomb);
   const inn = el("div", "bz-in", null, cs);
-  const bookEl = el("div", "bz-item book", "<i></i>BOMB DEFUSAL<br>HANDBOOK<small>CLICK TO READ</small>", bomb);
   const clothEl = el("div", "bz-item cloth", "CLOTH<br>HOLD + DRAG<br>TO WIPE", bomb);
   const phoneEl = el("div", "bz-item phone", "<i>NEW<br>NOTIFICATIONS<br>(tap to scroll)</i>", bomb);
   const sweat = el("div", "bz-sweat", null, bomb);
-  const arcSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); arcSvg.setAttribute("class", "bz-arcs"); arcSvg.setAttribute("viewBox", "0 0 1260 640"); bomb.appendChild(arcSvg);
+  const arcSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); arcSvg.setAttribute("class", "bz-arcs"); arcSvg.setAttribute("viewBox", "0 0 1264 640"); bomb.appendChild(arcSvg);
   const vig = el("div", "bz-vig", null, root);
   const flash = el("div", "bz-flash", null, root);
   const hand = el("div", "bz-hand", `<svg viewBox="0 0 44 56" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fsk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6d2b2"/><stop offset="1" stop-color="#d79e76"/></linearGradient></defs>
@@ -248,7 +273,9 @@ function open(opts) {
   const bBtn = bay("btnbay", inn);
   const ledB = el("div", "led", null, bBtn);
   el("div", "hole", null, bBtn);
-  const cap = el("div", "cap", "", bBtn), strip = el("div", "strip", null, bBtn);
+  const cap = el("div", "cap", "", bBtn), strip = el("div", "strip", null, bBtn), btip = el("div", "btip", "", bBtn);
+  let tipTimer = 0;
+  function tip(text, bad, ms) { clearTimeout(tipTimer); btip.textContent = text || ""; btip.className = "btip" + (text ? " show" : "") + (bad ? " bad" : ""); if (text && ms) tipTimer = setTimeout(() => tip(""), ms); }
 
   const bWire = bay("wirebay", inn);
   const ledW = el("div", "led", null, bWire);
@@ -263,13 +290,18 @@ function open(opts) {
 
   const bVit = bay("vit", inn);
   el("div", "h", "OPERATOR MONITOR", bVit);
-  const rowS = el("div", "row s", '<label><span>STRESS (METER)</span><b>--</b></label><div class="bar"><i></i></div>', bVit); rowS.style.top = "44px";
+  const rowS = el("div", "row s", '<label><span>AROUSAL (BODY)</span><b>--</b></label><div class="bar"><i></i></div>', bVit); rowS.style.top = "44px";
   const rowM = el("div", "row f", '<label><span>MIND CLEAR (PHONE)</span><b>0%</b></label><div class="bar"><i style="background:linear-gradient(90deg,#3fd6a0,#7be8ff)"></i></div>', bVit); rowM.style.top = "90px";
   const vNote = el("div", "note", "", bVit);
   const effect = el("div", "row", '<label><span>HAND TREMOR</span><b id="bzT">0 px</b></label><label style="margin-top:5px"><span>CLOCK SPEED</span><b id="bzC">x1.00</b></label><label style="margin-top:5px"><span>HEART RATE</span><b id="bzH">64 bpm</b></label><label style="margin-top:4px"><span>SWEAT ON BOMB</span><b id="bzW">0</b></label><label style="margin-top:4px"><span>CALM MODE</span><b id="bzK">ready</b></label>', bVit); effect.style.top = "138px";
 
   /* manual */
-  const manWrap = el("div", "bz-manwrap", null, root);
+  /* the sheet lies on the table as a booklet. Picking it up holds it in front of the bomb, so you cannot read and work at once */
+  const bookEl = el("div", "bz-item book", "<i></i>SERVICE SHEET<small>CLICK TO READ (M)</small>", bomb);
+  const manDim = el("div", "bz-mandim", null, bomb);
+  const manWrap = el("div", "bz-manwrap", null, bomb);
+  const manPut = el("div", "bz-manput", "PUT DOWN (M)", manWrap);
+  el("div", "bz-clip", null, manWrap);
   const man = el("div", "bz-man", "", manWrap);
   const manHand = el("div", "bz-manhand", `<svg viewBox="0 0 230 310" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="hsk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3cfae"/><stop offset="1" stop-color="#d49a72"/></linearGradient><linearGradient id="hsl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4b6d"/><stop offset="1" stop-color="#202a40"/></linearGradient></defs>
 <ellipse cx="98" cy="150" rx="24" ry="48" fill="rgba(0,0,0,.2)" transform="rotate(-18 98 150)"/>
@@ -281,11 +313,12 @@ function open(opts) {
 <ellipse cx="75" cy="111" rx="8" ry="11" fill="#f8e2d2" stroke="#c68e6b" stroke-width="1.2" transform="rotate(-20 75 111)"/>
 <path d="M112 168 C122 176 132 186 138 196" fill="none" stroke="#b27a58" stroke-width="1.4" opacity=".6"/></svg>`, manWrap);
   let manKick = 0, blotId = 0;
-  man.innerHTML = `<div class="paper"></div>`;
-  const paper = man.querySelector(".paper"); const mclose = el("button", "mclose", "PUT DOWN", null); man.insertBefore(mclose, man.firstChild); mclose.onclick = () => toggleManual(false); let blots = [], pdrops = [], pAcc = 0;
+  man.innerHTML = `<div class="sh-tabs"><div class="sh-tab" data-t="wires">WIRES</div><div class="sh-tab" data-t="button">BUTTON</div><div class="sh-tab" data-t="keypad">KEYPAD</div></div><div class="sh-page"></div><div class="sh-blots"></div>`;
+  man.style.display = "block";
+  const paper = man.querySelector(".sh-page"), blotLayer = man.querySelector(".sh-blots"), tabEls = [...man.querySelectorAll(".sh-tab")]; let blots = [], pdrops = [], pAcc = 0, tab = "wires";
 
   /* test tools */
-  const tools = el("div", "bz-tools", `<b style="letter-spacing:.2em;color:#e6c46a">MANUAL TEST MODE</b><label>Stress <input type="range" id="bzSl" min="0" max="100" value="0"><b id="bzSv">0</b></label><small>0 = calm, 100 = maximum stress</small><label><input type="checkbox" id="bzNo"> simulate "no reading"</label>`, root);
+  const tools = el("div", "bz-tools", `<b style="letter-spacing:.2em;color:#e6c46a">MANUAL TEST MODE</b><label>Arousal <input type="range" id="bzSl" min="0" max="100" value="0"><b id="bzSv">0</b></label><small>0 = at rest, 100 = fully worked up</small><label><input type="checkbox" id="bzNo"> simulate "no reading"</label>`, root);
   const sl = tools.querySelector("#bzSl"), sv = tools.querySelector("#bzSv"), no = tools.querySelector("#bzNo");
   sl.addEventListener("input", () => { sv.textContent = sl.value; });
 
@@ -299,6 +332,13 @@ function open(opts) {
   });
   phoneUi.querySelector("#phDown").onclick = () => togglePhone(false);
   const endEl = el("div", "bz-end", "", root);
+  const introEl = el("div", "bz-end", `<div class="card" style="max-width:600px;text-align:left"><h1 style="text-align:center;color:#ffd166;font-size:26px">BRIEFING</h1>
+    <p style="text-align:left"><b style="color:#fff">1. Pick up the service sheet</b> (click the booklet on the right, or press M). It is written for this bomb only. While you read it you cannot see or touch the bomb, and the clock keeps running, so remember what you need and put it down (M, or click anywhere else).</p>
+    <p style="text-align:left"><b style="color:#fff">2. Stay calm.</b> The more worked up your body gets, the more your finger shakes and the more you sweat. Three drops on one module short it out: hold the <b style="color:#9cc9f5">cloth</b> and drag it over the drops. Drops also soak the sheet.</p>
+    <p style="text-align:left"><b style="color:#fff">3. One lifeline.</b> Scroll the <b style="color:#b79cff">phone</b> to the end for a short calm mode. The clock keeps running while you scroll.</p>
+    <p style="color:#ff9a8f">Three strikes or 00:00 and it goes off.</p>
+    <div class="row"><button class="bz-btn" id="bzGo" style="background:#2a5bd6;font-weight:700;padding:10px 26px">START (Enter)</button></div></div>`, root);
+  introEl.querySelector("#bzGo").onclick = () => begin();
   const bayOf = { timer: bTimer, info: bInfo, button: bBtn, wires: bWire, keypad: bKey, vitals: bVit };
   let mode = opts.mode || ((opts.stress || opts.focus) ? "live" : "test");
   function setMode(m) {
@@ -310,69 +350,67 @@ function open(opts) {
   bMode.onclick = () => { if (S && S.state === "running" && S.t > 1 && !confirm("Switching mode mid-game mixes test and real readings in this run's results. Switch anyway?")) return; setMode(mode === "test" ? "live" : "test"); };
 
   /* ---------- the service sheet: written for THIS bomb only (rules differ on every bomb) ---------- */
+  function setTab(t) { tab = t; beep(700, .03, "triangle", .03); renderManual(); }
   function renderManual() {
     const lv = level, HEX = { red: "#e0281c", blue: "#2f78ff", yellow: "#f4cf1a", white: "#eef1f4", black: "#23272b", green: "#2fb37a" };
-    const dot = c => `<span class="dot" style="background:${HEX[c]}"></span>`;
-    /* a tiny five-wire panel: coloured slots are shown, grey dashes are "any"; a scissors marks the wire to cut */
+    const dot = c => `<span class="sh-dot" style="background:${HEX[c]}"></span>`;
+    tabEls.forEach(e => { e.classList.toggle("on", e.dataset.t === tab); e.classList.toggle("ok", !!(S && S.solved[e.dataset.t])); });
+    /* a tiny five-wire panel: coloured wires are the ones that matter, dashes are "any"; the red tag marks the wire to cut */
     const panel = (colors, cut) => {
-      let h = `<svg width="96" height="64" viewBox="0 0 96 64">`;
+      let h = `<svg width="84" height="66" viewBox="0 0 84 66">`;
       for (let i = 0; i < 5; i++) {
-        const y = 8 + i * 12, c = colors[i];
-        h += c ? `<line x1="6" y1="${y}" x2="70" y2="${y}" stroke="#222" stroke-width="8" stroke-linecap="round"/><line x1="6" y1="${y}" x2="70" y2="${y}" stroke="${HEX[c]}" stroke-width="5" stroke-linecap="round"/>`
-               : `<line x1="6" y1="${y}" x2="70" y2="${y}" stroke="#c9c0a3" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 5"/>`;
+        const y = 9 + i * 12, c = colors[i];
+        h += c ? `<line x1="6" y1="${y}" x2="58" y2="${y}" stroke="#222" stroke-width="8" stroke-linecap="round"/><line x1="6" y1="${y}" x2="58" y2="${y}" stroke="${HEX[c]}" stroke-width="5" stroke-linecap="round"/>`
+               : `<line x1="6" y1="${y}" x2="58" y2="${y}" stroke="${cut === i ? "#8a7f5e" : "#c9c0a3"}" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 5"/>`;
       }
-      if (cut >= 0) h += `<circle cx="80" cy="${8 + cut * 12}" r="9" fill="#b3302a"/><text x="80" y="${8 + cut * 12 + 5}" font-size="13" text-anchor="middle" fill="#fff">✂</text>`;
+      if (cut >= 0) h += `<circle cx="70" cy="${9 + cut * 12}" r="10" fill="#b3302a"/><text x="70" y="${9 + cut * 12 + 5}" font-size="13" text-anchor="middle" fill="#fff">✂</text>`;
       return h + `</svg>`;
     };
     const none5 = [null, null, null, null, null];
-    const wireRow = r => {
-      let cond, act;
-      switch (r.type) {
-        case "lastParity": cond = panel([null, null, null, null, r.color], -1) + `<span class="chip"># ${r.parity}</span>`; break;
-        case "oneAndMore": cond = `<span class="chip">1× ${dot(r.a)}</span><span class="chip">2+× ${dot(r.b)}</span>`; break;
-        case "none": cond = `<span class="chip">0× ${dot(r.color)}</span>`; break;
-        case "atLeast": cond = `<span class="chip">${r.n}+× ${dot(r.color)}</span>`; break;
-        case "firstIs": cond = panel([r.color, null, null, null, null], -1); break;
-        default: cond = `<span class="chip">else</span>`;
-      }
-      act = r.type === "atLeast" ? `<span class="chip">✂ last ${dot(r.color)}</span>` : panel(none5, r.cut) + `<span class="num">${r.cut + 1}</span>`;
-      return `<div class="mrow"><div class="cond">${cond}</div><span class="arrow">➜</span><div class="cond" style="flex:none">${act}</div></div>`;
-    };
-    const actIcon = a => a === "hold" ? `<span class="act hold"><i></i>HOLD</span>` : `<span class="act tap"><i></i>TAP</span>`;
-    const btnRow = r => {
-      let cond;
-      switch (r.type) {
-        case "colorLabel": cond = `<span class="chip">${dot(r.color)} ${r.label}</span>`; break;
-        case "color": cond = `<span class="chip">${dot(r.color)}</span>`; break;
-        case "label": cond = `<span class="chip">${r.label}</span>`; break;
-        default: cond = `<span class="chip">else</span>`;
-      }
-      return `<div class="mrow"><div class="cond">${cond}</div><span class="arrow">➜</span>${actIcon(r.action)}</div>`;
-    };
-    const sd = lv.serial, serial = sd.slice(0, -1) + `<u>${sd.slice(-1)}</u>`;
-    const strips = L.STRIP_COLORS.map(c => `<div><span style="background:${HEX[c]}"></span><b>${lv.button.stripDigits[c]}</b></div>`).join("");
-    const cols = lv.keypad.columns.map(c => `<div><small>↓</small>${c.map(x => `<div>${x}</div>`).join("")}</div>`).join("");
-    paper.innerHTML = `<div class="serialbox"><span class="sn">${serial}</span></div>
-     <div class="sec">WIRES</div>${lv.wires.rules.map(wireRow).join("")}
-     <div class="sec">BUTTON</div>${lv.button.rules.map(btnRow).join("")}
-     <div class="sec">HOLD? RELEASE WHEN THE CLOCK SHOWS</div><div class="strips">${strips}</div>
-     <div class="sec">KEYPAD</div><div class="kcols">${cols}</div>
-     <div class="foot">💧 wet? wipe it &nbsp;·&nbsp; 📱 shaky? scroll</div>`;
-    bookEl.innerHTML = `<i></i>SERVICE SHEET<br><span style="font-family:Menlo,monospace;letter-spacing:.1em">${lv.serial}</span><small>CLICK TO READ</small>`;
+    const sn = `<div class="sh-sn"><span>SERIAL</span><b>${lv.serial.slice(0, -1)}<u>${lv.serial.slice(-1)}</u></b></div>`;
+    let body;
+    if (tab === "wires") {
+      const row = (r, i) => {
+        let cond, act;
+        switch (r.type) {
+          case "lastParity": cond = panel([null, null, null, null, r.color], -1) + `<span class="sh-t">bottom wire is ${dot(r.color)}<br>and serial ends <b>${r.parity.toUpperCase()}</b><br><small>${r.parity === "odd" ? "1 3 5 7 9" : "0 2 4 6 8"}</small></span>`; break;
+          case "oneAndMore": cond = `<span class="sh-t">exactly <b>1</b> ${dot(r.a)}<br>and <b>2 or more</b> ${dot(r.b)}</span>`; break;
+          case "none": cond = `<span class="sh-t"><b>no</b> ${dot(r.color)} wire at all</span>`; break;
+          case "atLeast": cond = `<span class="sh-t"><b>${r.n} or more</b> ${dot(r.color)}</span>`; break;
+          case "firstIs": cond = panel([r.color, null, null, null, null], -1) + `<span class="sh-t">top wire is ${dot(r.color)}</span>`; break;
+          default: cond = `<span class="sh-t">anything else</span>`;
+        }
+        act = r.type === "atLeast" ? `<span class="sh-t" style="text-align:center">✂ the <b>lowest</b><br>${dot(r.color)} wire</span>` : panel(none5, r.cut) + `<span class="sh-ord">${L.ORD[r.cut]}</span>`;
+        return `<div class="sh-row"><span class="sh-n">${i + 1}</span><div class="sh-if">${cond}</div><span class="sh-ar">➜</span><div class="sh-do">${act}</div></div>`;
+      };
+      body = `<div class="sh-h">Cut ONE wire. Read down and use the <u>first</u> line that fits. Wires count from the top.</div>${lv.wires.rules.map(row).join("")}`;
+    } else if (tab === "button") {
+      const btn = r => r.type === "otherwise" ? `<span class="sh-t">anything else</span>` :
+        `<span class="sh-btn ${r.color ? "" : "any"}" style="${r.color ? `background:${HEX[r.color]};color:${r.color === "white" || r.color === "yellow" ? "#222" : "#fff"}` : ""}">${r.label || "any"}</span><span class="sh-t">${r.color ? `<b>${r.color}</b> button` : "any colour"}${r.label ? `<br>that says <b>${r.label}</b>` : "<br>any word"}</span>`;
+      const row = (r, i) => `<div class="sh-row" style="min-height:66px"><span class="sh-n">${i + 1}</span><div class="sh-if">${btn(r)}</div><span class="sh-ar">➜</span><div class="sh-do"><span class="sh-act ${r.action}"><i></i>${r.action.toUpperCase()}</span></div></div>`;
+      body = `<div class="sh-h">Tap or hold? Use the <u>first</u> line that fits. A tap is a quick press.</div>${lv.button.rules.map(row).join("")}
+        <div class="sh-h" style="margin-top:8px">If you HOLD: a strip lights up. Let go when the clock shows that strip's digit anywhere <small style="color:#7a6b43">(02:41 has a 4)</small>.</div>
+        <div class="sh-strips">${L.STRIP_COLORS.map(c => `<div class="${S && S.stripLit && c === lv.button.strip ? "lit" : ""}"><span style="background:${HEX[c]}"></span><b>${lv.button.stripDigits[c]}</b></div>`).join("")}</div>`;
+    } else {
+      body = `<div class="sh-h">One column has all 4 of your symbols. Press them in that column's order, top to bottom.</div>
+        <div class="sh-cols">${lv.keypad.columns.map(c => `<div><small>↓</small>${c.map(x => `<div>${x}</div>`).join("")}</div>`).join("")}</div>`;
+    }
+    paper.innerHTML = sn + body;
   }
 
   /* ---------- level setup ---------- */
-  function build(seed) {
+  function build(seed, withIntro) {
     level = L.makeLevel(seed); level.timeLimit = T.timeLimit; level.maxStrikes = T.maxStrikes;
-    S = { remaining: level.timeLimit, strikes: 0, state: "running", solved: { wires: false, button: false, keypad: false }, cut: [false, false, false, false, false],
+    S = { remaining: level.timeLimit, strikes: 0, state: withIntro ? "intro" : "running", solved: { wires: false, button: false, keypad: false }, cut: [false, false, false, false, false],
       pressAt: null, pressItem: null, progress: 0, stressSm: 0, stressSum: 0, stressHi: 0, calm: 0, calmPeak: 0, phoneSec: 0, feedDone: false, atEnd: false, calmUntil: null, calmAt: null, phone: false, cloth: false, t: 0, nextGlitch: 6, glitchUntil: 0, lastSec: -1, events: [], slips: 0, drops: 0, wipes: 0, blocked: 0, blots: 0, nextSpike: 4, spikeUntil: 0, beat: 0, lastBeat: 0 };
+    manWrap.classList.remove("open"); manDim.classList.remove("open"); bookEl.classList.remove("lifted");
     pdrops.forEach(d => d.e.remove()); pdrops = []; blots.forEach(b => b.e.remove()); blots = []; pAcc = 0;
     drops.forEach(d => d.e.remove()); drops = []; smudges.forEach(m => m.e.remove()); smudges = []; sweat.innerHTML = ""; spawnAcc = 0;
-    items.length = 0; toggleManual(false); togglePhone(false); clothUp(); bWire.querySelectorAll('.hit').forEach(x => x.remove());
+    items.length = 0; togglePhone(false); clothUp(); tab = "wires"; bWire.querySelectorAll('.hit').forEach(x => x.remove());
     plate.lastChild.textContent = level.serial;
     ledB.className = ledW.className = ledK.className = "led";
     feed.innerHTML = ""; calmBadge.style.display = "none"; calmFx.style.opacity = 0; phoneEl.innerHTML = "<i>NEW<br>NOTIFICATIONS<br>(tap to scroll)</i>";
-    reg(bookEl, () => toggleManual()); reg(phoneEl, () => togglePhone(true)); reg(clothEl, clothDown, clothUp);
+    tabEls.forEach(e => reg(e, () => setTab(e.dataset.t))); reg(bookEl, () => toggleManual(true)); reg(manPut, () => toggleManual(false)); reg(man, () => {}); reg(phoneEl, () => togglePhone(true)); reg(clothEl, clothDown, clothUp);
     /* wires */
     wsvg.innerHTML = "";
     level.wires.colors.forEach((c, i) => drawWire(i, false));
@@ -382,7 +420,7 @@ function open(opts) {
     }
     /* button */
     cap.className = "cap c-" + level.button.color; cap.textContent = level.button.label;
-    strip.className = "strip"; strip.style.color = "";
+    strip.className = "strip"; strip.style.color = ""; tip("");
     reg(cap, pressButton, releaseButton);
     /* keypad */
     kGrid.innerHTML = ""; [...kLeds.children].forEach(i => i.className = "");
@@ -390,8 +428,10 @@ function open(opts) {
     strikeBox.querySelectorAll("i").forEach(i => i.className = "");
     updMods(); endEl.style.display = "none"; root.classList.remove("bz-glitch");
     renderManual();
-    emit("start", { seed: level.seed, serial: level.serial, mode });
+    introEl.style.display = withIntro ? "flex" : "none";
+    if (!withIntro) emit("start", { seed: level.seed, serial: level.serial, mode });
   }
+  function begin() { if (S.state !== "intro") return; S.state = "running"; introEl.style.display = "none"; if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (x) { /* no sound */ } } emit("start", { seed: level.seed, serial: level.serial, mode }); }
   function drawWire(i, cut) {
     const y0 = 22 + i * 44, col = WIRE_HEX[level.wires.colors[i]], pts = [];
     for (let k = 0; k <= 24; k++) pts.push([10 + k * (242 / 24), y0 + 7 * Math.sin(k * 0.55 + i * 1.7)]);
@@ -424,7 +464,7 @@ function open(opts) {
   }
   function solveModule(name, led) {
     S.solved[name] = true; led.classList.add("on"); beep(988, .12, "square", .05); setTimeout(() => beep(1320, .18, "square", .05), 110);
-    emit("module_solved", { module: name }); updMods();
+    emit("module_solved", { module: name }); updMods(); renderManual();
     if (Object.values(S.solved).every(Boolean)) win();
   }
   const nSolved = () => Object.values(S.solved).filter(Boolean).length;
@@ -439,14 +479,21 @@ function open(opts) {
   function pressButton() {
     if (S.state !== "running" || S.solved.button) return;
     if (shorted("button")) return zapBlocked("button");
-    S.pressAt = performance.now(); cap.classList.add("dn"); beep(300, .05, "square", .05);
+    S.pressAt = performance.now(); cap.classList.add("dn"); beep(300, .05, "square", .05); tip("");
   }
   function releaseButton() {
     if (S.pressAt == null) return;
     const held = (performance.now() - S.pressAt) / 1000; S.pressAt = null; cap.classList.remove("dn"); strip.className = "strip"; strip.style.color = "";
     if (S.state !== "running") return;
+    const wasLit = S.stripLit; S.stripLit = false; if (wasLit) renderManual();
     const r = L.judgeButton(level, held, clockDigits());
-    if (r === "solved") solveModule("button", ledB); else strike("button");
+    if (r === "solved") { tip(""); solveModule("button", ledB); }
+    else {
+      /* say what went wrong so a strike teaches something */
+      const tapped = held < L.TAP_MAX;
+      tip(level.button.action === "tap" ? "Held too long. Check the sheet: tap or hold?" : tapped ? "Too quick. Check the sheet: tap or hold?" : "Let go at the wrong moment. The clock must show the strip's number.", true, 4500);
+      strike("button");
+    }
   }
   function pressKey(k, sym) {
     if (S.state !== "running" || S.solved.keypad) return;
@@ -488,11 +535,11 @@ function open(opts) {
   }
   function paperSplat(d) {
     d.e.remove(); beep(1300 + Math.random() * 500, .04, "sine", .02); manKick = Math.min(10, manKick + 4);
-    const pr = paper.getBoundingClientRect(), R = 24 + Math.random() * 30, W = R * 2, H = R * 1.8, id = ++blotId, n = 14, pts = [];
+    const pr = blotLayer.getBoundingClientRect(), R = 22 + Math.random() * 26, W = R * 2, H = R * 1.8, id = ++blotId, n = 14, pts = [];
     const ph1 = Math.random() * 6.28, ph2 = Math.random() * 6.28, ph3 = Math.random() * 6.28;
     for (let i = 0; i < 36; i++) { const a = i / 36 * Math.PI * 2, r = 0.8 + 0.1 * Math.sin(2 * a + ph1) + 0.07 * Math.sin(3 * a + ph2) + 0.04 * Math.sin(5 * a + ph3); pts.push([50 + Math.cos(a) * r * 50, 50 + Math.sin(a) * r * 50]); }
     const poly = "polygon(" + pts.map(p => p[0].toFixed(1) + "% " + p[1].toFixed(1) + "%").join(",") + ")", path = "M" + pts.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L") + " Z";
-    const x = d.x - pr.left, y = d.ty - pr.top, e = el("div", "blot wet", null, paper);
+    const x = (d.x - pr.left) / k, y = (d.ty - pr.top) / k, e = el("div", "blot wet", null, blotLayer);
     e.style.cssText = `left:${x}px;top:${y}px;width:${W}px;height:${H}px`;
     e.innerHTML = `<div class="bg"></div><svg viewBox="0 0 100 100" preserveAspectRatio="none"><defs><radialGradient id="rg${id}"><stop class="s0" offset="0"/><stop class="s1" offset=".7"/><stop class="s2" offset=".94"/><stop class="s3" offset="1"/></radialGradient></defs><path d="${path}" fill="url(#rg${id})" class="tide"/><ellipse class="shine" cx="38" cy="32" rx="14" ry="8" transform="rotate(-25 38 32)"/></svg><div class="runs"></div>`;
     const runs = e.querySelector(".runs");
@@ -500,9 +547,9 @@ function open(opts) {
       const r = el("i", "run", null, runs); r.style.left = 22 + Math.random() * 56 + "%"; r.style.top = 58 + Math.random() * 20 + "%";
       r.animate([{ height: "0px", opacity: 0 }, { height: 30 + Math.random() * 60 + "px", opacity: 1 }], { duration: 4000 + Math.random() * 5000, easing: "ease-out", fill: "forwards" });
     }
-    const rp = el("i", "rip", null, paper); rp.style.left = x + "px"; rp.style.top = y + "px";
+    const rp = el("i", "rip", null, blotLayer); rp.style.left = x + "px"; rp.style.top = y + "px";
     rp.animate([{ transform: "translate(-50%,-50%) scale(.2)", opacity: .6 }, { transform: "translate(-50%,-50%) scale(1.6)", opacity: 0 }], { duration: 700 }).onfinish = () => rp.remove();
-    blots.push({ e, wet: true, born: S.t }); S.blots++; if (blots.length > 14) blots.shift().e.remove();
+    blots.push({ e, wet: true, born: S.t }); S.blots++; if (blots.length > 10) blots.shift().e.remove();
     emit("paper_wet", {});
   }
   function dryBlot(bl) { if (!bl.wet) return; bl.wet = false; bl.e.className = "blot dry"; }
@@ -557,19 +604,25 @@ function open(opts) {
   }
   /* ---------- table objects: manual, cloth, phone ---------- */
   function toggleManual(open) {
-    const want = open == null ? man.style.display !== "block" : open;
-    man.style.display = want ? "block" : "none"; manWrap.style.display = want ? "block" : "none"; bookEl.style.opacity = want ? ".55" : "";
-    if (want) togglePhone(false);
+    if (!S) return;
+    if (open == null) open = !S.manual;
+    if (open && (S.state !== "running" || S.pressAt != null || S.phone)) return;   /* hands are busy */
+    S.manual = !!open; manWrap.classList.toggle("open", S.manual); manDim.classList.toggle("open", S.manual); bookEl.classList.toggle("lifted", S.manual);
+    if (!S.manual) { pdrops.forEach(d => d.e.remove()); pdrops = []; }
+    beep(S.manual ? 620 : 420, .04, "triangle", .04); emit(S.manual ? "manual_open" : "manual_close", {});
   }
   function clothDown() {
     if (!S || S.state !== "running") return;
-    if (man.style.display === "block") { const n = blots.filter(b => b.wet).length; blots.forEach(dryBlot); if (n) { beep(260, .1, "triangle", .04); emit("dab", { blotches: n }); } return; }
     S.cloth = true; clothEl.classList.add("lifted"); clothHeld.style.display = "block"; beep(250, .06, "triangle", .04);
   }
   function clothUp() { if (S) S.cloth = false; clothEl.classList.remove("lifted"); clothHeld.style.display = "none"; }
   function wipeWithCloth() {
-    if (!handPos || !smudges.length) return;
+    if (!handPos) return;
     let n = 0;
+    for (let i = blots.length - 1; i >= 0; i--) {
+      const r = blots[i].e.getBoundingClientRect();
+      if (blots[i].wet && Math.hypot(handPos[0] - (r.left + r.width / 2), handPos[1] - (r.top + r.height / 2)) < Math.max(r.width, r.height) / 2 + 30 * k) { blots[i].e.remove(); blots.splice(i, 1); n++; }
+    }
     for (let i = smudges.length - 1; i >= 0; i--) {
       const r = smudges[i].e.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
       if (Math.hypot(handPos[0] - cx, handPos[1] - cy) < Math.max(r.width, r.height) / 2 + 36 * k) { smudges[i].e.remove(); smudges.splice(i, 1); n++; }
@@ -616,7 +669,7 @@ function open(opts) {
   }
   function togglePhone(open) {
     if (!S) return; const was = S.phone; S.phone = !!open && S.state === "running"; phoneUi.style.display = S.phone ? "flex" : "none"; phoneEl.style.opacity = S.phone ? ".4" : "";
-    if (S.phone) { toggleManual(false); if (!feed.children.length) buildFeed(); S.atEnd = false; }
+    if (S.phone) { if (!feed.children.length) buildFeed(); S.atEnd = false; }
     if (S.phone !== was) emit(S.phone ? "phone_up" : "phone_down", { calm: +S.calm.toFixed(2) });
   }
   function slipAt(x, y) { /* a press on a wet patch slides mostly downward */
@@ -638,20 +691,22 @@ function open(opts) {
       phoneSeconds: +S.phoneSec.toFixed(1), calmModeUsed: S.feedDone, calmModeAtSec: S.calmAt, peakMindClear: +S.calmPeak.toFixed(2), events: S.events.slice() };
   }
   function finish(kind, title, msg) {
+    if (S && S.manual) toggleManual(false);
     S.state = kind; const sm = summary();
     endEl.innerHTML = `<div class="card ${kind === "won" ? "win" : "lose"}"><h1>${title}</h1><p>${msg}</p><div class="stats">
       <div><span>Time played</span><b>${sm.secondsPlayed} s</b></div><div><span>Clock left</span><b>${sm.clockLeft} s</b></div><div><span>Strikes</span><b>${sm.strikes} / ${level.maxStrikes}</b></div>
-      <div><span>Modules solved</span><b>${sm.modulesSolved} / 3</b></div><div><span>Average stress (0-1)</span><b>${sm.avgStress}</b></div><div><span>Seconds under high stress</span><b>${sm.secondsHighStress}</b></div>
+      <div><span>Modules solved</span><b>${sm.modulesSolved} / 3</b></div><div><span>Average arousal (0-1)</span><b>${sm.avgStress}</b></div><div><span>Seconds above 50% arousal</span><b>${sm.secondsHighStress}</b></div>
       <div><span>Paper blotches</span><b>${sm.paperBlots}</b></div><div><span>Sweat drops / slips / shorted presses</span><b>${sm.sweatDrops} / ${sm.slips} / ${sm.blockedPresses}</b></div><div><span>Time on the phone / calm mode</span><b>${sm.phoneSeconds} s / ${sm.calmModeUsed ? "used" : "not used"}</b></div><div><span>Mode</span><b>${mode === "test" ? "manual test (not real data)" : "live (Muse)"}</b></div><div><span>Seed</span><b>${sm.seed}</b></div></div>
       <div class="row"><button class="bz-btn" id="bzNew">NEW BOMB</button><button class="bz-btn" id="bzRe">RETRY THIS BOMB</button><button class="bz-btn" id="bzEx">EXIT</button></div></div>`;
     endEl.style.display = "flex";
-    endEl.querySelector("#bzNew").onclick = () => build();
-    endEl.querySelector("#bzRe").onclick = () => build(level.seed);
+    endEl.querySelector("#bzNew").onclick = () => build(undefined, false);
+    endEl.querySelector("#bzRe").onclick = () => build(level.seed, false);
     endEl.querySelector("#bzEx").onclick = close;
     emit(kind === "won" ? "defused" : "explode", sm); emit("finish", sm);
   }
   function win() { beep(660, .15, "triangle", .06); setTimeout(() => beep(880, .15, "triangle", .06), 150); setTimeout(() => beep(1320, .3, "triangle", .06), 300); finish("won", "DEFUSED", "Nice work. The bomb is safe."); }
   function explode(why) {
+    if (S && S.manual) toggleManual(false);
     if (S.state !== "running") return; S.state = "lost"; boomSound();
     flash.style.transition = "none"; flash.style.opacity = "1"; requestAnimationFrame(() => { flash.style.transition = "opacity 1.4s"; flash.style.opacity = "0"; });
     bomb.style.filter = "brightness(.35)";
@@ -680,7 +735,9 @@ function open(opts) {
     if (S.state === "running") handPos = slipAt(handPos[0], handPos[1]);
     if (S.state !== "running") return;
     hand.classList.add("dn");
-    const it = hit(handPos[0], handPos[1]); downItem = it; if (it && it.down) it.down();
+    const it = hit(handPos[0], handPos[1]);
+    if (S.manual && !(it && (manWrap.contains(it.el) || it.el === clothEl))) { toggleManual(false); downItem = null; return; }   /* any click off the sheet puts it down */
+    downItem = it; if (it && it.down) it.down();
   });
   function up() { hand.classList.remove("dn"); if (downItem && downItem.up) downItem.up(); downItem = null; }
   window.addEventListener("pointerup", up);
@@ -706,11 +763,14 @@ function open(opts) {
       if (S.remaining <= 0) { S.remaining = 0; explode("time"); }
       if (s > T.glitchStress && S.t > S.nextGlitch) { S.glitchUntil = S.t + 0.7; S.nextGlitch = S.t + 6 + Math.random() * 6; beep(70, .5, "sawtooth", .05); root.classList.add("bz-glitch"); setTimeout(() => root.classList.remove("bz-glitch"), 700); }
       spawnAcc += L.sweatRate(s, T) * dt; while (spawnAcc >= 1) { spawnAcc -= 1; spawnDrop(); }
-      if (man.style.display === "block") { pAcc += L.sweatRate(s, T) * 0.7 * dt; while (pAcc >= 1) { pAcc -= 1; spawnPaperDrop(); } }
+      if (S.manual) { pAcc += L.sweatRate(s, T) * 0.45 * dt; while (pAcc >= 1) { pAcc -= 1; spawnPaperDrop(); } }
       if (s > 0.5 && S.t > S.nextSpike) { S.spikeUntil = S.t + 0.45; S.nextSpike = S.t + 3 + Math.random() * 3; }
       S.beat += dt * L.heartBpm(s) / 60;
       if (Math.floor(S.beat) > S.lastBeat) { S.lastBeat = Math.floor(S.beat); if (s > 0.25) { beep(60, .12, "sine", .09); setTimeout(() => beep(52, .1, "sine", .06), 210); } }
-      if (S.pressAt != null && (performance.now() - S.pressAt) / 1000 > 0.4) { strip.className = "strip on stripc-" + level.button.strip; }
+      if (S.pressAt != null && (performance.now() - S.pressAt) / 1000 > 0.4) {
+        strip.className = "strip on stripc-" + level.button.strip;
+        if (!S.stripLit) { S.stripLit = true; tip(level.button.strip.toUpperCase() + " strip. Keep holding. Let go when the clock shows its number (see sheet)."); tab = "button"; renderManual(); }
+      }
     }
     if (S.state === "running" || S.state === "won") {
       let str = clockDigits(); if (S.state === "running" && (S.t < S.glitchUntil || shorted("timer"))) str = String(Math.floor(Math.random() * 9000 + 1000));
@@ -732,10 +792,10 @@ function open(opts) {
     const tt = now / 1000;
     const sp = S.t < S.spikeUntil ? 1 + 1.2 * Math.sin(Math.PI * (1 - (S.spikeUntil - S.t) / 0.45)) : 1;
     const step = Math.floor(tt * 40), nz = (i, sd) => { const x = Math.sin((i + sd * 17.3) * 127.1 + sd * 311.7) * 43758.5453; return (x - Math.floor(x)) * 2 - 1; };   /* 40 Hz hash noise: fast jumps, not a smooth wobble */
-    if (man.style.display === "block") {
+    {
       manKick *= Math.exp(-dt * 6);
-      const a = (shake * 0.42 + 0.35) * (sp > 1 ? 1.8 : 1), rot = nz(step, 7) * (s * 1.1 + 0.12);
-      manWrap.style.transform = `translate(${(nz(step, 5) * a).toFixed(2)}px,${(nz(step, 6) * a + manKick).toFixed(2)}px) rotate(${rot.toFixed(3)}deg)`;
+      const a = (shake * 0.16 + 0.1) * (sp > 1 ? 1.6 : 1), rot = nz(step, 7) * (s * 0.45 + 0.03);
+      manWrap.style.transform = `translate(${(nz(step, 5) * a).toFixed(2)}px,${(nz(step, 6) * a + manKick * 0.5).toFixed(2)}px) rotate(${rot.toFixed(3)}deg)`;
     }
     const f60 = Math.floor(tt * 60);
     jit = [shake * sp * k * (0.7 * nz(f60, 1) + 0.3 * Math.sin(tt * 75)), shake * sp * k * (0.7 * nz(f60, 3) + 0.3 * Math.sin(tt * 66 + 2))];
@@ -748,17 +808,20 @@ function open(opts) {
     effect.querySelector("#bzT").textContent = shake.toFixed(1) + " px"; effect.querySelector("#bzC").textContent = "x" + rate.toFixed(2); effect.querySelector("#bzH").textContent = Math.round(L.heartBpm(s)) + " bpm"; effect.querySelector("#bzW").textContent = smudges.length;
     effect.querySelector("#bzK").textContent = calmNow ? Math.ceil(S.calmUntil - S.t) + " s" : S.feedDone ? "used" : "ready";
     calmBadge.style.display = calmNow && S.state === "running" ? "flex" : "none"; calmFx.style.opacity = calmNow && S.state === "running" ? 1 : 0; if (calmNow) calmBadge.querySelector("#cmT").textContent = Math.ceil(S.calmUntil - S.t) + " s left: shaking and sweat paused";
-    vNote.textContent = mode === "test" ? "MANUAL TEST MODE: stress is set by the slider. Results are not real data." : noRead ? "LIVE MODE: no stress reading yet. Connect the headband and calibrate the stress meter in the panel. Until then there are no stress effects." : "LIVE MODE: driven by the experimental stress meter (heart rate, frontal beta/alpha, face tension). Not a validated stress measure.";
+    vNote.textContent = mode === "test" ? "MANUAL TEST MODE: arousal is set by the slider. Results are not real data." : noRead ? "LIVE MODE: no arousal reading yet. Connect the headband and sit still for 15 s. Until then nothing shakes." : "LIVE MODE: driven by your arousal meter (heart rate, muscle tension, movement) compared with your rest.";
     stEl.textContent = (mode === "test" ? "MANUAL TEST" : "LIVE") + (opts.status ? "  |  " + opts.status() : "");
   }
 
   /* ---------- layout, keys ---------- */
   function fit() {
-    const w = view.clientWidth, h = view.clientHeight; k = Math.max(0.3, Math.min((w - 40) / 1260, (h - 24) / 640));
-    wrap.style.width = 1260 * k + "px"; wrap.style.height = 640 * k + "px";
+    const w = view.clientWidth, h = view.clientHeight; k = Math.max(0.3, Math.min((w - 40) / 1264, (h - 24) / 640));
+    wrap.style.width = 1264 * k + "px"; wrap.style.height = 640 * k + "px";
   }
   function onKey(e) {
-    if (e.key === "Escape") { if (man.style.display === "block") toggleManual(false); else if (S && S.phone) togglePhone(false); else close(); }
+    if (e.key === "Enter" && S && S.state === "intro") { begin(); return; }
+    if (e.key === "Escape") { if (S && S.manual) toggleManual(false); else if (S && S.phone) togglePhone(false); else close(); }
+    else if (S && S.state === "running" && (e.key === "m" || e.key === "M")) toggleManual();
+    else if (S && S.state === "running" && S.manual && (e.key === "1" || e.key === "2" || e.key === "3")) setTab(["wires", "button", "keypad"][+e.key - 1]);
   }
   bSnd.onclick = () => { muted = !muted; bSnd.textContent = muted ? "SOUND OFF" : "SOUND ON"; };
   bExit.onclick = () => close();
@@ -773,7 +836,7 @@ function open(opts) {
   /* advance(seconds): run the simulation faster than real time (used by tests and screenshots) */
   function advance(sec) { let n = last; for (let i = 0; i < Math.round(sec * 60); i++) { n += 1000 / 60; update(n); } last = performance.now(); }
   ui = { close, restart: build, state: () => S, level: () => level, el: root, advance };
-  fit(); build(opts.seed); setMode(mode); raf = requestAnimationFrame(frame);
+  fit(); build(opts.seed, opts.intro !== false); setMode(mode); raf = requestAnimationFrame(frame);
 }
 
 root.BombUI = { open, close: () => ui && ui.close(), isOpen: () => !!ui, _ui: () => ui };

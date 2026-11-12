@@ -163,3 +163,22 @@ needs focus baselines), **Mario Kart (Python)** and **Animal Stacker** (external
 for the table and the mapping from the old single file. Code was moved, not rewritten. The "edits to `muse-panel.html`" in section 8 now live in
 `panel/gamelink.js` (game menu hookup), `panel/ble.js` (`demoGamma`) and `panel/stress-link.js` (stress glue). The game button is now a small "Games" button
 in the right-hand button column (same style as Band view / Raw view / Float focus / Fullscreen).
+
+## 12. v3 (2026-11-10/11): arousal meter, panel usability, new game manual
+Branch `improve/arousal-ui-manual`. **Why:** the stress card covered a third of the panel and showed nothing until a two-step calibration, and
+teammates' research (confirmed, see `docs/RESEARCH_AROUSAL.md`) says a headband cannot measure stress itself.
+- **Arousal replaces "stress"** (`arousal.js`, `panel/arousal-link.js`, `panel/motion.js`): heart rate + forehead/jaw muscle tension + head movement,
+  each compared with a resting value measured automatically in the first 15 s (`?rest=N`). No manual calibration. Score updates 4x/s:
+  `0.6 * weighted mean + 0.4 * strongest signal` (weights 0.5 / 0.3 / 0.2), with a noise floor from the rest period. Works with whatever signals exist.
+  It sits in the panel under the heart rate (click it for details, a 60 s graph, per-signal bars and "measure my rest again").
+  `ArousalMeter.value()` (0-100 or null); `StressMeter` is kept as an alias. `stress.js` is kept in the repo as legacy and is no longer loaded.
+- **Accelerometer** (`273e000a`) is subscribed in `panel/ble.js` inside a try/catch. **Never run on real hardware yet.**
+- **Recording** has a new last column `arousal_0_to_100`. The game link also sends `arousal`.
+- **Setup guide** (`panel/guide.js`, Guide button, opens on first visit): connect, fit, baselines, play, each with a live check. `?guide=0` hides it.
+- **Mac help text** on connection failure; **`tools/serve.py`** serves without caching (the Mac launcher uses it) so a reload always shows new code.
+- **Game manual redone:** a clipboard that always lies on the table to the right of the bomb (never covers it, no scrolling), three tabs
+  (WIRES / BUTTON / KEYPAD, keys 1-3), numbered "first line that fits" rules with pictures and short labels, a tick on solved tabs. Sweat still lands on
+  it; drag the cloth over a wet blot to remove it, a blot left to dry becomes a stain. The sheet trembles only slightly so it stays readable.
+- **Briefing screen** before the clock starts (Enter to start). Wording in the game is "arousal" throughout.
+- Tests: `arousal.test.js` (23 checks) plus the existing `game/bomb.test.js` (24). `stress.test.js` (34) still passes for the legacy file. (Earlier sections over-counted each file by one.)
+- **Not verified:** everything on a real Muse 2, especially the accelerometer packets, real heart-rate quality, and whether the thresholds feel right.

@@ -6,13 +6,13 @@
 /* ============ Game menu (game/menu.js) ============
    Games register in game/menu.js. The panel only supplies the live signals; add a game there, not here. */
 function focusReady(){return focus.lo!=null&&focus.hi!=null&&focus.hi-focus.lo>=0.05;}
-function stressLive(){return !!(window.StressMeter&&S.connected&&StressMeter.ready());}
+function stressLive(){return !!(window.ArousalMeter&&ArousalMeter.ready());}   // "stress" is the old name of the arousal meter
 function marioReady(){return focusReady();}   // kept for older callers
 function updateMarioBtn(){}                    // renderFocus() still calls this; the menu needs no per-frame update
 addEventListener("load",()=>GameMenu.attach({button:$("btnMario"),note:null,
   ctx:()=>({stage:$("stage"),connected:S.connected,focusReady:focusReady(),stressLive:stressLive(),
     focus:()=>S.connected?focusPct():null,
-    stress:()=>{const v=window.StressMeter&&StressMeter.value();return v==null?0:v/100;},
+    stress:()=>{const v=window.ArousalMeter&&ArousalMeter.value();return v==null?0:v/100;},
     sensors:()=>SENSORS.map((nm,i)=>{const p=S.connected&&S.emitted>0&&S.pct[i]!=null?Math.round(S.pct[i]):null;return{txt:p==null?"--":p+"%",cls:p==null?"":p>=70?"good":p>=40?"fair":"poor"};}),
     status:()=>S.connected?(S.emitted>0?"Muse live":"Muse waiting"):"Muse not connected"})}));
 /* ============ game link: the focus meter (0-100) is sent to the game running on this computer ============ */
@@ -22,7 +22,7 @@ function sendGame(p){
   const now=Date.now();
   if(gameBusy||now-gameLast<(gameOk?230:2000))return;
   gameLast=now;gameBusy=true;
-  const opt=S.connected?{method:"POST",mode:"cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({focus:p==null?null:Math.round(p*10)/10,sensors:S.pct.map(v=>v==null?null:Math.round(v))})}:{method:"GET",mode:"cors"};
+  const opt=S.connected?{method:"POST",mode:"cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({focus:p==null?null:Math.round(p*10)/10,sensors:S.pct.map(v=>v==null?null:Math.round(v)),arousal:(window.ArousalMeter&&ArousalMeter.value()!=null)?Math.round(ArousalMeter.value()*10)/10:null})}:{method:"GET",mode:"cors"};
   fetch(GAME_URL,opt).then(r=>{gameOk=r.ok;}).catch(()=>{gameOk=false;}).finally(()=>{
     gameBusy=false;const e=$("gameLink");
     e.textContent=gameOk?"GAME: LINKED":"GAME: OFF";e.style.color=gameOk?"#35e6ff":"#6f82c4";});

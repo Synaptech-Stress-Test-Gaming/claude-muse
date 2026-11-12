@@ -78,7 +78,9 @@ CSV columns: `time_s, TP9, AF7, AF8, TP10` (microvolts), the five band signals, 
 | `game-py/` | The Python version of the Mario Kart game (see its README) |
 | `game/menu.js` | The game menu (round button on the panel). Add new games with one `GameMenu.register(...)` call |
 | `panel/` | The panel's code split by category (UI, signal path, Bluetooth, focus meter, recording, games, stress link). See `panel/README.md` |
-| `stress.js` | The experimental stress meter (heart rate, HRV, frontal beta/alpha, face tension; two-phase calibration) |
+| `arousal.js` | The arousal meter: body activation from heart rate, muscle tension and movement vs your own rest (see `docs/RESEARCH_AROUSAL.md`) |
+| `stress.js` | Legacy stress meter, kept for reference, no longer loaded |
+| `tools/serve.py` | Local server without caching (used by the Mac launcher) |
 | `docs/DETAILED_README.md` | Detailed status: how everything works, what is tested, open work, how to merge |
 | `Open Muse Panel (Mac).command` | Mac launcher (serves the folder on localhost and opens Chrome) |
 | `game-link/` | The Animal Stacker prototype (see its README) |
