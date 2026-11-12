@@ -49,6 +49,9 @@ const CSS = `
 .c-red{background:radial-gradient(circle at 40% 30%,#ff8478,#d8261b 60%,#8d140d);color:#fff}.c-blue{background:radial-gradient(circle at 40% 30%,#8fc0ff,#2c6fe0 60%,#1a3f8c);color:#fff}
 .c-white{background:radial-gradient(circle at 40% 30%,#fff,#dfe3e8 60%,#a5adb6);color:#222}.c-yellow{background:radial-gradient(circle at 40% 30%,#fff3a0,#f1c40f 60%,#a7840a);color:#222}.c-green{color:#43f28a}
 .c-black{background:#15191d;color:#fff}
+.btnbay .btip{position:absolute;left:8px;right:8px;bottom:6px;min-height:30px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 11px/1.25 "Segoe UI",Arial;letter-spacing:.04em;color:#1c2630;background:rgba(255,255,255,.72);border-radius:6px;padding:3px 6px;opacity:0;transition:opacity .15s;pointer-events:none}
+.btnbay .btip.show{opacity:1}.btnbay .btip.bad{background:#ffd9d4;color:#8d140d}
+.sh-strips div.lit{outline:3px solid #b3302a;outline-offset:4px;border-radius:6px;animation:shlit .6s infinite alternate}@keyframes shlit{from{outline-color:#b3302a}to{outline-color:transparent}}
 .stripc-blue{color:#3d8bff}.stripc-white{color:#f4f7fa}.stripc-yellow{color:#f7d21e}.stripc-green{color:#43f28a}
 .wirebay svg{position:absolute;left:14px;top:34px}
 .wirebay .hit{position:absolute;left:14px;width:262px;height:30px}
@@ -267,7 +270,9 @@ function open(opts) {
   const bBtn = bay("btnbay", inn);
   const ledB = el("div", "led", null, bBtn);
   el("div", "hole", null, bBtn);
-  const cap = el("div", "cap", "", bBtn), strip = el("div", "strip", null, bBtn);
+  const cap = el("div", "cap", "", bBtn), strip = el("div", "strip", null, bBtn), btip = el("div", "btip", "", bBtn);
+  let tipTimer = 0;
+  function tip(text, bad, ms) { clearTimeout(tipTimer); btip.textContent = text || ""; btip.className = "btip" + (text ? " show" : "") + (bad ? " bad" : ""); if (text && ms) tipTimer = setTimeout(() => tip(""), ms); }
 
   const bWire = bay("wirebay", inn);
   const ledW = el("div", "led", null, bWire);
@@ -378,7 +383,7 @@ function open(opts) {
       const row = (r, i) => `<div class="sh-row" style="min-height:66px"><span class="sh-n">${i + 1}</span><div class="sh-if">${btn(r)}</div><span class="sh-ar">➜</span><div class="sh-do"><span class="sh-act ${r.action}"><i></i>${r.action.toUpperCase()}</span></div></div>`;
       body = `<div class="sh-h">Tap or hold? Use the <u>first</u> line that fits. A tap is a quick press.</div>${lv.button.rules.map(row).join("")}
         <div class="sh-h" style="margin-top:8px">If you HOLD: a strip lights up. Let go when the clock shows that strip's digit anywhere <small style="color:#7a6b43">(02:41 has a 4)</small>.</div>
-        <div class="sh-strips">${L.STRIP_COLORS.map(c => `<div><span style="background:${HEX[c]}"></span><b>${lv.button.stripDigits[c]}</b></div>`).join("")}</div>`;
+        <div class="sh-strips">${L.STRIP_COLORS.map(c => `<div class="${S && S.stripLit && c === lv.button.strip ? "lit" : ""}"><span style="background:${HEX[c]}"></span><b>${lv.button.stripDigits[c]}</b></div>`).join("")}</div>`;
     } else {
       body = `<div class="sh-h">One column has all 4 of your symbols. Press them in that column's order, top to bottom.</div>
         <div class="sh-cols">${lv.keypad.columns.map(c => `<div><small>↓</small>${c.map(x => `<div>${x}</div>`).join("")}</div>`).join("")}</div>`;
@@ -407,7 +412,7 @@ function open(opts) {
     }
     /* button */
     cap.className = "cap c-" + level.button.color; cap.textContent = level.button.label;
-    strip.className = "strip"; strip.style.color = "";
+    strip.className = "strip"; strip.style.color = ""; tip("");
     reg(cap, pressButton, releaseButton);
     /* keypad */
     kGrid.innerHTML = ""; [...kLeds.children].forEach(i => i.className = "");
@@ -466,14 +471,21 @@ function open(opts) {
   function pressButton() {
     if (S.state !== "running" || S.solved.button) return;
     if (shorted("button")) return zapBlocked("button");
-    S.pressAt = performance.now(); cap.classList.add("dn"); beep(300, .05, "square", .05);
+    S.pressAt = performance.now(); cap.classList.add("dn"); beep(300, .05, "square", .05); tip("");
   }
   function releaseButton() {
     if (S.pressAt == null) return;
     const held = (performance.now() - S.pressAt) / 1000; S.pressAt = null; cap.classList.remove("dn"); strip.className = "strip"; strip.style.color = "";
     if (S.state !== "running") return;
+    const wasLit = S.stripLit; S.stripLit = false; if (wasLit) renderManual();
     const r = L.judgeButton(level, held, clockDigits());
-    if (r === "solved") solveModule("button", ledB); else strike("button");
+    if (r === "solved") { tip(""); solveModule("button", ledB); }
+    else {
+      /* say what went wrong so a strike teaches something */
+      const tapped = held < L.TAP_MAX;
+      tip(level.button.action === "tap" ? "Held too long. Check the sheet: tap or hold?" : tapped ? "Too quick. Check the sheet: tap or hold?" : "Let go at the wrong moment. The clock must show the strip's number.", true, 4500);
+      strike("button");
+    }
   }
   function pressKey(k, sym) {
     if (S.state !== "running" || S.solved.keypad) return;
@@ -736,7 +748,10 @@ function open(opts) {
       if (s > 0.5 && S.t > S.nextSpike) { S.spikeUntil = S.t + 0.45; S.nextSpike = S.t + 3 + Math.random() * 3; }
       S.beat += dt * L.heartBpm(s) / 60;
       if (Math.floor(S.beat) > S.lastBeat) { S.lastBeat = Math.floor(S.beat); if (s > 0.25) { beep(60, .12, "sine", .09); setTimeout(() => beep(52, .1, "sine", .06), 210); } }
-      if (S.pressAt != null && (performance.now() - S.pressAt) / 1000 > 0.4) { strip.className = "strip on stripc-" + level.button.strip; }
+      if (S.pressAt != null && (performance.now() - S.pressAt) / 1000 > 0.4) {
+        strip.className = "strip on stripc-" + level.button.strip;
+        if (!S.stripLit) { S.stripLit = true; tip(level.button.strip.toUpperCase() + " strip. Keep holding. Let go when the clock shows its number (see sheet)."); if (tab !== "button") setTab("button"); else renderManual(); }
+      }
     }
     if (S.state === "running" || S.state === "won") {
       let str = clockDigits(); if (S.state === "running" && (S.t < S.glitchUntil || shorted("timer"))) str = String(Math.floor(Math.random() * 9000 + 1000));
