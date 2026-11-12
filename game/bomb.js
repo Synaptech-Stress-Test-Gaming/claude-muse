@@ -20,7 +20,7 @@ const CSS = `
 .bz-view{position:absolute;left:0;right:0;top:46px;bottom:0;cursor:none;display:flex;align-items:center;justify-content:center}
 .bz-room{position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(#7d5a46,#4a3328);box-shadow:0 -20px 40px rgba(0,0,0,.5) inset}
 .bz-wrap{position:relative}
-.bz-bomb{position:absolute;left:0;top:0;width:1560px;height:640px;transform-origin:0 0}
+.bz-bomb{position:absolute;left:0;top:0;width:1264px;height:640px;transform-origin:0 0}
 .bz-case{position:absolute;left:150px;top:10px;width:960px;height:620px;border-radius:26px;background:linear-gradient(160deg,#c9d6e2,#8397aa 55%,#6a7f93);padding:24px;box-shadow:0 30px 60px rgba(0,0,0,.65),inset 0 2px 0 #eaf2f9,inset 0 -4px 0 rgba(0,0,0,.25)}
 .bz-in{position:absolute;inset:24px;border-radius:14px;background:#1a2530;box-shadow:inset 0 0 0 4px #3f5367,inset 0 8px 18px rgba(0,0,0,.7);padding:14px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:12px}
 .bay{position:relative;border-radius:10px;background:linear-gradient(160deg,#dbe3ea,#a9b6c2);box-shadow:inset 0 2px 0 #fff,inset 0 -3px 0 rgba(0,0,0,.25),0 3px 8px rgba(0,0,0,.5);overflow:hidden}
@@ -102,7 +102,10 @@ const CSS = `
 .bz-man .strips{display:flex;gap:10px;justify-content:space-around;margin-top:8px}.bz-man .strips div{display:flex;flex-direction:column;align-items:center;gap:3px}.bz-man .strips span{width:16px;height:46px;border-radius:4px;border:1.5px solid #222}.bz-man .strips b{font:700 24px Georgia,serif;color:#2a2418}
 .bz-man .kcols{display:flex;gap:10px;margin-top:8px}.bz-man .kcols>div{flex:1;border:1.5px solid #5a4f33;border-radius:8px;background:#f6efd8;padding:6px 0;text-align:center;font:24px/1.55 "Segoe UI Symbol","Apple Symbols",serif;color:#2a2418}.bz-man .kcols small{display:block;font:700 18px Georgia,serif;color:#7a6b43;line-height:1}
 .bz-man .foot{margin-top:16px;text-align:center;font:13px Georgia,serif;color:#5a4f33}
-.bz-manwrap{position:absolute;left:1126px;top:14px;width:416px;height:612px;z-index:2;transform-origin:50% 100%;border-radius:10px;background:linear-gradient(160deg,#9a6a3f,#6d4526);box-shadow:0 8px 0 #4a2f19,0 14px 18px rgba(0,0,0,.55),inset 0 2px 0 rgba(255,255,255,.2)}
+.bz-manwrap{display:none;position:absolute;left:424px;top:14px;width:416px;height:612px;z-index:7;transform-origin:50% 100%;border-radius:10px;background:linear-gradient(160deg,#9a6a3f,#6d4526);box-shadow:0 8px 0 #4a2f19,0 14px 18px rgba(0,0,0,.55),inset 0 2px 0 rgba(255,255,255,.2)}
+.bz-manwrap.open{display:block}
+.bz-mandim{display:none;position:absolute;left:138px;top:0;width:984px;height:640px;z-index:6;border-radius:20px;background:rgba(6,8,12,.74);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.bz-mandim.open{display:block}
+.bz-manput{position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);z-index:5;white-space:nowrap;background:#2a2418;color:#f1e7c6;border-radius:14px;padding:5px 14px;font:700 11px "Segoe UI",Arial;letter-spacing:.12em;box-shadow:0 3px 6px rgba(0,0,0,.5)}
 .bz-manhand{position:absolute;right:-92px;bottom:-196px;width:200px;height:270px;pointer-events:none;z-index:4;filter:drop-shadow(0 12px 10px rgba(0,0,0,.5))}
 .bz-man .mclose{position:sticky;top:0;float:right;z-index:3;background:#d9cfae;border:1px solid #9a8f6c;color:#2a2418;border-radius:5px;padding:4px 10px;font:12px Georgia,serif;cursor:pointer}
 .sh-blots .blot{position:absolute;transform:translate(-50%,-50%);pointer-events:none}
@@ -165,7 +168,7 @@ const CSS = `
 .bay.shorted>*:not(.zap):not(.spark){animation:bzdim .16s steps(2) infinite}@keyframes bzdim{0%{filter:brightness(1)}50%{filter:brightness(.55) saturate(.6)}}
 .bay .zap{position:absolute;left:50%;top:-2px;transform:translateX(-50%);z-index:5;display:none;pointer-events:none;width:30px;height:40px;filter:drop-shadow(0 0 6px #ffe14d);animation:bzbolt .3s ease-in-out infinite alternate}
 .bay .zap svg{width:100%;height:100%}.bay.shorted .zap{display:block}@keyframes bzbolt{from{transform:translateX(-50%) scale(.9)}to{transform:translateX(-50%) scale(1.25)}}
-.bz-arcs{position:absolute;left:0;top:0;width:1560px;height:640px;pointer-events:none;z-index:4;overflow:visible}
+.bz-arcs{position:absolute;left:0;top:0;width:1264px;height:640px;pointer-events:none;z-index:4;overflow:visible}
 .bz-arcs polyline{fill:none;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px #6fd0ff) drop-shadow(0 0 8px #3aa8ff)}
 .smudge.hot{animation:bzhot .2s steps(2) infinite}@keyframes bzhot{0%{box-shadow:inset 0 -4px 6px rgba(0,0,0,.3),0 0 16px 6px rgba(110,210,255,.95)}50%{box-shadow:inset 0 -4px 6px rgba(0,0,0,.3),0 0 26px 10px rgba(255,245,170,.95)}}
 .bay .spark{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff6c2;box-shadow:0 0 8px 3px #ffb52e;z-index:5;pointer-events:none}
@@ -234,7 +237,7 @@ function open(opts) {
   const clothEl = el("div", "bz-item cloth", "CLOTH<br>HOLD + DRAG<br>TO WIPE", bomb);
   const phoneEl = el("div", "bz-item phone", "<i>NEW<br>NOTIFICATIONS<br>(tap to scroll)</i>", bomb);
   const sweat = el("div", "bz-sweat", null, bomb);
-  const arcSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); arcSvg.setAttribute("class", "bz-arcs"); arcSvg.setAttribute("viewBox", "0 0 1560 640"); bomb.appendChild(arcSvg);
+  const arcSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); arcSvg.setAttribute("class", "bz-arcs"); arcSvg.setAttribute("viewBox", "0 0 1264 640"); bomb.appendChild(arcSvg);
   const vig = el("div", "bz-vig", null, root);
   const flash = el("div", "bz-flash", null, root);
   const hand = el("div", "bz-hand", `<svg viewBox="0 0 44 56" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fsk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6d2b2"/><stop offset="1" stop-color="#d79e76"/></linearGradient></defs>
@@ -293,7 +296,11 @@ function open(opts) {
   const effect = el("div", "row", '<label><span>HAND TREMOR</span><b id="bzT">0 px</b></label><label style="margin-top:5px"><span>CLOCK SPEED</span><b id="bzC">x1.00</b></label><label style="margin-top:5px"><span>HEART RATE</span><b id="bzH">64 bpm</b></label><label style="margin-top:4px"><span>SWEAT ON BOMB</span><b id="bzW">0</b></label><label style="margin-top:4px"><span>CALM MODE</span><b id="bzK">ready</b></label>', bVit); effect.style.top = "138px";
 
   /* manual */
-  const manWrap = el("div", "bz-manwrap", null, bomb);   /* the clipboard: always on the table, to the right of the bomb */
+  /* the sheet lies on the table as a booklet. Picking it up holds it in front of the bomb, so you cannot read and work at once */
+  const bookEl = el("div", "bz-item book", "<i></i>SERVICE SHEET<small>CLICK TO READ (M)</small>", bomb);
+  const manDim = el("div", "bz-mandim", null, bomb);
+  const manWrap = el("div", "bz-manwrap", null, bomb);
+  const manPut = el("div", "bz-manput", "PUT DOWN (M)", manWrap);
   el("div", "bz-clip", null, manWrap);
   const man = el("div", "bz-man", "", manWrap);
   const manHand = el("div", "bz-manhand", `<svg viewBox="0 0 230 310" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="hsk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3cfae"/><stop offset="1" stop-color="#d49a72"/></linearGradient><linearGradient id="hsl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4b6d"/><stop offset="1" stop-color="#202a40"/></linearGradient></defs>
@@ -326,7 +333,7 @@ function open(opts) {
   phoneUi.querySelector("#phDown").onclick = () => togglePhone(false);
   const endEl = el("div", "bz-end", "", root);
   const introEl = el("div", "bz-end", `<div class="card" style="max-width:600px;text-align:left"><h1 style="text-align:center;color:#ffd166;font-size:26px">BRIEFING</h1>
-    <p style="text-align:left"><b style="color:#fff">1. Read the service sheet</b> on the right. It is written for this bomb only and has three tabs: WIRES, BUTTON, KEYPAD. Nothing on the bomb tells you what to press.</p>
+    <p style="text-align:left"><b style="color:#fff">1. Pick up the service sheet</b> (click the booklet on the right, or press M). It is written for this bomb only. While you read it you cannot see or touch the bomb, and the clock keeps running, so remember what you need and put it down (M, or click anywhere else).</p>
     <p style="text-align:left"><b style="color:#fff">2. Stay calm.</b> The more worked up your body gets, the more your finger shakes and the more you sweat. Three drops on one module short it out: hold the <b style="color:#9cc9f5">cloth</b> and drag it over the drops. Drops also soak the sheet.</p>
     <p style="text-align:left"><b style="color:#fff">3. One lifeline.</b> Scroll the <b style="color:#b79cff">phone</b> to the end for a short calm mode. The clock keeps running while you scroll.</p>
     <p style="color:#ff9a8f">Three strikes or 00:00 and it goes off.</p>
@@ -396,13 +403,14 @@ function open(opts) {
     level = L.makeLevel(seed); level.timeLimit = T.timeLimit; level.maxStrikes = T.maxStrikes;
     S = { remaining: level.timeLimit, strikes: 0, state: withIntro ? "intro" : "running", solved: { wires: false, button: false, keypad: false }, cut: [false, false, false, false, false],
       pressAt: null, pressItem: null, progress: 0, stressSm: 0, stressSum: 0, stressHi: 0, calm: 0, calmPeak: 0, phoneSec: 0, feedDone: false, atEnd: false, calmUntil: null, calmAt: null, phone: false, cloth: false, t: 0, nextGlitch: 6, glitchUntil: 0, lastSec: -1, events: [], slips: 0, drops: 0, wipes: 0, blocked: 0, blots: 0, nextSpike: 4, spikeUntil: 0, beat: 0, lastBeat: 0 };
+    manWrap.classList.remove("open"); manDim.classList.remove("open"); bookEl.classList.remove("lifted");
     pdrops.forEach(d => d.e.remove()); pdrops = []; blots.forEach(b => b.e.remove()); blots = []; pAcc = 0;
     drops.forEach(d => d.e.remove()); drops = []; smudges.forEach(m => m.e.remove()); smudges = []; sweat.innerHTML = ""; spawnAcc = 0;
     items.length = 0; togglePhone(false); clothUp(); tab = "wires"; bWire.querySelectorAll('.hit').forEach(x => x.remove());
     plate.lastChild.textContent = level.serial;
     ledB.className = ledW.className = ledK.className = "led";
     feed.innerHTML = ""; calmBadge.style.display = "none"; calmFx.style.opacity = 0; phoneEl.innerHTML = "<i>NEW<br>NOTIFICATIONS<br>(tap to scroll)</i>";
-    tabEls.forEach(e => reg(e, () => setTab(e.dataset.t))); reg(phoneEl, () => togglePhone(true)); reg(clothEl, clothDown, clothUp);
+    tabEls.forEach(e => reg(e, () => setTab(e.dataset.t))); reg(bookEl, () => toggleManual(true)); reg(manPut, () => toggleManual(false)); reg(man, () => {}); reg(phoneEl, () => togglePhone(true)); reg(clothEl, clothDown, clothUp);
     /* wires */
     wsvg.innerHTML = "";
     level.wires.colors.forEach((c, i) => drawWire(i, false));
@@ -595,7 +603,14 @@ function open(opts) {
     if (!arcSvg.firstChild) smudges.forEach(m => m.e.classList.remove("hot"));
   }
   /* ---------- table objects: manual, cloth, phone ---------- */
-  function toggleManual() { /* the sheet is always on the table now */ }
+  function toggleManual(open) {
+    if (!S) return;
+    if (open == null) open = !S.manual;
+    if (open && (S.state !== "running" || S.pressAt != null || S.phone)) return;   /* hands are busy */
+    S.manual = !!open; manWrap.classList.toggle("open", S.manual); manDim.classList.toggle("open", S.manual); bookEl.classList.toggle("lifted", S.manual);
+    if (!S.manual) { pdrops.forEach(d => d.e.remove()); pdrops = []; }
+    beep(S.manual ? 620 : 420, .04, "triangle", .04); emit(S.manual ? "manual_open" : "manual_close", {});
+  }
   function clothDown() {
     if (!S || S.state !== "running") return;
     S.cloth = true; clothEl.classList.add("lifted"); clothHeld.style.display = "block"; beep(250, .06, "triangle", .04);
@@ -676,6 +691,7 @@ function open(opts) {
       phoneSeconds: +S.phoneSec.toFixed(1), calmModeUsed: S.feedDone, calmModeAtSec: S.calmAt, peakMindClear: +S.calmPeak.toFixed(2), events: S.events.slice() };
   }
   function finish(kind, title, msg) {
+    if (S && S.manual) toggleManual(false);
     S.state = kind; const sm = summary();
     endEl.innerHTML = `<div class="card ${kind === "won" ? "win" : "lose"}"><h1>${title}</h1><p>${msg}</p><div class="stats">
       <div><span>Time played</span><b>${sm.secondsPlayed} s</b></div><div><span>Clock left</span><b>${sm.clockLeft} s</b></div><div><span>Strikes</span><b>${sm.strikes} / ${level.maxStrikes}</b></div>
@@ -690,6 +706,7 @@ function open(opts) {
   }
   function win() { beep(660, .15, "triangle", .06); setTimeout(() => beep(880, .15, "triangle", .06), 150); setTimeout(() => beep(1320, .3, "triangle", .06), 300); finish("won", "DEFUSED", "Nice work. The bomb is safe."); }
   function explode(why) {
+    if (S && S.manual) toggleManual(false);
     if (S.state !== "running") return; S.state = "lost"; boomSound();
     flash.style.transition = "none"; flash.style.opacity = "1"; requestAnimationFrame(() => { flash.style.transition = "opacity 1.4s"; flash.style.opacity = "0"; });
     bomb.style.filter = "brightness(.35)";
@@ -718,7 +735,9 @@ function open(opts) {
     if (S.state === "running") handPos = slipAt(handPos[0], handPos[1]);
     if (S.state !== "running") return;
     hand.classList.add("dn");
-    const it = hit(handPos[0], handPos[1]); downItem = it; if (it && it.down) it.down();
+    const it = hit(handPos[0], handPos[1]);
+    if (S.manual && !(it && (manWrap.contains(it.el) || it.el === clothEl))) { toggleManual(false); downItem = null; return; }   /* any click off the sheet puts it down */
+    downItem = it; if (it && it.down) it.down();
   });
   function up() { hand.classList.remove("dn"); if (downItem && downItem.up) downItem.up(); downItem = null; }
   window.addEventListener("pointerup", up);
@@ -744,13 +763,13 @@ function open(opts) {
       if (S.remaining <= 0) { S.remaining = 0; explode("time"); }
       if (s > T.glitchStress && S.t > S.nextGlitch) { S.glitchUntil = S.t + 0.7; S.nextGlitch = S.t + 6 + Math.random() * 6; beep(70, .5, "sawtooth", .05); root.classList.add("bz-glitch"); setTimeout(() => root.classList.remove("bz-glitch"), 700); }
       spawnAcc += L.sweatRate(s, T) * dt; while (spawnAcc >= 1) { spawnAcc -= 1; spawnDrop(); }
-      { pAcc += L.sweatRate(s, T) * 0.45 * dt; while (pAcc >= 1) { pAcc -= 1; spawnPaperDrop(); } }
+      if (S.manual) { pAcc += L.sweatRate(s, T) * 0.45 * dt; while (pAcc >= 1) { pAcc -= 1; spawnPaperDrop(); } }
       if (s > 0.5 && S.t > S.nextSpike) { S.spikeUntil = S.t + 0.45; S.nextSpike = S.t + 3 + Math.random() * 3; }
       S.beat += dt * L.heartBpm(s) / 60;
       if (Math.floor(S.beat) > S.lastBeat) { S.lastBeat = Math.floor(S.beat); if (s > 0.25) { beep(60, .12, "sine", .09); setTimeout(() => beep(52, .1, "sine", .06), 210); } }
       if (S.pressAt != null && (performance.now() - S.pressAt) / 1000 > 0.4) {
         strip.className = "strip on stripc-" + level.button.strip;
-        if (!S.stripLit) { S.stripLit = true; tip(level.button.strip.toUpperCase() + " strip. Keep holding. Let go when the clock shows its number (see sheet)."); if (tab !== "button") setTab("button"); else renderManual(); }
+        if (!S.stripLit) { S.stripLit = true; tip(level.button.strip.toUpperCase() + " strip. Keep holding. Let go when the clock shows its number (see sheet)."); tab = "button"; renderManual(); }
       }
     }
     if (S.state === "running" || S.state === "won") {
@@ -795,13 +814,14 @@ function open(opts) {
 
   /* ---------- layout, keys ---------- */
   function fit() {
-    const w = view.clientWidth, h = view.clientHeight; k = Math.max(0.3, Math.min((w - 40) / 1560, (h - 24) / 640));
-    wrap.style.width = 1560 * k + "px"; wrap.style.height = 640 * k + "px";
+    const w = view.clientWidth, h = view.clientHeight; k = Math.max(0.3, Math.min((w - 40) / 1264, (h - 24) / 640));
+    wrap.style.width = 1264 * k + "px"; wrap.style.height = 640 * k + "px";
   }
   function onKey(e) {
     if (e.key === "Enter" && S && S.state === "intro") { begin(); return; }
-    if (e.key === "Escape") { if (S && S.phone) togglePhone(false); else close(); }
-    else if (S && S.state === "running" && (e.key === "1" || e.key === "2" || e.key === "3")) setTab(["wires", "button", "keypad"][+e.key - 1]);
+    if (e.key === "Escape") { if (S && S.manual) toggleManual(false); else if (S && S.phone) togglePhone(false); else close(); }
+    else if (S && S.state === "running" && (e.key === "m" || e.key === "M")) toggleManual();
+    else if (S && S.state === "running" && S.manual && (e.key === "1" || e.key === "2" || e.key === "3")) setTab(["wires", "button", "keypad"][+e.key - 1]);
   }
   bSnd.onclick = () => { muted = !muted; bSnd.textContent = muted ? "SOUND OFF" : "SOUND ON"; };
   bExit.onclick = () => close();
