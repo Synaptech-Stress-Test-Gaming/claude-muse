@@ -11,6 +11,7 @@ function resetStream(){
   S.gapAt=-1e9;S.holdUntil=0;
   S.raw.forEach(a=>a.fill(0));S.rawPos=0;BANDS.forEach(b=>{b.buf.fill(0);b.pos=0;b.scale=null;makeFilters(b);});
   ppgFullReset();resetMotion();
+  if(typeof engTapReset==="function")engTapReset();
 }
 function handlePacket(ch,seq,vals){
   S.cnt+=vals.length;
@@ -40,6 +41,7 @@ function emit(vals,idx){
     S.rmsAcc[c].s+=y*y;S.rmsAcc[c].n++;
     if(Math.abs(y)>300)S.artUntil=Date.now()+1200;
   }
+  if(typeof engTapEeg==="function")engTapEeg(ys,idx);
   if(S.emitted<FS*2)return; // first 2 seconds: offset filter still settling, not shown
   for(let c=0;c<4;c++)S.raw[c][S.rawPos]=ys[c];
   S.rawPos=(S.rawPos+1)%BUF_LEN;

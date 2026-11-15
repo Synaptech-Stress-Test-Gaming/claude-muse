@@ -40,6 +40,7 @@ function onMotion(kind,seq,v,now){
   }
   while(q.t.length&&q.t[0]<keep){q.t.shift();q.m.shift();}
   if(kind==="acc")m.accSeen=true;else m.gyroSeen=true;
+  if(typeof engTapMotion==="function")engTapMotion(kind,v,now);
 }
 
 /* features over the motion samples that cover the EEG window (by timestamp). null = motion data missing or stale. */

@@ -1,0 +1,21 @@
+{
+  "version": 1, "tauC": 10, "T0": 120,
+  "cyton": {
+    "features": {
+      "thetaF": {"mu": 2.3, "sd": 0.7}, "alphaP": {"mu": 2.5, "sd": 0.7}, "betaLoC": {"mu": 1.2, "sd": 0.7},
+      "ratioD": {"mu": 1.9, "sd": 0.5},
+      "hr": {"mu": 70, "sd": 10}, "lnRmssd": {"mu": 3.4, "sd": 0.5},
+      "blinkDur": {"mu": 180, "sd": 50}, "blinkRate": {"mu": 17, "sd": 8}, "perclos": {"mu": 0.02, "sd": 0.03}, "spindleRate": {"mu": 2, "sd": 2},
+      "focusRaw": {"mu": 0, "sd": 1.5}, "stressRaw": {"mu": 0, "sd": 0.62}
+    },
+    "det": {"blinkFloorUv": 60, "blinkDerivFloor": 600, "blinkAmpMed": 120, "blinkAmpMad": 30, "emgBaseFloorUv": 0.5}
+  },
+  "muse": {
+    "features": {
+      "thetaF": {"mu": 2.8, "sd": 0.7}, "alphaP": {"mu": 2.3, "sd": 0.7}, "betaLoC": {"mu": 1.5, "sd": 0.7},
+      "hr": {"mu": 70, "sd": 10}, "lnRmssd": {"mu": 4.04, "sd": 0.6},
+      "focusRaw": {"mu": 0, "sd": 1.5}, "stressRaw": {"mu": 0, "sd": 0.70}
+    },
+    "det": {"blinkFloorUv": 40, "blinkDerivFloor": 400, "blinkAmpMed": 80, "blinkAmpMad": 20, "emgBaseFloorUv": 0.5}
+  }
+}
