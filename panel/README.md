@@ -19,7 +19,7 @@ order is set in `muse-panel.html` and matters.
 | `main.js` | start-up | wiring, must load last | rarely |
 | `stress-link.js` | **stress meter** (Legacy arousal model, see `../arousal.js`) | hands `../stress.js` the panel's signals | stress |
 | `engine-link.js` | **new engine glue** | Muse / Cyton connect dispatch (`engConnect`), the tap functions called from `dsp.js`/`pulse.js`/`motion.js`, frames -> `MuseEngine.create`, `window.EngineOut`, the Cyton display and Legacy focus on the Cyton, identity tick/cross | engine |
-| `engine-ui.js`, `engine-ui.css` | **new engine UI** | MUSE/CYTON switch, NEW/LEGACY switch, profile panel, engine card, Cyton card, help with the honest limits, button flashes, three looks | UI |
+| `engine-ui.js`, `engine-ui.css` | **new engine UI** | MUSE/CYTON switch, NEW/LEGACY switch, profile panel, engine card, the Cyton in the main panel (16-tile contact strip, 16-channel raw view, ECG in the Heart Rate box, status-line button flashes), help with the honest limits, three looks | UI |
 | `engine-rec.js` | **recording** | the 6 `eng_*` CSV columns (appended) and the v2 recorder (4 files) for the Cyton and the validation protocol | recording |
 | `validation.js` | **validation** | the guided validation protocol (`?validate=1`) | engine |
 

@@ -19,7 +19,9 @@ Other READMEs: [focus/README.md](focus/README.md) (the display switch), [panel/R
 
 **Muse 2:** double-click **Open Muse Panel.bat**, leave **MUSE** selected (the small switch above Connect), press **Connect** and pick your Muse.
 
-**Cyton + Daisy:** double-click **Open Cyton Helper.bat** (the first run creates its own Python environment; it tries the WiFi Shield first and falls back to the USB dongle), then open the panel, pick **CYTON** above Connect and press **Connect**. If the helper is not running the panel says so and keeps retrying.
+**Cyton + Daisy:** turn the board on and double-click **Open Cyton Panel.bat**. That is all: it starts the helper in a minimized "Cyton Helper" window (the first run sets up its own Python environment, about a minute, once; it finds the WiFi Shield or the USB dongle by itself, WiFi first) and opens the panel already set to **CYTON**, which connects on its own. Close the "Cyton Helper" window to stop it. (Mac: **Open Cyton Panel (Mac).command**. `Open Cyton Helper.bat` alone still starts just the helper.)
+
+**Switching:** click **MUSE** or **CYTON** above Connect at any time; the panel disconnects the current device first, then connects the other one (the Muse reconnects by itself if this browser has paired it before, otherwise press Connect once).
 
 No headset? Add `?demo=1` to the address (`muse-panel.html?demo=1`, or `muse-panel.html?demo=1&device=cyton` for a simulated Cyton) and press Connect.
 
@@ -86,7 +88,8 @@ Muse: close the Muse app on any phone, remove "Muse" in Windows Bluetooth settin
 | `engine/` | the new engine: pure maths, one file per stage, each with a `*.test.js` |
 | `adapters/` | Muse frames, the Cyton WebSocket client and the in-browser Cyton simulator |
 | `tools/` | `cyton_helper.py`, `replay.js`, `make_synth_recording.js`, `autotune.py`, `get_datasets.py`, `browser_smoke.js`, `run_all_tests.js` |
-| `Open Cyton Helper.bat` | starts the Cyton helper (creates `.venv-cyton` on first run) |
+| `Open Cyton Panel.bat`, `Open Cyton Panel (Mac).command` | one double-click for the Cyton: starts the helper (creates `.venv-cyton` on first run) and opens the panel set to CYTON |
+| `Open Cyton Helper.bat` | starts only the Cyton helper |
 | `validation.html`, `workflows/validate_focus_stress.md` | the validation recording and its SOP |
 | `focus/`, `arousal.js`, `stress.js` | Legacy display switch, the Legacy arousal model and stress card; `focus/experimental/` is parked (not loaded) |
 | `game/`, `game-py/`, `game-link/` | the games |

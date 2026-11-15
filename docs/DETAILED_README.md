@@ -112,7 +112,7 @@ tentative (scored with that profile, not merged unless the user taps the tick) o
 ## A8. Panel integration
 
 `panel/engine-link.js` (connect dispatch, frames -> engine, Cyton display and Legacy), `panel/engine-ui.js` + `engine-ui.css` (NEW/LEGACY switch,
-device switch, DROWSY button, profile panel, engine card, Cyton card, help), `panel/engine-rec.js` (CSV columns + v2 recorder), `panel/validation.js`
+device switch, DROWSY button, profile panel, engine card, the Cyton contact strip and 16-channel raw view, help), `panel/engine-rec.js` (CSV columns + v2 recorder), `panel/validation.js`
 (the validation protocol), `engine/gamebody.js` (game link v2). URL options: `?device=muse|cyton`, `?engine=new|legacy`, `?demo=1` (`&helper=1`),
 `?selftest=1`, `?validate=1` (`&fast=1&autostart=1`).
 

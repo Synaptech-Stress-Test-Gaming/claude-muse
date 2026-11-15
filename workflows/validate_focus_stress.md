@@ -21,7 +21,7 @@ Record one guided session per device (Muse 2, Cyton + Daisy) and let `tools/auto
 1. **Wear the headset.**
    - Muse 2: snug, forehead sensors on skin, ear sensors behind the ears; hair out of the way.
    - Cyton / Ultracortex: comb electrodes through the hair to the scalp (wiggle each until the contact grid shows it green); chest pads: one under the right collarbone, one on the lower left ribs, the two leads of channel 9 (F7 pins on the Daisy) clipped on, cables taped. No wrist leads.
-2. **Cyton only:** double-click `Open Cyton Helper.bat`. Wait until it says `streaming`. If the panel later reports data dropping on WiFi, stop, plug in the USB dongle, start the helper with `--link dongle` and start again.
+2. **Cyton only:** double-click `Open Cyton Helper.bat` (or `Open Cyton Panel.bat`, which also opens the panel). Wait until it says `streaming`. If the panel later reports data dropping on WiFi, stop, plug in the USB dongle, start the helper with `--link dongle` and start again.
 3. Open `validation.html` and click your device. In the panel check that the contact is good (Muse: sensors green; Cyton: grid mostly green, ECG bpm shown), then press **Start**.
 4. Follow the screen for the 18 parts (about 32 minutes): rest with eyes open and closed, a 2-back letter task, serial subtraction, short deliberate artifacts at each beep (blinks, double blinks, jaw taps, a 3 s clench, frowns, reading aloud, chewing, head turns, nods, standing up, typing), 5 minutes of the browser race, and 5 minutes looking at a dot. If the signal drops the protocol pauses and restarts the interrupted part by itself.
 5. At the end the 4 files (`…_eeg.csv`, `…_aux.csv`, `…_engine.csv`, `…_meta.json`) land in **Downloads** (allow multiple downloads if the browser asks).

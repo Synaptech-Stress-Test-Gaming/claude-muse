@@ -13,16 +13,18 @@ const engM = () => window.MuseEngine;
 /* profile store (engine/profiles.js): localStorage museengine.profiles.v1, in memory when storage is blocked */
 window.engStore = (window.MuseEngine && MuseEngine.Profiles) ? MuseEngine.Profiles.create({ storage: (() => { try { return window.localStorage; } catch (e) { return null; } })() }) : null;
 
-/* ---------- device choice (only while disconnected) ---------- */
+/* ---------- device choice: any time; a click on the other device disconnects the current one first, then connects the new one ---------- */
 function engSetDevice(d) {
   if (d !== "muse" && d !== "cyton") return false;
-  if (S.connected || S.connecting) { toast("Disconnect first, then switch the device.", "info", 4000); return false; }
+  if (d === S.dev) return true;
+  if (S.connected || S.connecting) { engDisconnect(); S.connected = false; S.connecting = false; }
   S.dev = d; try { localStorage.setItem("muse2panel.device", d); } catch (e) {}
   engState.eng = null; engState.engKey = null; engState.out = null; window.EngineOut = null;
   engDisplaySetup(d === "cyton" ? (engState.fsDisp || 125) : FS);
   if (typeof engUiDevice === "function") engUiDevice();
   setStatus("search", d === "cyton" ? "Press Connect" : "Press Connect once");
-  renderFocus();
+  renderFocus(); setButtons();
+  engConnect(false);      // Cyton: start looking for the helper at once; Muse: reconnect a headset this browser already knows (else "Press Connect once")
   return true;
 }
 
@@ -31,7 +33,7 @@ function engConnect(userClicked) {
   if (S.dev !== "cyton") return connectMuse(userClicked);
   if (S.connected || S.connecting) return;
   S.connecting = true; S.userDisconnected = false; setButtons(); setStatus("search", "Connecting");
-  resetStream();
+  resetStream(); engState.firstFrameWall = 0;   // timers such as the 20 s "no ECG" help count from this connection
   const M = engM(), useSim = DEMO && params.get("helper") !== "1";
   const common = { onFrame: engOnFrame, onMessage: engOnHelperMsg, onStatus: engOnHelperStatus };
   engState.cy = useSim ? M.Adapters.CytonSim.create(Object.assign({ fs: +(params.get("simfs") || 125), script: params.get("script") || "default" }, common))
@@ -122,17 +124,23 @@ function engDisplaySetup(fs) {
   BANDS.forEach(b => { const f0 = Math.sqrt(b.range[0] * b.range[1]), Q = f0 / (b.range[1] - b.range[0]); b.f1 = biquadFs(f0, Q, fs); b.f2 = biquadFs(f0, Q, fs); b.buf.fill(0); b.pos = 0; b.scale = null; });
   S.raw.forEach(a => a.fill(0)); S.rawPos = 0;
   engState.disp = { hp: null, ecgHp: { x: null, y: 0 }, ecgK: 0 };
+  // the Cyton raw view: every channel (offset removed, nothing else), the same length as the panel's other rows; 1 s RMS per channel
+  engState.cyBuf = []; engState.cyPos = 0; engState.cyRms = []; engState.cyAcc = [];
 }
 function engDisplayFrame(f) {
   if (engState.fsDisp !== f.fs) engDisplaySetup(f.fs);
   const D = engState.disp, C = f.channels.length, ecg = f.ecg ? f.ecg.channel : -1, n = f.samples[0].length, rawIdx = ["Fp1", "C3", "P3", "O1"].map(x => f.channels.indexOf(x));
   if (!D.hp || D.hp.length !== C) D.hp = f.channels.map(() => ({ x: null, y: 0 }));
+  if (engState.cyBuf.length !== C) { engState.cyBuf = f.channels.map(() => new Float32Array(BUF_LEN)); engState.cyPos = 0; engState.cyRms = f.channels.map(() => null); engState.cyAcc = f.channels.map(() => ({ s: 0, n: 0 })); }
+  engState.cyNames = f.channels; engState.cyEcg = ecg;
   const o = window.EngineOut, ex = o ? new Set(o.quality.excluded) : new Set();
   const use = f.channels.map((nm, c) => c !== ecg && nm !== "ECG" && !ex.has(nm));
   for (let k = 0; k < n; k++) {
     let s = 0, m = 0; const ys = new Array(C);
     for (let c = 0; c < C; c++) { const h = D.hp[c], x = f.samples[c][k]; if (h.x == null) h.x = x; const y = x - h.x + 0.995 * h.y; h.x = x; h.y = y; ys[c] = y; if (use[c]) { s += y; m++; } }
     S.emitted++; S.usable = m;
+    for (let c = 0; c < C; c++) { engState.cyBuf[c][engState.cyPos] = ys[c]; const a = engState.cyAcc[c]; a.s += ys[c] * ys[c]; a.n++; if (a.n >= f.fs) { engState.cyRms[c] = Math.sqrt(a.s / a.n); a.s = 0; a.n = 0; } }
+    engState.cyPos = (engState.cyPos + 1) % BUF_LEN;
     for (let r = 0; r < 4; r++) S.raw[r][S.rawPos] = rawIdx[r] >= 0 ? ys[rawIdx[r]] : 0;
     S.rawPos = (S.rawPos + 1) % BUF_LEN;
     const x = m ? s / m : 0;

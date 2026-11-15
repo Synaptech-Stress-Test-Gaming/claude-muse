@@ -36,6 +36,12 @@ function main() {
     run(browser, ["--window-size=" + w + "," + h, "--screenshot=" + file], fileUrl("demo=1&device=" + d + "&look=" + l + "&engine=" + e), 12000);
     ok(fs.existsSync(file) && fs.statSync(file).size > 20000, "screenshot " + name);
   }
+  for (const l of looks) {   // the Cyton raw view (16 channels + ECG) in each look
+    const name = "cyton_" + l + "_raw_1366x768", file = path.join(OUT, name + ".png");
+    try { fs.unlinkSync(file); } catch (x) {}
+    run(browser, ["--window-size=1366,768", "--screenshot=" + file], fileUrl("demo=1&device=cyton&look=" + l + "&engine=new&view=raw"), 12000);
+    ok(fs.existsSync(file) && fs.statSync(file).size > 20000, "screenshot " + name);
+  }
   for (const d of devs) {
     const r = run(browser, ["--window-size=1366,768", "--dump-dom"], fileUrl("demo=1&device=" + d + "&selftest=1&engine=new"), 32000);
     const m = /<pre id="engSelfTest"[^>]*>([^<]*)<\/pre>/.exec(r.stdout || ""); let j = null; try { j = JSON.parse(m[1].replace(/&quot;/g, '"')); } catch (x) {}

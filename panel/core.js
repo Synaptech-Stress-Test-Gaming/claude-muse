@@ -38,7 +38,7 @@ const S = {
   pct:[null,null,null,null], usable:4, artUntil:0,
   raw:[0,1,2,3].map(()=>new Float32Array(BUF_LEN)), rawPos:0,
   rec:null, view:"bands", pip:null, k:1, gapAt:-1e9, holdUntil:0,
-  dev:"muse" // "muse" | "cyton": URL ?device=, else localStorage muse2panel.device, else muse (changed only while disconnected; panel/engine-link.js)
+  dev:"muse" // "muse" | "cyton": URL ?device=, else localStorage muse2panel.device, else muse (switching disconnects the current device first; panel/engine-link.js)
 };
 try{const d=params.get("device")||localStorage.getItem("muse2panel.device");if(d==="cyton"||d==="muse")S.dev=d;}catch(e){}
 function biquad(f0,Q){return biquadFs(f0,Q,FS);}

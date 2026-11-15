@@ -17,7 +17,7 @@
 
 Why a helper: a browser cannot receive the WiFi Shield's TCP push and BrainFlow is native code, so a local Python process bridges the board to the page.
 
-Start it with **Open Cyton Helper.bat** in the project folder (first run: creates `.venv-cyton` and installs `tools/requirements.txt`; later runs start at once), or:
+The easy way is **Open Cyton Panel.bat** in the project folder: it starts the helper in a minimized window and opens the panel set to CYTON (arguments are passed on to the helper, e.g. `"Open Cyton Panel.bat" --link dongle`). **Open Cyton Helper.bat** starts only the helper. Both create `.venv-cyton` and install `tools/requirements.txt` on the first run; later runs start at once. Or:
 
 ```
 python tools/cyton_helper.py [--link auto|wifi|dongle] [--ip 192.168.4.1] [--ip-port 3000]
@@ -71,7 +71,7 @@ JSON helper → page: `hello {proto, helper, version, simulated}` (then the late
 
 Page → helper: `{"type":"cmd","cmd":"ping"|"impedance_sweep"|"stop_impedance"|"set_ecg_channel"|"restart"|"shutdown","channel":N}`. A client whose queue holds more than 2 s of frames loses its oldest frames (counted in `clientDrops`). Ctrl+C or `shutdown`: stop the stream, release the session, close the sockets, exit 0.
 
-### Self-checks (automatic; logged and shown in the panel's Cyton card)
+### Self-checks (automatic; logged and shown once as a message in the panel and listed in the engine card)
 
 1. **Daisy attached**: 16 channels and the Daisy half not all zero; else error `no_daisy`, 8 channels.
 2. **Per channel** (every 10 s): railed (> 2% of samples at ≥ 95% of ±187 500 µV), flat (1-45 Hz RMS < 1 µV), line ratio (mains power / 1-45 Hz power).

@@ -1,7 +1,8 @@
 /* panel/engine-ui.js
    DOM for the new engine: device selector (#devSel), New/Legacy switch (#engSw), profile panel (#engProf, in the Auto-baselines slot),
-   engine card (#engCard, bottom left), Cyton card (#cyCard, bottom right), the "?" help with the honest limits, button flashes, and the
-   Cyton versions of the sensor strip / rate line / heart-rate card.
+   engine card (#engCard, bottom left), the "?" help with the honest limits, and the Cyton versions of the panel's own places:
+   the header contact strip (#cySens: 16 tiles), the raw view (#cyRaw: the 16 channel slots with contact and RMS, Check contact; the F7 slot carries the ECG, which is shown only in the Heart Rate box),
+   the status line under the status pill (helper state, button flashes), the rate line and the heart-rate card (ECG).
    Classic script: top-level names start with eng / Eng. Loaded before panel/engine-link.js. */
 "use strict";
 const EngUI = { built: false, flash: {}, lastHelperMsg: null };
@@ -19,7 +20,11 @@ const ENG_LIMITS = [
 ];
 const ENG_PADS = "No ECG. Stick two gel pads on your chest: one under the right collarbone, one on the lower left ribs. Clip the two leads of channel 9 (the F7 pins on the Daisy board) to them. Tape the cables so they do not pull. Do not use wrist leads.";
 const ENG_WIFI = "Data is dropping on WiFi. OpenBCI retired the WiFi Shield for reliability problems. Plug in the USB dongle and restart the helper with --link dongle.";
-const ENG_GRID = [["Fp1", "Fp2", "F7", "F8"], ["F3", "F4", "T7", "T8"], ["C3", "C4", "P7", "P8"], ["P3", "P4", "O1", "O2"]];
+/* front to back; left column = left hemisphere, right column = right hemisphere */
+const ENG_ORDER = ["Fp1", "Fp2", "F7", "F8", "F3", "F4", "T7", "T8", "C3", "C4", "P7", "P8", "P3", "P4", "O1", "O2"];
+const ENG_REGION = { Fp1: "left frontal pole", Fp2: "right frontal pole", F7: "left frontal, side", F8: "right frontal, side", F3: "left frontal", F4: "right frontal",
+  T7: "left temporal", T8: "right temporal", C3: "left central", C4: "right central", P7: "left parietal, side", P8: "right parietal, side",
+  P3: "left parietal", P4: "right parietal", O1: "left occipital", O2: "right occipital" };
 const engEl = (tag, attrs, html, parent) => { const e = document.createElement(tag); for (const k in attrs || {}) { if (k === "cls") e.className = attrs[k]; else e.setAttribute(k, attrs[k]); } if (html != null) e.innerHTML = html; if (parent) parent.appendChild(e); return e; };
 const engEsc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -36,14 +41,17 @@ function engUiBuild() {
   const pf = engEl("div", { id: "engProf" }, '<div class="l1"><span id="engId">Identifying…</span><button type="button" id="engOk" title="Yes, this is me">✓</button><button type="button" id="engNo" title="Not me: choose who it is">✗</button></div><div class="l2" id="engBadge">Population norms</div><div id="engPick" hidden></div>', $("gCal") || st);
   $("engOk").addEventListener("click", () => { if (typeof engProfileConfirm === "function") engProfileConfirm(); });
   $("engNo").addEventListener("click", () => engUiPicker());
-  // engine card (bottom left), Cyton card (bottom right)
+  // engine card (bottom left)
   const ec = engEl("div", { id: "engCard", cls: "min" }, '<div class="hd"><b>ENGINE</b><span id="engCardSt"></span><button type="button" id="engHelpBtn" title="What these numbers mean">?</button><button type="button" id="engTg" title="Open / close">▴</button></div><div class="bd" id="engCardBd"></div>', document.body);
   $("engTg").addEventListener("click", () => { ec.classList.toggle("min"); $("engTg").textContent = ec.classList.contains("min") ? "▴" : "▾"; });
   $("engHelpBtn").addEventListener("click", engUiHelp);
-  const cy = engEl("div", { id: "cyCard", cls: "min" }, '<div class="hd"><b>CYTON</b><span id="cyFl"><i id="flDb">DOUBLE BLINK</i><i id="flCl">CLENCH</i></span><button type="button" id="cyTg" title="Open / close">▴</button></div><div class="bd"><div id="cyGrid"></div><div id="cyEcg"></div><div id="cyHelper"></div><div id="cyWarn"></div><button type="button" id="cyCheck">Check contact</button></div>', document.body);
-  $("cyTg").addEventListener("click", () => { cy.classList.toggle("min"); $("cyTg").textContent = cy.classList.contains("min") ? "▴" : "▾"; });
+  // Cyton: the raw view holds all 16 channels; the header holds a 16-tile contact strip
+  const raw = engEl("div", { id: "cyRaw" }, '<div class="tb"><b>16 CHANNELS</b><span id="cyInfo">offset removed, no other filtering · \u00b1100 \u00b5V</span><button type="button" id="cyCheck">Check contact</button></div><div class="grid" id="cyGrid"></div>', $("rawov"));
+  ENG_ORDER.forEach(n => engEl("div", { cls: "cyr", id: "cyr_" + n }, '<div class="lb"><b>' + n + '</b><i>' + ENG_REGION[n] + '</i></div><canvas class="cyw" id="cyw_' + n + '"></canvas><div class="st"><span class="q">--</span><span class="r">--</span></div>', $("cyGrid")));
   $("cyCheck").addEventListener("click", engUiCheckContact);
-  ENG_GRID.forEach(row => row.forEach(n => engEl("div", { cls: "cell", id: "cyc_" + n }, '<b>' + n + '</b><span>--</span>', $("cyGrid"))));
+  const strip = engEl("div", { id: "cySens", cls: "t" }, "", $("sensors"));
+  ENG_ORDER.forEach(n => engEl("div", { cls: "cyt", id: "cyt_" + n }, '<i></i>' + n, strip));
+  void raw;
   // help overlay
   engEl("div", { id: "engHelp", hidden: "" }, "", document.body);
   // the selftest box (?selftest=1)
@@ -52,16 +60,12 @@ function engUiBuild() {
 }
 function engUiDevice() {
   const ds = $("devSel"); if (!ds) return;
-  ds.querySelectorAll("button").forEach(b => { const on = b.dataset.dev === S.dev; b.classList.toggle("on", on); b.setAttribute("aria-checked", on); b.disabled = S.connected || S.connecting; });
+  ds.querySelectorAll("button").forEach(b => { const on = b.dataset.dev === S.dev; b.classList.toggle("on", on); b.setAttribute("aria-checked", on); b.disabled = false; b.title = b.dataset.dev === "cyton" ? "OpenBCI Cyton + Daisy (needs the helper: Open Cyton Panel.bat starts it)" : "Muse 2 (Bluetooth)"; });
   document.documentElement.dataset.dev = S.dev;
   document.documentElement.classList.toggle("eng-new", typeof engIsNew === "function" ? engIsNew() : true);
   const sw = $("engSw"); if (sw) sw.querySelectorAll("button").forEach(b => { const on = b.dataset.eng === engMode; b.classList.toggle("on", on); b.setAttribute("aria-checked", on); });
-  // raw view labels and the visible span
-  const names = S.dev === "cyton" ? ["Fp1", "C3", "P3", "O1"] : SENSORS;
-  document.querySelectorAll("#rawov .rawrow").forEach((row, i) => { const nm = row.querySelector(".nm"); if (!nm) return;
-    if (i < 4) nm.textContent = names[i]; else { nm.textContent = S.dev === "cyton" ? "ECG" : "HEART"; const sb = row.querySelector(".sb"); if (sb) sb.textContent = S.dev === "cyton" ? "CHEST LEAD (CHANNEL 9)" : "PULSE (INFRARED)"; } });
   const fsD = S.dev === "cyton" && typeof engState !== "undefined" && engState.fsDisp ? engState.fsDisp : S.dev === "cyton" ? 125 : FS, span = (BUF_LEN / fsD).toFixed(1);
-  document.querySelectorAll("canvas.wave").forEach(c => { c.title = "Visible span: " + span + " s"; });
+  document.querySelectorAll("canvas.wave, canvas.cyw").forEach(c => { c.title = "Visible span: " + span + " s"; });
   $("hrName").textContent = S.dev === "cyton" ? "HEART RATE (ECG)" : "HEART RATE";
 }
 function engUiHelperMsg(m) { EngUI.lastHelperMsg = m; if (m.type === "impedance_done") { EngUI.checking = false; engUiCyton(); } if (m.type === "impedance" && engState.eng) engState.eng.setImpedance(m.channel, m.kohm); }
@@ -70,9 +74,11 @@ function engUiCheckContact() {
   if (engState.cy.send("impedance_sweep")) { EngUI.checking = true; toast("Checking contact: scores are paused for about 30 seconds.", "info", 5000); }
   engUiCyton();
 }
+/* a button event flashes in the status line under the status pill for 600 ms */
 function engUiButton(ev) {
-  const id = ev.type === "double_blink" ? "flDb" : ev.type === "clench_tap" ? "flCl" : null; if (!id || !$(id)) return;
-  $(id).classList.add("on"); clearTimeout(EngUI.flash[id]); EngUI.flash[id] = setTimeout(() => $(id).classList.remove("on"), 600);
+  if (ev.type !== "double_blink" && ev.type !== "clench_tap") return;
+  EngUI.flashText = ev.type === "double_blink" ? "DOUBLE BLINK" : "CLENCH"; EngUI.flashUntil = Date.now() + 600; engUiStatusLine();
+  clearTimeout(EngUI.flashT); EngUI.flashT = setTimeout(engUiStatusLine, 620);
 }
 function engUiHelp() {
   const h = $("engHelp"); if (!h.hidden) { h.hidden = true; return; }
@@ -116,6 +122,7 @@ function engUiCard() {
     html += '<div class="comp"><span><i class="' + (c.hr.valid ? "ok" : "") + '"></i>HR z ' + z(c.hr) + '</span><span><i class="' + (c.hrv.valid ? "ok" : "") + '"></i>HRV z ' + z(c.hrv) + '</span><span><i class="' + (c.eeg.valid ? "ok" : "") + '"></i>EEG z ' + z(c.eeg) + '</span></div>'; }
   const ev = (engState.lastEvents || []).slice(-4).reverse().map(e => engEsc(e.type.replace("_", " ") + (e.sub && e.sub !== "start" ? " (" + e.sub + ")" : "")) + " " + e.t.toFixed(1) + "s").join(" · ");
   html += '<div class="evs">' + (ev || "No artifacts yet") + "</div>";
+  if (S.dev === "cyton" && EngUI.warnings && EngUI.warnings.length) html += '<div class="evs" style="color:#ffd98a">' + EngUI.warnings.map(engEsc).join("<br>") + "</div>";
   html += '<div class="lim">Scores are relative to your usual (50). Not validated measures. Held moments are not measured. Press ? for more.</div>';
   bd.innerHTML = html;
   $("engCardSt").textContent = o ? (o.quality.motion === "proxy" ? "motion from EEG" : o.quality.motion) : "";
@@ -137,41 +144,72 @@ function engUiProfile() {
   $("engBadge").textContent = (window.engStore && window.engStore.notSaved ? "Not saved · " : "") + b;
   void m;
 }
-/* ---------- Cyton card and the Muse-only DOM in Cyton mode ---------- */
+/* ---------- Cyton: the panel's own places ---------- */
+const engQCls = q => q == null ? "" : q >= 70 ? "good" : q >= 40 ? "fair" : "poor";
+function engUiCyIdx(n) { const ch = engState.cyNames || (engState.cfg ? engState.cfg.channels : null); if (!ch) return -1; let i = ch.indexOf(n); if (i < 0 && n === "F7") i = ch.indexOf("ECG"); return i; }
+function engUiStatusLine() {
+  if (S.dev !== "cyton") return; const el = $("rate"); if (!el) return;
+  if (EngUI.flashUntil && Date.now() < EngUI.flashUntil) { el.textContent = EngUI.flashText; el.classList.add("cyflash"); return; }
+  el.classList.remove("cyflash");
+  const h = engState.helper || {}, cfg = engState.cfg, sc = engState.stats, link = cfg ? ({ wifi: "WiFi", dongle: "dongle", sim: "simulated" }[cfg.link] || cfg.link) : "";
+  if (h.state === "down") { el.textContent = "Start Open Cyton Panel.bat"; el.title = h.text; return; }
+  if (EngUI.checking) { el.textContent = "Checking contact\u2026 scores paused"; return; }
+  el.title = "";
+  el.textContent = S.connected ? [link, (sc && sc.fs ? Math.round(sc.fs) : cfg ? cfg.fs : "--") + " Hz", (sc ? (+sc.lossPct).toFixed(1) : "0.0") + "% lost"].filter(Boolean).join(" \u00b7 ") : "";
+}
 function engUiCyton() {
   if (S.dev !== "cyton") return;
-  const o = window.EngineOut, cfg = engState.cfg, chans = cfg ? cfg.channels : (MuseEngine.Adapters.CytonSim ? MuseEngine.Adapters.CytonSim.NAMES : []);
-  const ecgIdx = cfg ? cfg.ecgChannel : 8, ecgName = ecgIdx >= 0 ? "F7" : null;
-  ENG_GRID.flat().forEach(n => { const cell = $("cyc_" + n); if (!cell) return; let i = chans.indexOf(n); if (n === ecgName && ecgIdx >= 0) i = ecgIdx;
-    const isEcg = i === ecgIdx && ecgIdx >= 0, q = o && i >= 0 ? o.quality.perChannel[i] : null;
-    let txt = "--", cls = "cell"; if (isEcg) { const bpm = o && o.quality.ecg && o.quality.ecg.bpm; txt = bpm != null ? Math.round(bpm) + " bpm" : "--"; cls += " ecg"; cell.querySelector("b").textContent = "ECG"; }
-    else if (S.connected && q != null) { txt = String(q); cls += q >= 70 ? " good" : q >= 40 ? " fair" : " poor"; }
-    cell.className = cls; cell.querySelector("span").textContent = txt; });
-  const e = o && o.quality.ecg;
-  $("cyEcg").textContent = e && e.bpm != null ? Math.round(e.bpm) + " bpm · signal " + (e.sqi || 0).toFixed(2) : (S.connected && (!e || e.state === "none") ? ENG_PADS : "ECG --");
-  const h = engState.helper || {}, sc = engState.stats, link = cfg ? (cfg.link === "wifi" ? "WiFi" : cfg.link === "dongle" ? "dongle" : cfg.link === "sim" ? "simulated" : cfg.link) : "";
-  $("cyHelper").textContent = h.state === "down" ? h.text : "Helper: " + (EngUI.checking ? "contact check" : h.state === "streaming" ? "streaming" : h.state || "--") + (link ? " · " + link : "") + (sc && sc.fs ? " · " + Math.round(sc.fs) + " Hz" : cfg ? " · " + cfg.fs + " Hz" : "") + (sc ? " · " + (+sc.lossPct).toFixed(1) + "% lost" : "");
-  const warns = [].concat(engState.selfcheck && engState.selfcheck.warnings || [], o ? o.quality.warnings : []);
-  if (engState.wifiBad) warns.push(ENG_WIFI);
-  $("cyWarn").innerHTML = [...new Set(warns)].map(w => "<div>" + engEsc(w) + "</div>").join("");
-  $("cyCheck").textContent = EngUI.checking ? "Checking… scores paused" : "Check contact"; $("cyCheck").disabled = !S.connected || EngUI.checking;
-  // the panel's Muse-only places
+  const o = window.EngineOut, cfg = engState.cfg, ecgIdx = engState.cyEcg != null ? engState.cyEcg : cfg ? cfg.ecgChannel : 8, e = o && o.quality.ecg, sc = engState.stats;
+  const unused = cfg ? cfg.unusedChannels : [];
+  let good = 0, nEeg = 0;
+  ENG_ORDER.forEach(n => {
+    const i = engUiCyIdx(n), isEcg = i >= 0 && i === ecgIdx, q = S.connected && o && i >= 0 && !isEcg ? o.quality.perChannel[i] : null, off = i >= 0 && unused.includes(i);
+    if (!isEcg && !off && i >= 0) { nEeg++; if (q != null && q >= 40) good++; }
+    const tile = $("cyt_" + n), row = $("cyr_" + n);
+    // the ECG is shown only in the Heart Rate box (it replaces the Muse pulse there); its F7 slot here is just marked as used for it
+    if (tile) { tile.className = "cyt " + (isEcg ? "off" : off ? "off" : engQCls(q)); tile.lastChild.textContent = n;
+      tile.title = isEcg ? "F7: these pins carry the ECG (see the Heart Rate box)" : n + " (" + ENG_REGION[n] + "): " + (off ? "not in use" : q == null ? "--" : "contact " + q + "%"); }
+    if (row) { row.className = "cyr " + (isEcg || off ? "off" : engQCls(q));
+      row.querySelector(".lb b").textContent = n; row.querySelector(".lb i").textContent = isEcg ? "used for the ECG \u2192 Heart Rate box" : ENG_REGION[n];
+      const rms = engState.cyRms && i >= 0 ? engState.cyRms[i] : null;
+      row.querySelector(".q").textContent = isEcg ? "" : off ? "off" : q == null ? "--" : q + "%";
+      row.querySelector(".r").textContent = isEcg ? "" : S.connected && rms != null ? rms.toFixed(1) + " \u00b5V" : "--"; }
+  });
+  $("cyCheck").textContent = EngUI.checking ? "Checking\u2026 scores paused" : "Check contact"; $("cyCheck").disabled = !S.connected || EngUI.checking;
+  engUiStatusLine();
+  // warnings (helper self-check, engine, WiFi) and the ECG pad help appear once each as a message
+  if (S.connected) {
+    const warns = [].concat(engState.selfcheck && engState.selfcheck.warnings || [], o ? o.quality.warnings : [], engState.wifiBad ? [ENG_WIFI] : []);
+    if (o && e && e.state === "none" && engState.firstFrameWall && Date.now() - engState.firstFrameWall > 20000) warns.push(ENG_PADS);
+    EngUI.shownWarn = EngUI.shownWarn || {}; for (const w of warns) if (!EngUI.shownWarn[w]) { EngUI.shownWarn[w] = 1; toast(w, "info", 10000); }
+    EngUI.warnings = [...new Set(warns)];
+  }
   if (S.connected && o) {
-    const good = o.quality.perChannel.filter((q, i) => q != null && q >= 40 && i !== ecgIdx).length, nEeg = chans.filter((n, i) => i !== ecgIdx && !(cfg && cfg.unusedChannels.includes(i))).length;
-    engUiSensorStrip(nEeg + " ch · " + good + " good");
     $("stRate").textContent = (sc && sc.fs ? Math.round(sc.fs) : cfg ? cfg.fs : "--") + " Hz"; $("stDrop").textContent = (sc ? (+sc.lossPct).toFixed(1) : o.quality.packetLoss.toFixed(1)) + "% lost";
     $("stUse").textContent = (nEeg - o.quality.excluded.length) + "/" + nEeg + " in use";
     $("stMot").textContent = o.quality.motion === "proxy" ? "motion (from EEG)" : o.quality.motion === "valid" ? "motion ok" : o.quality.motion === "movement" ? "MOVING, scores held" : "motion data missing";
     $("hrNum").textContent = e && e.bpm != null ? String(Math.round(e.bpm)) : "--"; $("hrState").textContent = e ? (e.state === "ok" ? "LIVE" : e.state === "weak" ? "WEAK" : "NO ECG") : "--";
+    $("hrState").title = e && e.state === "none" ? ENG_PADS : "";
     $("hrFill").style.width = e && e.bpm != null ? Math.max(2, Math.min(100, (e.bpm - 40) / 140 * 100)) + "%" : "0";
-    $("rate").textContent = "Live data";
-  } else { engUiSensorStrip(S.connected ? "waiting" : "16 ch"); $("stRate").textContent = "-- Hz"; $("stDrop").textContent = "--% lost"; $("stUse").textContent = "-/16 in use"; $("stMot").textContent = "motion --"; $("hrNum").textContent = "--"; $("hrState").textContent = "--"; $("rate").textContent = ""; }
+  } else { $("stRate").textContent = "-- Hz"; $("stDrop").textContent = "--% lost"; $("stUse").textContent = "-/16 in use"; $("stMot").textContent = "motion --"; $("hrNum").textContent = "--"; $("hrState").textContent = "--"; }
+  $("cySens").title = S.connected ? nEeg + " EEG channels, " + good + " with good or fair contact" : "16 channels (not connected)";
   setBattery(null);
 }
-function engUiSensorStrip(text) {
-  let el = $("cySens"); if (!el) { el = engEl("div", { id: "cySens", cls: "t" }, "", $("sensors")); }
-  el.textContent = text;
+/* the Cyton raw view: drawn with the panel's own canvas helpers (prep, grid, trace in panel/ui.js) */
+function engUiDrawCy() {
+  requestAnimationFrame(engUiDrawCy);
+  if (S.dev !== "cyton" || S.view !== "raw" || typeof prep !== "function") return;
+  const fsD = engState.fsDisp || 125, span = (BUF_LEN / fsD).toFixed(0) + " s";
+  for (const n of ENG_ORDER) {
+    const cv = $("cyw_" + n); if (!cv) continue; const { g, w, h } = prep(cv), i = engUiCyIdx(n), isEcg = i >= 0 && i === engState.cyEcg;
+    g.strokeStyle = C("rgba(110,150,255,.16)", "grid"); g.lineWidth = 1; g.beginPath(); g.moveTo(0, h / 2 + .5); g.lineTo(w, h / 2 + .5); g.stroke();
+    if (!S.connected || i < 0 || isEcg || !engState.cyBuf[i]) continue;
+    const buf = engState.cyBuf[i];
+    trace(g, w, h, buf, engState.cyPos, (h / 2 - 1) / 100, C("#7fe0ff", "raw"));   // fixed +/-100 uV, so a row can never look exaggerated
+  }
+  const info = $("cyInfo"); if (info) info.textContent = "offset removed, no other filtering \u00b7 \u00b1100 \u00b5V per row \u00b7 last " + span + " \u00b7 ECG in the Heart Rate box";
 }
+requestAnimationFrame(engUiDrawCy);
 /* ---------- selftest summary (?selftest=1) ---------- */
 function engUiSelfTest() {
   const pre = $("engSelfTest"); if (!pre || !engState.firstFrameWall || Date.now() - engState.firstFrameWall < 20000 || pre.textContent) return;
