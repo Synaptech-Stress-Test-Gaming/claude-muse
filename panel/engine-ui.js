@@ -30,17 +30,17 @@ function engUiBuild() {
   const ds = engEl("div", { id: "devSel", role: "radiogroup", "aria-label": "Device" }, '<button type="button" role="radio" data-dev="muse">MUSE</button><button type="button" role="radio" data-dev="cyton">CYTON</button>', st);
   ds.querySelectorAll("button").forEach(b => b.addEventListener("click", () => engSetDevice(b.dataset.dev)));
   // New / Legacy switch in the focus card
-  const sw = engEl("div", { id: "engSw", role: "radiogroup", "aria-label": "Engine" }, '<button type="button" role="radio" data-eng="new" title="New engine: artifact-robust, learns your usual level, no calibration">NEW</button><button type="button" role="radio" data-eng="legacy" title="Legacy: the old formulas (beta/alpha, 10 s baselines)">LEGACY</button>', st);
+  const sw = engEl("div", { id: "engSw", role: "radiogroup", "aria-label": "Engine" }, '<button type="button" role="radio" data-eng="new" title="New engine: artifact-robust, learns your usual level, no calibration">NEW</button><button type="button" role="radio" data-eng="legacy" title="Legacy: the old formulas (beta/alpha, 10 s baselines)">LEGACY</button>', $("gFocus") || st);
   sw.querySelectorAll("button").forEach(b => b.addEventListener("click", () => setEngMode(b.dataset.eng)));
   // profile panel in the Auto-baselines slot
-  const pf = engEl("div", { id: "engProf" }, '<div class="l1"><span id="engId">Identifying…</span><button type="button" id="engOk" title="Yes, this is me">✓</button><button type="button" id="engNo" title="Not me: choose who it is">✗</button></div><div class="l2" id="engBadge">Population norms</div><div id="engPick" hidden></div>', st);
+  const pf = engEl("div", { id: "engProf" }, '<div class="l1"><span id="engId">Identifying…</span><button type="button" id="engOk" title="Yes, this is me">✓</button><button type="button" id="engNo" title="Not me: choose who it is">✗</button></div><div class="l2" id="engBadge">Population norms</div><div id="engPick" hidden></div>', $("gCal") || st);
   $("engOk").addEventListener("click", () => { if (typeof engProfileConfirm === "function") engProfileConfirm(); });
   $("engNo").addEventListener("click", () => engUiPicker());
   // engine card (bottom left), Cyton card (bottom right)
   const ec = engEl("div", { id: "engCard", cls: "min" }, '<div class="hd"><b>ENGINE</b><span id="engCardSt"></span><button type="button" id="engHelpBtn" title="What these numbers mean">?</button><button type="button" id="engTg" title="Open / close">▴</button></div><div class="bd" id="engCardBd"></div>', document.body);
   $("engTg").addEventListener("click", () => { ec.classList.toggle("min"); $("engTg").textContent = ec.classList.contains("min") ? "▴" : "▾"; });
   $("engHelpBtn").addEventListener("click", engUiHelp);
-  const cy = engEl("div", { id: "cyCard" }, '<div class="hd"><b>CYTON</b><span id="cyFl"><i id="flDb">DOUBLE BLINK</i><i id="flCl">CLENCH</i></span><button type="button" id="cyTg" title="Open / close">▾</button></div><div class="bd"><div id="cyGrid"></div><div id="cyEcg"></div><div id="cyHelper"></div><div id="cyWarn"></div><button type="button" id="cyCheck">Check contact</button></div>', document.body);
+  const cy = engEl("div", { id: "cyCard", cls: "min" }, '<div class="hd"><b>CYTON</b><span id="cyFl"><i id="flDb">DOUBLE BLINK</i><i id="flCl">CLENCH</i></span><button type="button" id="cyTg" title="Open / close">▴</button></div><div class="bd"><div id="cyGrid"></div><div id="cyEcg"></div><div id="cyHelper"></div><div id="cyWarn"></div><button type="button" id="cyCheck">Check contact</button></div>', document.body);
   $("cyTg").addEventListener("click", () => { cy.classList.toggle("min"); $("cyTg").textContent = cy.classList.contains("min") ? "▴" : "▾"; });
   $("cyCheck").addEventListener("click", engUiCheckContact);
   ENG_GRID.forEach(row => row.forEach(n => engEl("div", { cls: "cell", id: "cyc_" + n }, '<b>' + n + '</b><span>--</span>', $("cyGrid"))));
@@ -60,7 +60,7 @@ function engUiDevice() {
   const names = S.dev === "cyton" ? ["Fp1", "C3", "P3", "O1"] : SENSORS;
   document.querySelectorAll("#rawov .rawrow").forEach((row, i) => { const nm = row.querySelector(".nm"); if (!nm) return;
     if (i < 4) nm.textContent = names[i]; else { nm.textContent = S.dev === "cyton" ? "ECG" : "HEART"; const sb = row.querySelector(".sb"); if (sb) sb.textContent = S.dev === "cyton" ? "CHEST LEAD (CHANNEL 9)" : "PULSE (INFRARED)"; } });
-  const span = (BUF_LEN / (S.dev === "cyton" && engState.fsDisp ? engState.fsDisp : FS)).toFixed(1);
+  const fsD = S.dev === "cyton" && typeof engState !== "undefined" && engState.fsDisp ? engState.fsDisp : S.dev === "cyton" ? 125 : FS, span = (BUF_LEN / fsD).toFixed(1);
   document.querySelectorAll("canvas.wave").forEach(c => { c.title = "Visible span: " + span + " s"; });
   $("hrName").textContent = S.dev === "cyton" ? "HEART RATE (ECG)" : "HEART RATE";
 }
@@ -130,7 +130,7 @@ function engUiProfile() {
     if (p.state === "confirmed") { t = "Looks like " + p.label + " (" + Math.round(100 * p.confidence) + "%)"; showBtns = true; }
     else if (p.state === "tentative") { t = "Probably " + p.label + " (" + Math.round(100 * p.confidence) + "%)"; showBtns = true; }
     else if (p.state === "guest") { t = p.label || "Guest"; showBtns = true; }
-    else if (p.state === "first") { t = (p.label || "Julian") + " (first session)"; showBtns = true; }
+    if (p.first && p.state === "confirmed") t = (p.label || "Julian") + " (first session)";
   }
   id.textContent = t; $("engOk").hidden = !showBtns || (p && p.merged); $("engNo").hidden = !showBtns && !(p && p.state === "uncertain");
   const m = o && o.focus, b = p && p.badge ? p.badge : "Population norms";
@@ -181,4 +181,4 @@ function engUiSelfTest() {
 }
 addEventListener("error", e => { (EngUI.pageErrors = EngUI.pageErrors || []).push(String(e.message || e)); });
 engUiBuild();
-setInterval(() => { engUiDevice(); engUiCard(); engUiProfile(); engUiCyton(); engUiSelfTest(); }, 500);
+setInterval(() => { if (typeof engState === "undefined") return; for (const f of [engUiDevice, engUiCard, engUiProfile, engUiCyton, engUiSelfTest]) { try { f(); } catch (e) { (EngUI.pageErrors = EngUI.pageErrors || []).push(f.name + ": " + e.message); } } }, 500);

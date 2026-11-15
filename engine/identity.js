@@ -142,7 +142,7 @@
     };
     I.profile = function () {
       const stt = I.state === "gathering" ? "uncertain" : I.state;
-      return { id: I.profileId, label: I.label, confidence: I.conf, state: stt, badge: stt === "uncertain" ? "Identifying…" : I.first ? (I.label || "Julian") + " (first session)" : "", merged: I.merged, sessionId: I.sid };
+      return { id: I.profileId, label: I.label, confidence: I.conf, state: stt, badge: "", first: I.first, merged: I.merged, sessionId: I.sid };
     };
     function commit(sum) {
       if (!sum || I.sid == null) return null;

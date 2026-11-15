@@ -1,107 +1,97 @@
-# claude-muse: Muse 2 Control Panel
+# claude-muse: Muse 2 / OpenBCI Cyton Control Panel
 
-A single-page control panel that shows the live brainwave data from a **Muse 2** headband, turns it into a 0 to 100 **focus score**, and lets other programs (games) use that score. It runs in the browser, talks to the headband over Bluetooth, and needs no installs and no accounts.
+A single-page control panel for two EEG headsets: the **Muse 2** headband (Bluetooth, straight from the browser) and the **OpenBCI Cyton + Daisy** (16 channels, Ultracortex Mark IV, through a small local Python helper). It shows the live signals, turns them into **FOCUS**, **STRESS** and (Cyton) **DROWSY** scores plus two hands-free **buttons** (double blink, jaw-clench tap), and sends them to games on the same computer. No accounts; nothing leaves your computer.
 
-This README covers the panel and the project files. The games have their own READMEs:
+Two engines run side by side and a switch picks which one is shown:
 
-- [focus/README.md](focus/README.md): the FOCUS / STRESS display switch and remembered baselines (loaded by the panel; keep the `focus` folder next to it)
-- [game/README.md](game/README.md): Mario Kart DS style race whose speed follows your focus (opens from the panel)
-- [game-py/README.md](game-py/README.md): the same Mario Kart game ported to Python (pygame), fed by the panel's focus score
-- [game/BOMB.md](game/BOMB.md): the stress-driven bomb defusal game (opens from the panel's red **B** button): a level-specific service sheet, a sweating, shaking player, and a phone to calm down
-- [game-link/README.md](game-link/README.md): the earlier Animal Stacker prototype that can read the focus score
+- **NEW** (default): the artifact-robust engine in `engine/`. It detects blinks, eye movements, jaw and forehead muscle, talking, chewing, head movement, electrode pops and data gaps, masks them, holds the last clean value for up to 3 seconds and then shows `--` with the reason. It needs **no calibration of any kind**: it keeps learning your usual level from clean data across sessions, and it recognises who is wearing the headset.
+- **LEGACY**: the original formulas, unchanged (focus = `ln(beta/alpha)` with your 10 second baselines; stress = 100 minus focus).
+
+Other READMEs: [focus/README.md](focus/README.md) (the display switch), [panel/README.md](panel/README.md) (panel code), [tools/README.md](tools/README.md) (Cyton helper, replay, auto-tune), [game/README.md](game/README.md), [game/BOMB.md](game/BOMB.md), [game-py/README.md](game-py/README.md), [game-link/README.md](game-link/README.md), [docs/DETAILED_README.md](docs/DETAILED_README.md) (how everything works).
 
 ## What you need
 
-- A **Muse 2** headband, charged, with Bluetooth turned on in your computer
-- **Windows** with **Microsoft Edge** or **Google Chrome** (the panel uses Web Bluetooth, which Firefox and Safari do not support)
-- The Muse phone app **closed** while you use the panel, because the app can grab the headband first
+- **Muse 2**: charged, Bluetooth on, the Muse phone app closed.
+- **Cyton + Daisy** (optional): the board with its WiFi Shield or USB dongle, Python 3.10 or newer, and for STRESS two gel ECG pads.
+- **Windows** with **Microsoft Edge** or **Google Chrome**.
 
 ## How to start it
 
-1. Download or clone this repo and keep every file together (the panel needs `cosmic-bg.jpg` and the `game` and `focus` folders next to it).
-2. Double-click **Open Muse Panel.bat**. It opens the panel in its own Edge window with the Bluetooth features turned on.
-3. Put the headband on, press **Connect**, and pick your Muse when the browser asks.
+**Muse 2:** double-click **Open Muse Panel.bat**, leave **MUSE** selected (the small switch above Connect), press **Connect** and pick your Muse.
 
-No headband? Open `muse-panel.html?demo=1` (add `?demo=1` to the address) and press Connect to get simulated data.
+**Cyton + Daisy:** double-click **Open Cyton Helper.bat** (the first run creates its own Python environment; it tries the WiFi Shield first and falls back to the USB dongle), then open the panel, pick **CYTON** above Connect and press **Connect**. If the helper is not running the panel says so and keeps retrying.
 
-## What you see
+No headset? Add `?demo=1` to the address (`muse-panel.html?demo=1`, or `muse-panel.html?demo=1&device=cyton` for a simulated Cyton) and press Connect.
 
-- **Status lamp and battery** at the top, plus a signal-quality light and percentage for each of the four sensors (TP9 and TP10 behind the ears, AF7 and AF8 on the forehead).
-- **Five wave rows**: delta, theta, alpha, beta, gamma. Each row has a live line, a **Strength** slider (turns the drawing down) and a **Mute** button. These only change what is drawn, never the numbers underneath.
-- **Heart rate** from the headband's pulse sensor, when it is sending data.
-- **Focus meter** (0 to 100) along the bottom.
-- **Buttons**: Connect, Disconnect, Start Recording, Stop Recording, Band view, Raw view, Float focus, Fullscreen, and the red **M** game button.
+## The four outputs
 
-## How the focus score works
+| Output | Devices | From | Meaning |
+|---|---|---|---|
+| **FOCUS** | both | frontal theta up, posterior alpha down, central low beta (13-20 Hz) up | relative to your usual (50 = usual for you) |
+| **STRESS** | both | heart rate (ECG on the Cyton, pulse on the Muse), heart-rate variability, alpha | physiological arousal |
+| **DROWSY** | Cyton | theta+alpha / low-beta ratio, blink duration and rate, eyes-closed time, alpha bursts | a slow trend with minutes of lag |
+| **BUTTONS** | Cyton | a quick double blink; a short jaw-clench tap | events for games |
 
-1. The panel measures how strong **beta** waves (13 to 30 Hz) are compared with **alpha** waves (8 to 13 Hz) and takes the natural log of the ratio: `F = ln(beta / alpha)`. It smooths this over about 3 seconds.
-2. Everyone's brain is different, so the panel needs your own range. Press **Auto Set Baselines** and spend 10 seconds drifting from relaxed to concentrating. It throws out blinks and jaw clenches, then uses the 10th and 90th percentile of what is left as your low and high baselines. You never type numbers in.
-3. The score is `25 + 50 x (F - low) / (high - low)`, held between 0 and 100. Your relaxed baseline lands on 25 and your concentrating baseline on 75.
+**Chips:** `LIVE` = measured now; `HELD · reason` = the last clean value while an artifact passes (confidence fades over 3 s); `LEARNING` = still learning your usual level (about the first 2 minutes after the headset is put on); `--` = not measured, with the reason (movement, muscle, blink, no contact, no ECG, no pulse, signal lost, eyes closed). A missing value is never shown as 0.
 
-Baselines are kept only while the panel is open. Clenching your jaw or forehead muscles fakes a high reading, so stay relaxed in the face.
+**Badges** (in the slot where Legacy's Auto Set Baselines button sits): who the panel thinks is wearing the headset (`Looks like Julian (82%) ✓ ✗`, `Probably …`, `Guest 2`, `Identifying…`) and how much of that person's data it has (`Population norms`, `Learning you (N min)`, `Personal, medium`, `Personal, high`). Tick confirms; cross lets you pick the right person or a new guest (the whole session is moved), plus Rename, Merge into…, Forget me, Export and Import.
 
-## Focus or stress display (the two buttons under FOCUS)
+## Honest limits
 
-- **FOCUS** shows the focus meter described above.
-- **STRESS** shows `100 - focus`: focus 100 means stress 0, focus 0 means stress 100. It uses the same baselines, so there is nothing extra to calibrate.
+- The scores are relative to your own usual level (50 = usual for you). They are not absolute and cannot be compared between people.
+- Focus and stress are not validated measures.
+- Muse focus is weak: 4 sensors, none over the top of the head.
+- STRESS measures physiological arousal. Excitement, effort and caffeine look the same.
+- While you move, talk, chew or tense your face, the score is held and then shown as `--`. Those moments are not measured.
+- Drowsiness is a slow trend with minutes of lag and needs 10 minutes of history.
+- Person detection is a guess, and on the Muse it is unreliable. Use ✗ to correct it.
+- The Cyton's dry electrodes on this headset have no published validation.
+- OpenBCI retired the WiFi Shield for reliability problems. If data drops, use the USB dongle.
+- Nothing here is a medical device.
 
-The title above the buttons changes to match, so a screenshot always says which one you are looking at. Your choice is remembered. External games and the game menu always receive the **focus** number (the bomb game has its own source selector and does its own `100 - focus` mapping). Both are rough proxies, not validated measures.
+## Privacy
 
-**Baselines.** The only calibration is the normal 10 second **Auto Set Baselines**. The low and high it finds are remembered in the browser, so next time the panel starts with the baselines from last time until you press the button again.
+Profiles (per-session summaries and identity templates, never raw signals) stay in this browser's local storage (`museengine.profiles.v1`). They are never sent anywhere; only a profile label and a confidence number go to the game link on `127.0.0.1`. If the browser blocks storage the panel still works and says "Not saved". Forget me deletes a person and all their sessions.
 
-A muscle-corrected focus score (with its own calibration) was tried and taken out of the interface until a better system exists. Its code is kept, not loaded, in [focus/experimental/](focus/experimental/).
+## Legacy mode
 
-## Accuracy rules
-
-- Every reading comes straight from the headband, converted to microvolts, with only the constant offset removed.
-- Lost packets are not filled in or smoothed over. The panel shows a "% lost" figure instead.
-- **Raw view** shows the four sensors unfiltered on a fixed scale of 200 microvolts either way, so it can never look exaggerated.
-- The first 2 seconds after connecting are not shown while the offset removal settles.
-- If no sensor has skin contact, the panel says so instead of drawing a line.
+Press **LEGACY** to get the original behaviour: FOCUS = `ln(beta/alpha)` smoothed about 3 s and mapped with **Auto Set Baselines 10 seconds** (relaxed → 25, concentrating → 75); STRESS = 100 minus focus; the old arousal card with `?stress=1`. Legacy beta (13-30 Hz) includes forehead and jaw muscle, so a frown reads as "focus"; that is one reason the new engine exists. On the Cyton, Legacy focus runs on the mean of the good channels with its own baselines.
 
 ## Recording
 
-**Start Recording** keeps every reading; **Stop Recording** shows a report and downloads a CSV to your Downloads folder. Recordings stop by themselves at 10 minutes.
+**Start/Stop Recording.** On the Muse the CSV keeps its old columns in the same order (`time_s`, the 4 sensors, 5 bands, `sensors_in_use`, `focus_index_ln_beta_over_alpha`, `focus_0_to_100` = always Legacy, heart rate, the 3 motion columns) and appends `eng_focus, eng_focus_state, eng_stress, eng_stress_state, eng_profile_conf, eng_mask`. On the Cyton the v2 recorder saves 4 files (`_eeg.csv`, `_aux.csv`, `_engine.csv`, `_meta.json`; up to 40 minutes; the browser may ask once to allow multiple downloads). Gaps stay gaps; nothing is filled in.
 
-CSV columns, in order: `time_s`, `TP9_uV, AF7_uV, AF8_uV, TP10_uV`, the five band signals, `sensors_in_use`, `focus_index_ln_beta_over_alpha` and `focus_0_to_100` (always the focus score, whichever display is selected), then the two heart-rate columns. The accelerometer/gyroscope columns come after these when that feature is present.
+## Validation and auto-tune (optional, once per device)
 
-There is one row per reading, 256 rows per second, and dropped readings stay as gaps in `time_s`. The report also lists signal levels per sensor and wave type and how long focus stayed above 50 and 75. Nothing is saved unless you press Stop.
+Open **validation.html** and follow it: about 32 minutes of guided rest, tasks and deliberate artifacts, recorded with markers. Then run `python tools/autotune.py` and read `docs/validation-report.md`. The SOP is [workflows/validate_focus_stress.md](workflows/validate_focus_stress.md). This checks and tunes the engine; it is not a calibration and the panel never needs it. Undo by deleting `engine/tuned.json` and `engine/tuned.js`.
 
-## Other features
+## Games
 
-- **Float focus**: a small always-on-top window with only the focus meter. Minimize the panel (do not close it) and the meter stays on screen.
-- **Auto reconnect**: if the link drops the panel retries three times by itself, then shows a plain step-by-step message.
-- **Fullscreen**: the stage scales to any window and keeps its 16:9 shape.
-- **Game link**: the panel sends the focus score to a program on your own computer (`127.0.0.1` port 8765). Nothing leaves your machine. The label near the focus meter shows `GAME: LINKED` when something is listening.
+The game menu (Games button) and external games on `127.0.0.1:8765` receive the focus number exactly as before (New or Legacy, whichever is selected; `null` when there is no reading), plus the v2 fields: metrics, button events (resent until acknowledged), device, engine, profile label. Gameplay is unchanged.
+
+## Tests
+
+`node tools/run_all_tests.js` runs every test (old and new, Node and Python) and prints a table; exit code 0 means all passed. `node tools/browser_smoke.js` (optional) takes screenshots of every look and device with headless Chrome or Edge and runs the in-page self-test.
 
 ## If it will not connect
 
-1. Close the Muse app on any phone or tablet.
-2. In Windows Settings, Bluetooth and devices, remove "Muse" if it is listed.
-3. Turn the headband off, then on again.
-4. Press Connect.
+Muse: close the Muse app on any phone, remove "Muse" in Windows Bluetooth settings, restart the headband, press Connect. Cyton: see [tools/README.md](tools/README.md) (WiFi direct mode, dongle, the FTDI latency fix).
 
 ## Files
 
-| File | What it is |
+| Path | What it is |
 |---|---|
-| `muse-panel.html` | The panel page (markup and script list only; the code is in `panel/`) |
-| `Open Muse Panel.bat` | Launches the panel in Edge with Web Bluetooth switched on |
-| `cosmic-bg.jpg` | The artwork behind the panel. Keep it next to `muse-panel.html` |
-| `game/` | The Mario Kart game (see its README) |
-| `game-py/` | The Python version of the Mario Kart game (see its README) |
-| `game/menu.js` | The game menu (round button on the panel). Add new games with one `GameMenu.register(...)` call |
-| `panel/` | The panel's code split by category (UI, signal path, Bluetooth, focus meter, recording, games, stress link). See `panel/README.md` |
-| `arousal.js` | The stress / arousal score everything uses: F = 100·clip(0.40 H + 0.35 V + 0.25 E) from heart rate, HRV (RMSSD) and median beta/alpha, with a personal 2-minute baseline. Tests: `node arousal.test.js` |
-| `stress.js` | The stress card (UI) that runs the arousal model and feeds it the panel's signals; the older effect-size meter still runs inside but is no longer shown or used |
-| `docs/DETAILED_README.md` | Detailed status: how everything works, what is tested, open work, how to merge |
-| `Open Muse Panel (Mac).command` | Mac launcher (serves the folder on localhost and opens Chrome) |
-| `game-link/` | The Animal Stacker prototype (see its README) |
-| `Claude outputs/` | An earlier copy of the panel kept for reference |
-| `PLAN.md` | Running plan and change log for the panel and game |
-| `muse2-panel-requirements.md` | The original requirements (a few have since changed, for example recording now saves a CSV) |
-| `CLAUDE.md` | Working instructions for the AI assistant used on this project |
+| `muse-panel.html`, `Open Muse Panel.bat`, `Open Muse Panel (Mac).command` | the panel and its launchers |
+| `panel/` | the panel's code (UI, signal path, Bluetooth, Legacy focus, recording, games, and `engine-*.js`: the glue, UI and recorder of the new engine, `validation.js`) |
+| `engine/` | the new engine: pure maths, one file per stage, each with a `*.test.js` |
+| `adapters/` | Muse frames, the Cyton WebSocket client and the in-browser Cyton simulator |
+| `tools/` | `cyton_helper.py`, `replay.js`, `make_synth_recording.js`, `autotune.py`, `get_datasets.py`, `browser_smoke.js`, `run_all_tests.js` |
+| `Open Cyton Helper.bat` | starts the Cyton helper (creates `.venv-cyton` on first run) |
+| `validation.html`, `workflows/validate_focus_stress.md` | the validation recording and its SOP |
+| `focus/`, `arousal.js`, `stress.js` | Legacy display switch, the Legacy arousal model and stress card; `focus/experimental/` is parked (not loaded) |
+| `game/`, `game-py/`, `game-link/` | the games |
+| `docs/` | `DETAILED_README.md`, `IMPLEMENTATION_NOTES.md`, the spec and research documents |
 
 ## About this project
 
-Built with Claude Code as a student project. The panel reads the Muse 2's standard Bluetooth data and does all the maths in your browser.
+Built with Claude Code as a student project. All maths runs locally (in the browser, and in the Cyton helper for the board link).

@@ -228,7 +228,8 @@
       // hold / fade
       const fo = hf.focus.step(m.focus), so = hf.stress.step(m.stress), dro = m.drowsiness ? hf.drowsiness.step(m.drowsiness) : null;
       const badgeF = Nm.badge(metrics.feats.focusRaw.personalTime(), metrics.state.sessions);
-      if (prof && prof.state !== "guest" && prof.state !== "uncertain" && !prof.badge) prof.badge = badgeF.text;
+      // the confidence badge: population norms while the wearer is not known yet (scored with the priors), else how much of this person's data exists
+      if (prof) prof.badge = prof.state === "uncertain" ? "Population norms" : badgeF.text;
       // legacy
       let lg = { focus: null, stress: null };
       if (legacy) { const good = eegIdx.filter(c => !contact.isExcluded(c)), i1 = st.idx + 1, i0 = Math.max(st.firstIdx, i1 - fs);
