@@ -1,3 +1,5 @@
+Superseded on 2026-11-15 by the engine in `engine/` (see docs/DETAILED_README.md). Kept for history.
+
 # Focus correction: plan and status
 
 Goal: make the focus score ignore muscle noise (jaw clench, frown) and, later, blinks and head movement, while still tracking attention. Beta over alpha is a proxy for focus, not a validated measure, and nothing here claims otherwise.

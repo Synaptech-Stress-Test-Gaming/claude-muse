@@ -106,3 +106,10 @@ One program you open with a double-click. It shows a navy and silver art deco co
 - Choice is remembered (`localStorage` key `muse2panel.look`) and applied in `<head>` before first paint.
 - No DOM nodes are moved. Stage groups are wrapped in `.g` elements (`display:contents` in cosmic, grid cells in clean). All clean rules sit in the `CLEAN LOOK` CSS block; canvas colors come from the `TH` object (null in cosmic).
 - The "Dream. Focus. Achieve." plaque and band titles are baked into `cosmic-bg.jpg`, so the clean look drops them by not loading the image.
+
+## Added: artifact-robust engine, Cyton + Daisy mode, self-learning scores (branch feat/robust-engine-cyton)
+- New engine in `engine/` (nine stages, pure maths, every module tested): artifact detection and masking (blinks, eye movements, EMG with clench/chew/talk/tension labels, head movement, electrode pops, gaps, bad contact), hold for 3 s then `--` with the reason, no calibration, learning each person's usual level across sessions, person auto-detection.
+- Outputs: FOCUS and STRESS (both devices), DROWSY and the double-blink / jaw-tap buttons (Cyton). The old formulas stay selectable as **LEGACY** and keep running in parallel.
+- OpenBCI Cyton + Daisy through `tools/cyton_helper.py` (WiFi first, dongle fallback, rate ladder, self-checks, reconnect) and `Open Cyton Helper.bat`; an in-browser simulator for `?demo=1&device=cyton`.
+- Game link v2 (metrics, acknowledged button events; old fields unchanged), recorder columns appended, v2 recorder, validation protocol (`validation.html`), replay and auto-tune tools, browser smoke test.
+- Docs: README, docs/DETAILED_README.md (Part A), tools/README.md, workflows/validate_focus_stress.md, docs/IMPLEMENTATION_NOTES.md.

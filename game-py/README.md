@@ -16,7 +16,7 @@ py mario_kart.py
 Or double-click **Run Mario Kart.bat** (it installs the packages first).
 
 1. Start the game. It shows "Waiting for the Muse 2 panel...".
-2. Open the Muse 2 panel (`Open Muse Panel.bat` in the main folder), press **Connect**, then **Auto Set Baselines** and go from relaxed to concentrating for 10 seconds.
+2. Open the panel (`Open Muse Panel.bat` in the main folder) and press **Connect**. In the panel's default **NEW** mode the focus score is live without any calibration; in **LEGACY** mode press **Auto Set Baselines** and go from relaxed to concentrating for 10 seconds.
 3. The race starts by itself once your focus score is live. The panel shows `GAME: LINKED`.
 
 The game listens on `127.0.0.1:8765` (this computer only), the same link the Animal Stacker prototype uses. Do not run both at once.
@@ -60,3 +60,7 @@ Built from public descriptions of Mario Kart DS, not its files. Characters, kart
 ## Testing status
 
 Tested with simulated focus (keyboard mode and scripted link messages) and full automated races. **Not yet run against a real headband.** The panel was changed slightly to also send the four sensor percentages (older games ignore them).
+
+## Game link v2
+
+`link.py` reads up to 8 KB per message (was 1 KB) and keeps `read()` -> `(state, focus, sensors)` exactly as before. New attributes behind the same lock: `link.metrics` (focus/stress/drowsiness, each {value, conf, state, reason}), `link.device`, `link.engine`, `link.profile` (label and confidence only), `link.legacy`, and `link.pop_events()` (button events, each delivered once; the reply carries `ack` so the panel stops resending). A malformed v2 field is ignored on its own and never loses `focus`. `mario_kart.py` keeps `self.metrics` and `self.last_events` (unused: no gameplay change). Test: `python game-py/test_link.py`.
