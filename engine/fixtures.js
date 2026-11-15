@@ -186,7 +186,7 @@
     for (let c = 0; c < rec.channels.length; c++) { if (c === rec.ecgChannel) continue; const x = rec.data[c];
       for (let i = Math.max(0, Math.round(t * fs)); i < Math.min(rec.n, Math.round((t + seconds) * fs)); i++) { const tt = i / fs; x[i] += o.eegUv * Math.sin(2 * Math.PI * 3 * tt) * ramp(tt, t, t + seconds, 0.15); } }
     for (const k of ["accel", "gyro"]) { const a = rec[k]; if (!a) continue; const amp = k === "accel" ? o.g : 60;
-      for (let i = Math.floor(t * a.fs); i < Math.min(a.x.length, Math.ceil((t + seconds) * a.fs)); i++) { const tt = i / a.fs, rr = ramp(tt, t, t + seconds, 0.1); a.x[i] += amp * Math.sin(2 * Math.PI * 2 * tt) * rr; a.y[i] += 0.6 * amp * Math.sin(2 * Math.PI * 2 * tt + 1) * rr; } }
+      for (let i = Math.floor(t * a.fs); i < Math.min(a.x.length, Math.ceil((t + seconds) * a.fs)); i++) { const tt = i / a.fs, rr = ramp(tt, t, t + seconds, 0.1); a.x[i] += amp * Math.sin(2 * Math.PI * 2 * tt) * rr; a.y[i] += 0.6 * amp * Math.sin(2 * Math.PI * 2 * tt + 1) * rr; a.z[i] += amp * Math.sin(2 * Math.PI * 2 * tt + 0.5) * rr; } }
     return [addEv(rec, { type: "motion", onset: t, offset: t + seconds })];
   }
   function pop(rec, t, ch, stepUv) {
