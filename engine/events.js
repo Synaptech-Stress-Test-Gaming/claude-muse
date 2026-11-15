@@ -45,7 +45,7 @@
   }
 
   function create(o) {
-    o = Object.assign({ fs: 250, device: "cyton", channels: [], eegIdx: null, cfg: null, det: null, undoPanelHp: false }, o);
+    o = Object.assign({ fs: 250, device: "cyton", channels: [], eegIdx: null, cfg: null, det: null, undoPanelHp: false, mains: 60 }, o);
     const fs = o.fs, C = o.channels.length, eeg = o.eegIdx || o.channels.map((_, i) => i), dev = o.device;
     const k = U.deepMerge(DEF, o.cfg || {}), kd = Object.assign({}, k[dev] || k.cyton, (o.cfg && o.cfg[dev]) || {});
     const G = groupsFor(dev, o.channels, eeg);
@@ -53,7 +53,7 @@
     const fhi = fs < 250 ? 55 : Math.min(100, fs / 2 - 5), envN = Math.max(1, Math.round(k.emgEnvMs / 1000 * fs));
     const excluded = new Uint8Array(C);
     // ---- per-channel filter state
-    function mkCh() { return { lp: U.lp(10, fs), h1: U.hp(25, fs), l1: U.lp(fhi, fs), ma: U.MovingAvg(envN), a1: U.bp(Math.sqrt(8 * 13), fs, 2), a2: U.bp(Math.sqrt(8 * 13), fs, 2), prev: null }; }
+    function mkCh() { return { mn: o.mains && o.mains < fs / 2 - 2 ? U.notch(o.mains, fs, 4) : null, lp: U.lp(10, fs), h1: U.hp(25, fs), l1: U.lp(fhi, fs), ma: U.MovingAvg(envN), a1: U.bp(Math.sqrt(8 * 13), fs, 2), a2: U.bp(Math.sqrt(8 * 13), fs, 2), prev: null }; }
     const ch = []; for (let c = 0; c < C; c++) ch.push(mkCh());
     // ---- histories (indexed by absolute sample index modulo L)
     const vR = new Float32Array(L), eyeR = G.eye.map(() => new Float32Array(L)), otherR = new Float32Array(L), eaR = new Float32Array(L);
@@ -86,7 +86,9 @@
     const use = list => list.filter(c => !excluded[c]);
 
     /* one sample of xb for every channel (array indexed by channel), absolute sample index i */
-    function push(i, xb) {
+    /* xd (DC-blocked, not notched) is optional: when given, the EMG envelope uses it through a low-Q (4) mains notch, because the
+       Q 30 notch of xb rings for a few hundred ms after a strong burst and stretched every clench past 600 ms */
+    function push(i, xb, xd) {
       S.idx = i; const p = i % L;
       // eye channels
       const eye = use(G.eye); let vs = 0, nv = 0;
@@ -105,7 +107,7 @@
       // EMG envelopes, burst state per sample, pops
       const t = tOf(i), settled = i >= S.validFrom;
       for (const c of eeg) {
-        const s = ch[c], e = s.ma.p(Math.abs(s.l1.p(s.h1.p(xb[c])))); S.env[c] = e;
+        const s = ch[c], src = xd ? (s.mn ? s.mn.p(xd[c]) : xd[c]) : xb[c], e = s.ma.p(Math.abs(s.l1.p(s.h1.p(src)))); S.env[c] = e;
         if (s.prev != null && settled && !excluded[c]) { const st = Math.abs(xb[c] - s.prev); if (st > k.popSlope / fs) S.steps.push({ i, c, t }); if (Math.abs(xb[c]) > k.satUv && t - S.satAt[c] > 1) { S.satAt[c] = t; S.steps.push({ i, c, t, sat: true }); } }
         s.prev = xb[c];
         if (!settled || excluded[c]) continue;
@@ -117,7 +119,8 @@
           else { S.above[c] = 0; S.maxR[c] = 0; }
         } else {
           S.maxR[c] = Math.max(S.maxR[c], r);
-          if (r < k.emgRatioOut) { S.below[c]++; if (S.below[c] >= k.emgOutMs / 1000 * fs) { S.inB[c] = 0; S.above[c] = 0; burstChannelEnd(c, t - k.emgOutMs / 1000); } }
+          if (r < Math.max(k.emgRatioOut, 0.1 * S.maxR[c])) { S.below[c]++;   // end also at 10% of the peak ratio: the notch rings after a strong burst
+            if (S.below[c] >= k.emgOutMs / 1000 * fs) { S.inB[c] = 0; S.above[c] = 0; burstChannelEnd(c, t - k.emgOutMs / 1000 - 0.8 * k.emgEnvMs / 1000); } }   // the 75 ms envelope average lags the falling edge
           else S.below[c] = 0;
           if (S.merged && t - S.bOn[c] > k.emgStallS) { S.base[c].clear(); S.inB[c] = 0; burstChannelEnd(c, t); }   // anti-stall: accept the level as the new baseline
         }

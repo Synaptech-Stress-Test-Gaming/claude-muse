@@ -60,7 +60,7 @@
     const pre = Pp.create(Object.assign({ fs, mains: opts.mains, nCh: C }, cfg.preproc));
     const contact = Ct.create({ fs, device: dev, channels: chans, eegIdx, mains: opts.mains, cfg: cfg.contact });
     const det = opts.store && opts.store.detFor ? opts.store.detFor(dev) : null;
-    const events = Ev.create({ fs, device: dev, channels: chans, eegIdx, cfg: cfg.events, det, undoPanelHp: opts.undoPanelHp != null ? opts.undoPanelHp : dev === "muse" && !!opts.legacyProvider });
+    const events = Ev.create({ fs, device: dev, channels: chans, eegIdx, cfg: cfg.events, det, mains: opts.mains, undoPanelHp: opts.undoPanelHp != null ? opts.undoPanelHp : dev === "muse" && !!opts.legacyProvider });
     const G = events.groups;
     const mask = Mk.create({ fs, device: dev, channels: chans, groups: G, eegIdx, cfg: cfg.mask });
     let gate = Mo.Gate({ kind: dev, cfg: cfg.motion, th: opts.motionTh });
@@ -87,7 +87,7 @@
       dropZones: [], muse: { contact: null, ppgHr: null }, impedance: false, aliasWarn: false, warnings: new Set(), blinks: [], eyesClosed: [], lastFrameIdx: null, firstT: null,
       sessionStart: null, hops: 0, legacyBuf: null, mapCheck: { done: false, eye: [], post: [] }, ecgOut: null, ppgOut: null, gyroSeen: false, nlmsRef: null, sessionCount: 0 };
     const eng = { onEvent: null, cfg, flags, device: dev, fs, channels: chans, eegIdx, D, legacy };
-    const xbArr = new Float64Array(C);
+    const xbArr = new Float64Array(C), xdArr = new Float64Array(C);
 
     function nextId() { return ++st.evId; }
     function emitEvent(ev) {
@@ -291,9 +291,9 @@
       const n = f.samples[0].length;
       for (let k = 0; k < n; k++) {
         const i = f.sampleIndex + k, p = ((i % L) + L) % L;
-        for (let c = 0; c < C; c++) { const x = f.samples[c][k]; pre.run(c, x); R.raw[c][p] = x; R.xd[c][p] = pre.xd; R.xb[c][p] = pre.xb; R.xa[c][p] = pre.xa; xbArr[c] = pre.xb; if (st.useProxy) proxy.push(c, pre.xb); }
+        for (let c = 0; c < C; c++) { const x = f.samples[c][k]; pre.run(c, x); R.raw[c][p] = x; R.xd[c][p] = pre.xd; R.xb[c][p] = pre.xb; R.xa[c][p] = pre.xa; xbArr[c] = pre.xb; xdArr[c] = pre.xd; if (st.useProxy) proxy.push(c, pre.xb); }
         have[p] = 1;
-        events.push(i, xbArr);
+        events.push(i, xbArr, xdArr);
         if (ecg) ecg.push(i, f.samples[ecgCh][k]);
         if (nlms) nlms.process(i, R.xa, R.xc, p); else if (asr) for (const c of eegIdx) R.xc[c][p] = R.xa[c][p];
         st.idx = i;

@@ -10,12 +10,12 @@ function run(rec, opts) {
   const fs = rec.fs, C = rec.channels.length, eeg = rec.channels.map((_, i) => i).filter(i => i !== rec.ecgChannel);
   const pp = P.create({ fs, nCh: C }), ev = Ev.create({ fs, device: rec.device, channels: rec.channels, eegIdx: eeg, det: opts.det || null, cfg: opts.cfg || null });
   const gate = rec.accel ? M.Gate({ kind: rec.device }) : null; if (gate) gate.setFs(rec.accel.fs);
-  const out = [], tickN = Math.round(0.05 * fs), xb = new Float64Array(C); let ai = 0, gi = 0, lost = 0;
+  const out = [], tickN = Math.round(0.05 * fs), xb = new Float64Array(C), xd = new Float64Array(C); let ai = 0, gi = 0, lost = 0;
   for (let i = 0; i < rec.n; i++) {
     if (rec.gapMask && rec.gapMask[i]) { lost++; continue; }
     if (lost) { ev.gap(i, lost); for (let c = 0; c < C; c++) pp.reset(c); out.push({ type: "gap", onset: (i - lost) / fs, offset: i / fs }); lost = 0; }
-    for (let c = 0; c < C; c++) { pp.run(c, rec.data[c][i]); xb[c] = pp.xb; }
-    ev.push(i, xb);
+    for (let c = 0; c < C; c++) { pp.run(c, rec.data[c][i]); xb[c] = pp.xb; xd[c] = pp.xd; }
+    ev.push(i, xb, xd);
     if ((i + 1) % tickN === 0) {
       const t = (i + 1) / fs;
       ev.tick(t).forEach(e => out.push(e));
