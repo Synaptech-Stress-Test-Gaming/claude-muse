@@ -5,6 +5,7 @@
    - stress(): 0..1 from the stress meter, or null
    - mode: legacy option, "test" starts on the manual slider
    - onEvent(type, data): start | strike | module_solved | explode | defused | finish
+   - metrics(), events(): the new engine's metrics and button events (stored for later use; gameplay does not read them); engine: "new" | "legacy"
    All art is drawn in code. */
 "use strict";
 (function (root) {
@@ -196,6 +197,7 @@ function boomSound() {
 function open(opts) {
   if (ui) return;
   opts = opts || {};
+  const engineFeed = { metrics: opts.metrics || null, events: opts.events || null };   // stored, unused: no gameplay change
   if (!document.getElementById("bz-css")) { const s = document.createElement("style"); s.id = "bz-css"; s.textContent = CSS; document.head.appendChild(s); }
   const T = Object.assign({}, L.TUNING, opts.tuning || {});
   const root = el("div", "bz", null, opts.parent || document.body);
@@ -705,11 +707,7 @@ function open(opts) {
   function frame(now) { raf = requestAnimationFrame(frame); update(now); }
   function update(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
-    let target = 0, noRead = false;
-    if (source === "test") { noRead = no.checked; target = noRead ? 0 : +sl.value / 100; }
-    else if (source === "stress" && opts.stress) { const v = opts.stress(); noRead = v == null || !isFinite(v); target = noRead ? 0 : v; }
-    else if (source === "focus" && opts.focus) { const f = opts.focus(); noRead = f == null || !isFinite(f); target = noRead ? 0 : L.stressFromFocusLinear(f); }
-    else noRead = true;
+    const src = L.stressTarget(source, opts, { none: no.checked, value: +sl.value / 100 }), target = src.target, noRead = src.noRead;
     S.stressSm += (target - S.stressSm) * (1 - Math.exp(-dt / T.smoothingSec));
     if (S.state === "running" && !S.phone) S.calm = Math.max(0, S.calm - T.calmDecay * dt);
     S.calmPeak = Math.max(S.calmPeak, S.calm);
@@ -765,6 +763,7 @@ function open(opts) {
     calmBadge.style.display = calmNow && S.state === "running" ? "flex" : "none"; calmFx.style.opacity = calmNow && S.state === "running" ? 1 : 0; if (calmNow) calmBadge.querySelector("#cmT").textContent = Math.ceil(S.calmUntil - S.t) + " s left: shaking and sweat paused";
     vNote.textContent = source === "test" ? "MANUAL TEST MODE: stress is set by the slider. Results are not real data."
       : source === "focus" ? (noRead ? "FOCUS MODE: no focus reading yet. Connect the headband and press Auto Set Baselines in the panel. Until then there are no stress effects." : "FOCUS MODE: stress = 100 minus your focus. Focus 100 means no stress, focus 0 means full stress. Focus is a rough proxy, not a validated measure.")
+      : !noRead && opts.engine === "new" ? "STRESS MODE: driven by the engine (heart rate, heart-rate variability, alpha). Measures arousal, not a validated stress measure."
       : noRead ? "STRESS MODE: no stress reading yet. Connect the headband and calibrate the stress meter in the panel. Until then there are no stress effects." : "STRESS MODE: driven by the experimental stress meter (heart rate, frontal beta/alpha, face tension). Not a validated stress measure.";
     rowS.querySelector("span").textContent = source === "test" ? "STRESS (MANUAL)" : source === "focus" ? "STRESS (100 - FOCUS)" : "STRESS (METER)";
     stEl.textContent = (source === "test" ? "MANUAL TEST" : source === "focus" ? "FOCUS" : "STRESS METER") + (opts.status ? "  |  " + opts.status() : "");

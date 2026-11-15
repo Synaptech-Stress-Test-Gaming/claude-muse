@@ -154,7 +154,7 @@ class HeadbandLink:
 
             def do_POST(self):
                 try:
-                    n = min(int(self.headers.get("Content-Length", "0")), 512)
+                    n = min(int(self.headers.get("Content-Length", "0")), 8192)  # the panel's v2 body is larger (game link v2)
                     data = json.loads(self.rfile.read(n) or b"{}")
                     raw = data.get("focus")
                     value = None

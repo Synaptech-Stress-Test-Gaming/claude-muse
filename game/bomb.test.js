@@ -72,5 +72,12 @@ ok(condWire === 2000 && condBtn === 2000, "a conditional rule (not the fallback)
 ok(B.stressFromFocusLinear(100) === 0 && B.stressFromFocusLinear(0) === 1 && Math.abs(B.stressFromFocusLinear(25) - 0.75) < 1e-12, "focus 100 = stress 0, focus 0 = stress 1, linear in between");
 ok(B.stressFromFocusLinear(null) === 0 && B.stressFromFocusLinear(150) === 0 && B.stressFromFocusLinear(-10) === 1, "focus mapping handles no reading and out-of-range values");
 
+// stress source with an engine-style provider (game link v2): the engine value is used; null is "no reading" with no stress effects
+{ const eng = { stress: () => 0.62 }, none = { stress: () => null };
+  const a = B.stressTarget("stress", eng), b = B.stressTarget("stress", none);
+  ok(a.target === 0.62 && !a.noRead, "stress source with an engine-style provider returns the engine value");
+  ok(b.target === 0 && b.noRead === true && B.clockRate(b.target, 0) === 1 && B.handShake(b.target) === 0, "a null engine reading is 'no reading' with no stress effects");
+  ok(B.stressTarget("focus", { focus: () => 25 }).target === 0.75 && B.stressTarget("test", {}, { none: false, value: 0.3 }).target === 0.3 && B.stressTarget("stress", {}).noRead, "source selection unchanged for focus, manual and missing sources"); }
+
 if (typeof document !== "undefined") { document.body.style.cssText = "font:14px monospace;white-space:pre;padding:16px;background:#111;color:#ddd"; document.body.textContent = out.join("\n") + "\n\n" + (fails ? fails + " FAILED" : "ALL PASSED"); }
 else { console.log(out.join("\n")); console.log(fails ? fails + " FAILED" : "ALL PASSED"); process.exit(fails ? 1 : 0); }
