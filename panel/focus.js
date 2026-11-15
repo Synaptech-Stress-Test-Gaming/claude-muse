@@ -19,9 +19,13 @@ function renderFocus(){
   $("fnum").textContent=txt;
   [...fbar.children].forEach((s,i)=>s.classList.toggle("lit",p!=null&&i<Math.round(p/100*FSEG)));
   renderFocusSwitch(); // switch buttons, label, status badge and note (focus/focus-switch.js)
-  $("btnCal").disabled=!(S.connected&&!focus.cal);
-  $("btnCal").classList.toggle("on",sh.lo!=null&&sh.hi!=null&&!focus.cal);
-  if(S.pip){S.pip.num.textContent=txt;[...S.pip.bar.children].forEach((s,i)=>s.classList.toggle("lit",p!=null&&i<Math.round(p/100*FSEG)));S.pip.note.textContent=p==null?(S.connected?(sh.lo==null?"Set baselines in the panel":em.toUpperCase()+": no valid reading"):"Not connected"):em.toUpperCase();}
+  const cyLeg=S.dev==="cyton"&&typeof engLegacyState==="function"?engLegacyState():null; // Cyton Legacy: engine/legacy.js baselines
+  $("btnCal").disabled=!(S.connected&&!(cyLeg?cyLeg.cal:focus.cal));
+  $("btnCal").classList.toggle("on",cyLeg?cyLeg.lo!=null&&!cyLeg.cal:(sh.lo!=null&&sh.hi!=null&&!focus.cal));
+  if(S.pip){const title=em==="drowsy"?"DROWSY":em==="stress"?"STRESS":"FOCUS";S.pip.title.textContent=title;
+    S.pip.num.textContent=txt;[...S.pip.bar.children].forEach((s,i)=>s.classList.toggle("lit",p!=null&&i<Math.round(p/100*FSEG)));
+    if(engIsNew()){const m=engMetric();S.pip.note.textContent=!S.connected?"Not connected":m?(m.state==="stale"||m.state==="unavailable"?"-- "+(m.reason||""):engChipText(m)):"--";}
+    else S.pip.note.textContent=p==null?(S.connected?(sh.lo==null?"Set baselines in the panel":em.toUpperCase()+": no valid reading"):"Not connected"):em.toUpperCase();}
   sendGame(pctOf(focus)); // external games always get the focus score
   updateMarioBtn();
 }
@@ -42,9 +46,9 @@ async function toggleFloat(){
     const w=await documentPictureInPicture.requestWindow({width:300,height:136});
     try{w.moveTo(screen.availLeft+screen.availWidth-320,screen.availTop+8);}catch(e){}
     const st=w.document.createElement("style");st.textContent=PIP_CSS;w.document.head.appendChild(st);
-    w.document.body.innerHTML=`<div class="t">FOCUS</div><div class="n" id="n">--</div><div class="b" id="b"></div><div class="s" id="s"></div>`;
+    w.document.body.innerHTML=`<div class="t" id="t">FOCUS</div><div class="n" id="n">--</div><div class="b" id="b"></div><div class="s" id="s"></div>`;
     const bar=w.document.getElementById("b");for(let i=0;i<FSEG;i++){const s=w.document.createElement("span");s.style.height=(22+i*(78/(FSEG-1)))+"%";bar.appendChild(s);}
-    S.pip={w,num:w.document.getElementById("n"),bar,note:w.document.getElementById("s")};
+    S.pip={w,title:w.document.getElementById("t"),num:w.document.getElementById("n"),bar,note:w.document.getElementById("s")};
     $("btnFloat").classList.add("on");$("btnFloat").lastChild.textContent="Close float";
     w.addEventListener("pagehide",()=>{S.pip=null;$("btnFloat").classList.remove("on");$("btnFloat").lastChild.textContent="Float focus";});
     renderFocus();

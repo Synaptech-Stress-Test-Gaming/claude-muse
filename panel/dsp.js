@@ -58,7 +58,8 @@ function emit(vals,idx){
   if(S.rec){S.rec.samples++;recPush(idx,ys,bv);}
 }
 /* every aligned reading is kept while recording: 4 sensors, 5 band signals, sensors in use, focus */
-const REC_COLS=14+MOTION_REC_COLNAMES.length,REC_MAX_SEC=600; // columns 0-13 are the original ones, unchanged; the rest are the motion columns (panel/motion.js)
+const REC_ENG_COLS=6; // eng_focus, eng_focus_state, eng_stress, eng_stress_state, eng_profile_conf, eng_mask (names in recording.js, values from panel/engine-rec.js)
+const REC_COLS=14+MOTION_REC_COLNAMES.length+REC_ENG_COLS,REC_MAX_SEC=600; // columns 0-13 are the original ones, unchanged; then the motion columns (panel/motion.js); then the new engine's columns (appended)
 function recPush(idx,ys,bv){
   const r=S.rec;
   if(r.n>=r.cap){if(!r.full){r.full=true;setTimeout(()=>stopRec(true,"The 10 minute limit was reached."),0);}return;}
@@ -68,7 +69,8 @@ function recPush(idx,ys,bv){
   for(let b=0;b<5;b++)r.d[o+4+b]=bv[b];
   r.d[o+9]=S.usable;r.d[o+10]=focus.ema==null?NaN:focus.ema;const p=pctOf(focus);r.d[o+11]=p==null?NaN:p; // always the LEGACY score, whichever is displayed
   r.d[o+12]=PL.bpm==null?NaN:PL.bpm;r.d[o+13]=PL.pct==null?NaN:PL.pct; // heart rate updates once per second
-  motionRecFill(r.d,o+14);   // last 3 columns: accelerometer / gyroscope features and the motion gate state (panel/motion.js)
+  motionRecFill(r.d,o+14);   // 3 columns: accelerometer / gyroscope features and the motion gate state (panel/motion.js)
+  const oe=o+14+MOTION_REC_COLNAMES.length;if(typeof engRecFill==="function")engRecFill(r.d,oe);else for(let k=0;k<REC_ENG_COLS;k++)r.d[oe+k]=NaN;
 }
 const fmt=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
 function sessMsg(t){const e=$("sessM");e.textContent=t;e.removeAttribute("data-idle");}
@@ -76,7 +78,8 @@ function setSess(running){
   if(running){const s=Math.floor((Date.now()-S.rec.t0)/1000);$("sessT").textContent=fmt(s);$("sessN").textContent=S.rec.samples.toLocaleString();sessMsg("Recording. File saves when you stop");}
 }
 setInterval(()=>{
-  SENSORS.forEach((nm,i)=>{
+  const muse=S.dev!=="cyton"; // Cyton mode: panel/engine-ui.js paints the sensor strip, rates, heart rate and motion line instead
+  if(muse)SENSORS.forEach((nm,i)=>{
     const a=S.rmsAcc[i],rms=a.n?Math.sqrt(a.s/a.n):0;if(a.n)S.rms[i]=rms;a.s=0;a.n=0;
     let raw;
     if(rms<0.5)raw=0;else if(rms<3)raw=(rms-0.5)/2.5*100;else if(rms<=40)raw=100;else if(rms<200)raw=(200-rms)/160*100;else raw=0;
@@ -89,17 +92,19 @@ setInterval(()=>{
   });
   const rate=S.cnt/4;S.cnt=0;
   const tot=S.emitted+S.lostSamples,dp=tot?S.lostSamples/tot*100:0;
+  if(muse){
   $("rate").textContent=S.connected?(rate>0?"Live data":"Connected, waiting for data"):"";
   $("stRate").textContent=S.connected&&rate>0?Math.round(rate)+" Hz":"-- Hz";
   $("stDrop").textContent=(S.connected&&tot?dp.toFixed(1):"--")+"% lost";
   $("stUse").textContent=(S.connected&&S.emitted>FS*2?S.usable:"-")+"/4 in use";
   if(S.connected&&rate>0){S.stall=S.emitted===S.lastEmitted?S.stall+1:0;S.lastEmitted=S.emitted;
     if(S.stall>=3&&S.alignMode==="seq"){S.alignMode="arrival";S.maps.forEach(m=>m.clear());}}
+  }
   BANDS.forEach((b,i)=>{
     b.power=b.eN?Math.sqrt(b.energy/b.eN):0;b.energy=0;b.eN=0;
     $("rd"+i).textContent=S.connected&&S.emitted>FS*2?b.power.toFixed(1)+" µV RMS"+(b.muted?" (muted)":""):"--";
   });
-  ppgAnalyse();hrUi();motionUi();
+  if(muse){ppgAnalyse();hrUi();motionUi();}
   if(S.rec){
     S.rec.contactN++;for(let c=0;c<4;c++)S.rec.contactSum[c]+=S.pct[c]==null?0:S.pct[c];
     if(Date.now()<S.artUntil)S.rec.artSec++;

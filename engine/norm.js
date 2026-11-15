@@ -143,7 +143,8 @@
     F.personalTime = personal;
     F.percentile = x => { const h = merge(forget(F.life, k.forget), F.sess).hist; return h.total >= 200 * k.tauC ? h.percentile(x) : null; };
     /* lifetime from stored session summaries (chronological), on top of an optional base */
-    F.loadLifetime = function (summaries, base) { F.life = fold(summaries || [], prior, base, k); F.cache = null; if (isEeg) F.exAnchor = post().p; };
+    F.loadLifetime = function (summaries, base) { F.life = fold(summaries || [], prior, base, k); F.cache = null;
+      if (isEeg) { F.exAnchor = post().p; const ep = F.epoch; if (ep && ep.a.W > 0) F.eOff = ep.lam * (ep.a.m - F.exAnchor.mn); } };
     /* the session's contribution (an unmerged epoch younger than 5 min is not stored) */
     F.summary = () => accSer(F.sess);
     F.serialize = () => ({ v: 1, prior, k: opts || {}, life: accSer(F.life), sess: accSer(F.sess), epoch: isEeg ? { a: accSer(F.epoch.a), Te: F.epoch.Te, frozen: F.epoch.frozen, merged: F.epoch.merged, lam: F.epoch.lam } : null,

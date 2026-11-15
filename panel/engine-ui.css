@@ -1,6 +1,74 @@
-/* panel/engine-ui.css: styles for the new engine controls (device selector, engine switch, profile panel, engine card, Cyton card). One block per look. */
+/* panel/engine-ui.css: the new engine's controls (device selector, NEW/LEGACY switch, profile panel, engine card, Cyton card, help).
+   Loaded after panel/ui.css and focus/focus-switch.css. A base block (cosmic look), then a block per look. */
+/* ---------- base / cosmic ---------- */
 #devSel{position:absolute;left:296px;top:766px;width:232px;height:22px;display:flex;gap:4px;z-index:6}
-#devSel button{flex:1;font:600 10px/1 "Segoe UI",sans-serif;letter-spacing:.2em;color:#9fb2e6;background:rgba(8,16,80,.75);border:1px solid rgba(110,150,255,.45);border-radius:4px;cursor:pointer}
-#devSel button.on{color:#06102e;background:#35e6ff;border-color:#35e6ff}
-#devSel button:disabled{cursor:default;opacity:.55}
-#devSel button.on:disabled{opacity:.85}
+#devSel button,#engSw button{flex:1;font:600 10px/1 "Segoe UI",sans-serif;letter-spacing:.2em;color:#9fb2e6;background:rgba(8,16,80,.75);border:1px solid rgba(110,150,255,.45);border-radius:4px;cursor:pointer;padding:0}
+#devSel button.on,#engSw button.on{color:#06102e;background:#35e6ff;border-color:#35e6ff}
+#devSel button:disabled{cursor:default;opacity:.55}#devSel button.on:disabled{opacity:.85}
+#engSw{position:absolute;left:418px;top:689px;width:118px;height:19px;display:flex;gap:3px;z-index:6}
+#engSw button{font-size:8.5px;letter-spacing:.14em}
+#gameLink{left:1468px!important;top:380px!important;z-index:5}
+#fmode.three button{min-width:64px;padding:0 6px;font-size:9.5px}
+#fmode button#fmD{display:inline-block}
+#fnote{max-height:34px;overflow:hidden}
+#cstat.live{background:rgba(53,230,255,.22);color:#9ff3ff}#cstat.learn{background:rgba(170,140,255,.25);color:#d6c8ff}
+/* profile panel in the Auto Set Baselines slot */
+#engProf{position:absolute;left:1076px;top:692px;width:312px;height:52px;z-index:5;display:none;flex-direction:column;justify-content:center;gap:4px;padding:4px 12px;box-sizing:border-box;
+  border:1px solid rgba(74,168,255,.7);border-radius:6px;background:rgba(6,14,70,.7);font:12px/1.2 "Segoe UI",sans-serif;color:#cfe7ff}
+.eng-new #engProf{display:flex}.eng-new #btnCal{display:none!important}
+#engProf .l1{display:flex;align-items:center;gap:6px;white-space:nowrap}#engProf .l1 span{flex:1;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em}
+#engProf .l1 button{width:24px;height:20px;padding:0;border-radius:4px;border:1px solid rgba(110,150,255,.6);background:rgba(20,30,110,.7);color:#dfe9ff;cursor:pointer;font-size:12px}
+#engProf .l2{font-size:10px;letter-spacing:.08em;color:#8fb7ff}
+#engPick{position:absolute;right:0;bottom:56px;width:360px;max-height:330px;overflow:auto;background:#0a1260;border:1px solid #4a6adf;border-radius:8px;padding:8px;box-shadow:0 0 24px rgba(0,0,0,.6);z-index:40}
+#engPick .row{display:flex;gap:4px;margin:3px 0}#engPick .pk{font-size:10.5px;color:#9fb2e6;margin:4px 2px}
+#engPick button{flex:1;background:#16215a;border:1px solid #4a6adf;color:#e9f1ff;border-radius:4px;padding:3px 6px;font-size:11px;cursor:pointer}#engPick button.sm{flex:0 0 auto;font-size:10px}
+/* engine card (bottom left) and Cyton card (bottom right) */
+#engCard,#cyCard{position:fixed;bottom:12px;z-index:55;width:290px;font:11px/1.35 "Segoe UI",sans-serif;color:#e9f1ff;background:rgba(5,10,46,.94);border:1px solid rgba(90,174,255,.8);border-radius:8px;box-shadow:0 0 18px rgba(40,90,255,.35)}
+#engCard{left:12px}#cyCard{right:12px;width:300px}
+#engCard .hd,#cyCard .hd{display:flex;align-items:center;gap:6px;padding:5px 8px;letter-spacing:.2em;font-size:10.5px}
+#engCard .hd b,#cyCard .hd b{flex:0 0 auto}#engCardSt{flex:1;font-size:9.5px;letter-spacing:.06em;color:#8fa6e6;text-transform:none}
+#engCard .hd button,#cyCard .hd button{width:20px;height:18px;padding:0;background:#16215a;border:1px solid #4a6adf;color:#e9f1ff;border-radius:4px;cursor:pointer;font-size:11px;line-height:1}
+#engCard.min .bd,#cyCard.min .bd{display:none}
+#engCard .bd,#cyCard .bd{padding:2px 8px 8px}
+#engCard .mrow{display:grid;grid-template-columns:52px 30px 1fr 54px;align-items:center;gap:6px;margin:3px 0}
+#engCard .mrow .nm{letter-spacing:.14em;font-size:10px;color:#9fb2e6}#engCard .mrow .v{font-size:15px;text-align:right}
+.chip{font-size:9px;letter-spacing:.06em;padding:1px 5px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.live{background:rgba(53,230,255,.2);color:#9ff3ff}.chip.held{background:rgba(255,200,80,.22);color:#ffd98a}.chip.learn{background:rgba(170,140,255,.25);color:#d6c8ff}.chip.na{background:rgba(120,130,170,.2);color:#aab4d6}
+#engCard .cf{height:6px;background:#141c4c;border-radius:3px;overflow:hidden}#engCard .cf i{display:block;height:100%;background:linear-gradient(90deg,#5a7cff,#35e6ff)}
+#engCard .comp{display:flex;gap:8px;font-size:10px;color:#bcd0ff;margin:4px 0}#engCard .comp i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3a4166;margin-right:3px}#engCard .comp i.ok{background:#35e6ff}
+#engCard .evs{font-size:10px;color:#9fb2e6;margin-top:3px}#engCard .lim{font-size:9.5px;color:#7f93c9;margin-top:4px}
+#cyGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin:2px 0 6px}
+#cyGrid .cell{border:1px solid #2a3a8a;border-radius:4px;padding:2px 4px;font-size:10px;display:flex;justify-content:space-between;background:#0b1450}
+#cyGrid .cell.good{border-color:#2fd68b}#cyGrid .cell.fair{border-color:#e6c14f}#cyGrid .cell.poor{border-color:#ff5f7a}#cyGrid .cell.ecg{border-color:#ff7088}
+#cyEcg,#cyHelper{font-size:10.5px;margin:3px 0;color:#d6e2ff}#cyWarn div{font-size:10px;color:#ffd98a;margin:2px 0}
+#cyCheck{margin-top:5px;width:100%;background:#16215a;border:1px solid #4a6adf;color:#e9f1ff;border-radius:4px;padding:4px;cursor:pointer;font-size:11px}#cyCheck:disabled{opacity:.6;cursor:default}
+#cyFl{flex:1;display:flex;gap:4px;justify-content:flex-end}#cyFl i{font-style:normal;font-size:8.5px;letter-spacing:.08em;padding:1px 4px;border-radius:3px;background:#141c4c;color:#58629a}
+#cyFl i.on{background:#35e6ff;color:#001040;box-shadow:0 0 8px #35e6ff}
+[data-dev="muse"] #cyCard{display:none}
+#engHelp{position:fixed;inset:0;z-index:99980;background:rgba(2,4,24,.8);display:flex;align-items:center;justify-content:center}#engHelp[hidden]{display:none}
+#engHelp .box{width:min(640px,92vw);max-height:86vh;overflow:auto;background:#0a1260;border:1.5px solid #5aaeff;border-radius:10px;padding:16px 20px;font:13px/1.45 "Segoe UI",sans-serif;color:#e9f1ff}
+#engHelp h3{font-weight:400;letter-spacing:.25em;font-size:14px;margin:6px 0}#engHelp li{margin:3px 0}#engHelp .r{text-align:right}#engHelp button{background:#16215a;border:1px solid #4a6adf;color:#e9f1ff;border-radius:4px;padding:4px 12px;cursor:pointer}
+/* the stress card of stress.js belongs to Legacy; in New mode the engine card replaces it */
+.eng-new #stressCard{display:none!important}
+/* Cyton mode: the 4 Muse sensor tiles become one line */
+#cySens{display:none;position:absolute;left:0;top:10px;width:196px;text-align:center;font-size:12px;letter-spacing:.12em;color:#cfe7ff}
+[data-dev="cyton"] #sensors .sensor{display:none}[data-dev="cyton"] #cySens{display:block}
+/* ---------- clean look ---------- */
+[data-look="clean"] #devSel button,[data-look="clean"] #engSw button{font-family:var(--font-clean);color:var(--muted);background:var(--panel);border-color:var(--line)}
+[data-look="clean"] #devSel button.on,[data-look="clean"] #engSw button.on{background:var(--green);color:#fff;border-color:var(--green)}
+[data-look="clean"] #engProf{background:var(--panel);border-color:var(--line);color:var(--ink);font-family:var(--font-clean)}
+[data-look="clean"] #engProf .l2{color:var(--muted)}[data-look="clean"] #engProf .l1 button{background:#fff;border-color:var(--line);color:var(--ink)}
+[data-look="clean"] #engCard,[data-look="clean"] #cyCard{background:#fbfaf6;color:#22251f;border-color:#d8d3c3;box-shadow:0 4px 18px rgba(0,0,0,.12);font-family:var(--font-clean)}
+[data-look="clean"] #engCard .hd button,[data-look="clean"] #cyCard .hd button,[data-look="clean"] #cyCheck{background:#fff;border-color:#d8d3c3;color:#22251f}
+[data-look="clean"] #engCard .mrow .nm,[data-look="clean"] #engCard .evs,[data-look="clean"] #engCard .lim,[data-look="clean"] #engCardSt{color:#6c6a5f}
+[data-look="clean"] #engCard .comp{color:#3d4036}[data-look="clean"] #engCard .cf{background:#e9e5d8}[data-look="clean"] #engCard .cf i{background:var(--green)}
+[data-look="clean"] .chip.live{background:#dcefe3;color:#1d6b3f}[data-look="clean"] .chip.held{background:#f7ecd0;color:#8a6410}[data-look="clean"] .chip.learn{background:#e8e1f7;color:#5a3f99}[data-look="clean"] .chip.na{background:#ecebe5;color:#6c6a5f}
+[data-look="clean"] #cyGrid .cell{background:#fff;border-color:#d8d3c3}[data-look="clean"] #cyEcg,[data-look="clean"] #cyHelper{color:#22251f}[data-look="clean"] #cyWarn div{color:#8a6410}
+[data-look="clean"] #cySens{color:var(--ink);font-family:var(--font-clean)}
+[data-look="clean"] #cstat.live{background:#dcefe3;color:#1d6b3f}[data-look="clean"] #cstat.learn{background:#e8e1f7;color:#5a3f99}
+/* ---------- neon look ---------- */
+[data-look="neon"] #devSel button,[data-look="neon"] #engSw button{background:rgba(30,0,50,.8);border-color:rgba(255,80,220,.55);color:#ffb6f1}
+[data-look="neon"] #devSel button.on,[data-look="neon"] #engSw button.on{background:#ff4fd8;color:#200020;border-color:#ff9cf0}
+[data-look="neon"] #engSw{left:352px;top:668px}
+[data-look="neon"] #engProf{background:rgba(30,0,50,.8);border-color:rgba(255,80,220,.6);color:#ffd6f6}
+[data-look="neon"] #engCard,[data-look="neon"] #cyCard{background:rgba(20,0,36,.95);border-color:rgba(255,80,220,.7);box-shadow:0 0 18px rgba(255,60,220,.35)}

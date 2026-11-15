@@ -28,6 +28,7 @@ function sendGame(p){
     e.textContent=gameOk?"GAME: LINKED":"GAME: OFF";e.style.color=gameOk?"#35e6ff":"#6f82c4";e.dataset.state=gameOk?"on":"off";});
 }
 function startCal(){
+  if(S.dev==="cyton"&&typeof engLegacyCal==="function")return engLegacyCal(); // Cyton Legacy baselines: engine/legacy.js
   if(!S.connected||focus.cal)return;const t0=Date.now();focus.result="";
   focus.cal={t0,vals:[],all:[],msg(){const left=Math.max(0,CAL_SEC-(Date.now()-t0)/1000);return "RECORDING "+Math.ceil(left)+"s. Drift from relaxed to concentrating";}};
   renderFocus();

@@ -133,8 +133,9 @@
     function newEpoch() { for (const key of EEG_KEYS) if (feats[key]) feats[key].newEpoch(); }
     function loadLifetime(byKey, base, sessions) { for (const key in feats) feats[key].loadLifetime((byKey && byKey[key]) || [], base && base[key]); S.sessions = sessions || 0; }
     function summary() { const out = {}; for (const key in feats) out[key] = feats[key].summary(); return out; }
+    function resetSession() { for (const key in feats) feats[key].resetSession(); S.zf = S.zs = S.zd = null; }
     function stalled() { return ["thetaF", "alphaP", "alphaP@iaf", "betaLoC"].some(key => feats[key] && feats[key].stall); }   // only re-anchoring EEG power features open epochs
-    return { hop, apply, newEpoch, loadLifetime, summary, stalled, feats, alphaKey, state: S, cfg: k, restart(m) { if (m === "focus") S.restartFocus = true; if (m === "stress") S.restartStress = true; } };
+    return { hop, apply, newEpoch, loadLifetime, summary, resetSession, stalled, feats, alphaKey, state: S, cfg: k, restart(m) { if (m === "focus") S.restartFocus = true; if (m === "stress") S.restartStress = true; } };
   }
   const API = { create, FEATURES, DEF, EEG_KEYS, DROWSY_KEYS };
   E.Metrics = API;

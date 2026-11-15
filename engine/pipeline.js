@@ -218,7 +218,7 @@
       const m = metrics.hop({ t, hop, feats: F, cardiac: card, motionFrac20, aliasWarn: st.aliasWarn, drowsy });
       // identity (profile choice) before any learning
       let prof = { id: null, label: null, confidence: 0, state: "guest", badge: "" };
-      if (identity) prof = identity.observe({ t, feats: F, card, ecgTemplate: st.ecgOut ? st.ecgOut.template : null, contact: contact.state.Q, clean: F.alphaP.valid && st.gateState === "VALID" && !F.alphaP.eyesClosed, metrics, hop });
+      if (identity) prof = identity.observe({ t, feats: F, channels: chans, card, ecgTemplate: st.ecgOut ? st.ecgOut.template : null, contact: eegIdx.map(c => contact.state.Q[c]), clean: F.alphaP.valid && F.thetaF.valid && st.gateState === "VALID" && !F.alphaP.eyesClosed && F.alphaP.cleanFrac > 0.9, metrics, hop });
       // learning: quarantined updates
       for (const u of m.updates) if (u.w > 0 && isFinite(u.x)) quarantine.push(t, t0 - 0.5, t1 + 0.5, () => metrics.apply(u));
       // hold / fade
@@ -323,8 +323,10 @@
     eng.output = () => st.out;
     eng.setHelperInfo = function (info) { if (info && info.alias && info.alias.warn) st.aliasWarn = true; if (info && info.warnings) info.warnings.forEach(w => st.warnings.add(w)); };
     eng.setImpedance = (c, kohm) => contact.setImpedance(c, kohm, st.t);
+    function summarize() { const iaf = feat.iafEstimate(); return { device: dev, montage: montageKey(), cleanSec: st.cleanSec, features: metrics.summary(), det: events.det(), iaf: { valid: iaf.valid, hz: iaf.hz, apExp: iaf.apExp }, asr: asr ? asr.export() : null }; }
+    if (identity) identity.setSummarizer(summarize);
     eng.endSession = function () {
-      const sum = { device: dev, montage: montageKey(), cleanSec: st.cleanSec, start: st.sessionStart, end: st.t, features: metrics.summary(), det: events.det(), iaf: feat.iafEstimate(), asr: asr ? asr.export() : null };
+      const sum = summarize();
       if (identity) { try { const r = identity.endSession(sum); if (r) return r; } catch (e) {} }
       return sum;
     };

@@ -5,13 +5,15 @@
 "use strict";
 /* ============ recording: full breakdown + file download ============ */
 function startRec(){
+  if(S.dev==="cyton"&&typeof engRecStart==="function")return engRecStart(); // Cyton: the v2 recorder (panel/engine-rec.js)
   if(!S.connected||S.rec)return;
   $("report").classList.remove("show");
   S.rec={t0:Date.now(),startDate:new Date(),samples:0,n:0,cap:FS*REC_MAX_SEC,t:new Float64Array(FS*REC_MAX_SEC),d:new Float32Array(FS*REC_MAX_SEC*REC_COLS),
     startIdx:null,contactSum:[0,0,0,0],contactN:0,artSec:0,motSec:0,lost0:S.lostSamples,pLost0:PL.lost,fLo:focus.lo,fHi:focus.hi,full:false};
   setButtons();$("btnStart").classList.add("on");setSess(true);
 }
-const COLNAMES=["TP9_uV","AF7_uV","AF8_uV","TP10_uV","delta_uV","theta_uV","alpha_uV","beta_uV","gamma_uV","sensors_in_use","focus_index_ln_beta_over_alpha","focus_0_to_100","heart_rate_bpm","heart_signal_pct"].concat(MOTION_REC_COLNAMES);
+const ENG_REC_COLNAMES=["eng_focus","eng_focus_state","eng_stress","eng_stress_state","eng_profile_conf","eng_mask"]; // new engine, appended after the motion columns
+const COLNAMES=["TP9_uV","AF7_uV","AF8_uV","TP10_uV","delta_uV","theta_uV","alpha_uV","beta_uV","gamma_uV","sensors_in_use","focus_index_ln_beta_over_alpha","focus_0_to_100","heart_rate_bpm","heart_signal_pct"].concat(MOTION_REC_COLNAMES,ENG_REC_COLNAMES);
 function pad2(n){return String(n).padStart(2,"0");}
 function stamp(d){return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+"_"+pad2(d.getHours())+"-"+pad2(d.getMinutes())+"-"+pad2(d.getSeconds());}
 function colStats(r,c){let cnt=0,sum=0,sq=0,mn=Infinity,mx=-Infinity;
@@ -50,13 +52,14 @@ function reportText(R){
   L.push("");L.push("HEART RATE  (forehead pulse sensor, 64 readings per second, updated once per second from the last 8 seconds)");
   if(R.hr.cnt)L.push("Average "+f1(R.hr.mean,0)+" bpm, lowest "+f1(R.hr.min,0)+", highest "+f1(R.hr.max,0)+". A rate is shown only when the pulse repeats clearly; "+f1(R.hrValid,0)+"% of the recording has one. Average pulse signal "+f1(R.hrq.mean,0)+"%. Lost pulse packets: "+R.hrLost+".");
   else L.push("No clear heart rate was read during this recording. Lost pulse packets: "+R.hrLost+".");
+  L.push("");L.push("ENGINE");L.push("Score shown during the recording: "+(typeof engMode!=="undefined"&&engMode==="legacy"?"Legacy (focus_0_to_100)":"New engine (eng_focus, eng_stress)")+". focus_0_to_100 is always the Legacy score; eng_* columns are the new engine (states as text, empty when there is no value; eng_mask = the current mask reason).");
   L.push("");L.push("DATA FILE COLUMNS");L.push("time_s plus: "+COLNAMES.join(", "));
   return L.join("\r\n");
 }
 function csvOf(r){
   const rows=["time_s,"+COLNAMES.join(",")];
   for(let i=0;i<r.n;i++){const o=i*REC_COLS;let line=r.t[i].toFixed(4);
-    for(let c=0;c<REC_COLS;c++){const v=r.d[o+c];line+=","+(c>=14?motionRecFormat(c-14,v):v!==v?"":(c===9?String(v):c===12?v.toFixed(1):c===13?v.toFixed(0):v.toFixed(3)));}
+    for(let c=0;c<REC_COLS;c++){const v=r.d[o+c];line+=","+(c>=14+MOTION_REC_COLNAMES.length?(typeof engRecFormat==="function"?engRecFormat(c-14-MOTION_REC_COLNAMES.length,v):""):c>=14?motionRecFormat(c-14,v):v!==v?"":(c===9?String(v):c===12?v.toFixed(1):c===13?v.toFixed(0):v.toFixed(3)));}
     rows.push(line);}
   return rows.join("\r\n");
 }
@@ -90,6 +93,7 @@ function showReport(R,saved,why){
   $("rpClose").onclick=()=>rr.classList.remove("show");
 }
 function stopRec(auto,why){
+  if(S.rec&&S.rec.v2&&typeof engRecStop==="function")return engRecStop(auto,why);
   if(!S.rec)return;const r=S.rec;S.rec=null;
   $("btnStart").classList.remove("on");setButtons();
   if(r.n<FS){$("sessT").textContent=fmt(Math.round((Date.now()-r.t0)/1000));$("sessN").textContent=String(r.n);sessMsg("Too short to save (under 1 second)");
