@@ -199,8 +199,8 @@
       }
       // FTDI latency: data arriving in bursts 10 ms or more apart
       const d = []; for (let i = 1; i < S.chunkTs.length; i++) { const v = S.chunkTs[i] - S.chunkTs[i - 1]; if (v > 2) d.push(v); } d.sort((a, b) => a - b);
-      const burst = d.length ? d[d.length >> 1] : 0, ftdi = { checked: S.chunkTs.length > 20, burstMs: Math.round(burst * 100) / 100, warn: S.chunkTs.length > 20 && burst >= 10, fix: null };
-      if (ftdi.warn) { ftdi.fix = TEXT.ftdiFix; warns.push("USB dongle latency is high. " + TEXT.ftdiFix); }
+      // measured only: the browser hands serial data over in batches whatever the FTDI latency timer is, so no warning from it here
+      const burst = d.length ? d[d.length >> 1] : 0, ftdi = { checked: S.chunkTs.length > 20, burstMs: Math.round(burst * 100) / 100, warn: false, fix: null };
       const railed = per.filter((p, c) => c < S.chans && p.railed && !(S.daisy && c === ECG)).map(p => p.name);
       if (railed.length && railed.length < eeg.length) warns.push("No signal on " + railed.join(", ") + ": the electrode is not touching the scalp.");
       const st = stats();

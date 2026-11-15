@@ -17,9 +17,10 @@
 
 Why a helper: a browser cannot receive the WiFi Shield's TCP push and BrainFlow is native code, so a local Python process bridges the board to the page.
 
-With the **USB dongle** the helper is not needed: the panel reads the board itself (`adapters/cyton-serial.js`, Web Serial in Chrome/Edge; Connect -> Choose dongle). The helper is for the **WiFi Shield** (and still works with the dongle when started with `--link dongle`, as long as the panel is not using it).
+With the **USB dongle** the helper is not needed: the panel reads the board itself (`adapters/cyton-serial.js`, Web Serial in Chrome/Edge; Connect -> USB dongle -> Choose dongle). The helper is the **WiFi Shield**'s receiver (a web page cannot receive the shield's TCP stream), shown in the panel as the "Cyton WiFi link":
 
-The easy way is **Open Cyton Panel.bat** in the project folder (it starts the helper with `--link wifi`, and registers the `musecyton:` link behind the panel's Start helper button for this Windows user, under `HKCU\Software\Classes\musecyton`; delete that key to undo): it starts the helper in a minimized window and opens the panel set to CYTON (arguments are passed on to the helper, e.g. `"Open Cyton Panel.bat" --link dongle`). **Open Cyton Helper.bat** starts only the helper. Both create `.venv-cyton` and install `tools/requirements.txt` on the first run; later runs start at once. Or:
+- The panel's Connect page (WiFi Shield -> Connect over WiFi) opens the link `musecyton:wifi[?ip=A.B.C.D]`. **Open Cyton Panel.bat** and **Open Cyton Helper.bat** register it for this Windows user (`HKCU\Software\Classes\musecyton`, no admin; delete that key to undo). It runs `pythonw tools/cyton_helper.py --from-url <link> --exit-when-idle 120 --log-file .tmp/cyton_helper.log`: no window, logs to `.tmp/cyton_helper.log`, stops when the panel sends `shutdown` (Disconnect) or after 2 minutes with no panel connected. Only `wifi`/`dongle` and a valid IP address are taken from the link.
+- **Open Cyton Panel.bat** starts the same hidden helper (`--link wifi`) and opens the panel set to CYTON. **Open Cyton Helper.bat** starts it in a console window instead (Ctrl+C stops it; arguments are passed on, e.g. `--link dongle`, `--simulate`). Both create `.venv-cyton` and install `tools/requirements.txt` on the first run. Or:
 
 ```
 python tools/cyton_helper.py [--link auto|wifi|dongle] [--ip 192.168.4.1] [--ip-port 3000]

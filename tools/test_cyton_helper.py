@@ -137,6 +137,17 @@ ok(0.005 < fr.lost_out / (recv + fr.lost_out) < 0.05, "H4 loss about 2%% (%.2f%%
 
 
 # ---------------- H5 ECG auto-detect
+
+# ---- the panel's musecyton: link
+a = H.parse_args(["--from-url", "musecyton:wifi?ip=192.168.4.1"])
+ok(a.link == "wifi" and a.ip == "192.168.4.1", "musecyton:wifi?ip=... -> --link wifi --ip 192.168.4.1")
+a = H.parse_args(["--from-url", "musecyton:wifi?ip=1.2.3.4;calc.exe"])
+ok(a.link == "wifi" and a.ip is None, "a bad ip in the link is ignored")
+a = H.parse_args(["--from-url", "https://example.com/wifi"])
+ok(a.link == "auto", "other schemes are ignored")
+a = H.parse_args(["--exit-when-idle", "5"])
+ok(a.exit_when_idle == 5.0, "--exit-when-idle parsed")
+
 def sim_data(seconds=20, **kw):
     clk = Clock()
     b = H.SimBoard(clock=clk, accel=False, **kw)

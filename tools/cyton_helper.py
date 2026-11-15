@@ -4,6 +4,8 @@ A browser cannot receive the WiFi Shield's TCP push and BrainFlow is native code
 Usage (see tools/README.md for every flag and the byte layout):
     python tools/cyton_helper.py                      real board: WiFi first, USB dongle as the fallback
     python tools/cyton_helper.py --simulate           simulated board, no hardware and no BrainFlow needed
+    pythonw tools/cyton_helper.py --from-url "musecyton:wifi?ip=192.168.4.1" --exit-when-idle 120 --log-file .tmp/cyton_helper.log
+                                                      how the panel's Connect page starts it (the musecyton: link, no console window)
 
 Structure: a small Board interface (start/read/config/stop) with two implementations, BrainFlowBoard (real hardware) and SimBoard
 (simulator). Everything above the board (rate selection, loss accounting, ECG detection, framing, self-checks, reconnect) is shared,
@@ -1059,14 +1061,33 @@ async def serve(args, ready=None, board_factory=None):
         if ready:
             ready(port)
         t_end = time.monotonic() + args.run_seconds if args.run_seconds else None
+        seen = time.monotonic()                  # last time a panel was connected (for --exit-when-idle)
+        opening = None                           # the board-opening thread (daemon: a shutdown never waits for a slow WiFi search)
+
+        def open_step():
+            try:
+                helper.step()
+            except Exception as e:
+                log.exception("opening the board failed: %s", e)
+                helper._close()
+                helper.retry_at = time.monotonic() + 2
         try:
             while not stop.is_set():
+                if clients:
+                    seen = time.monotonic()
+                elif args.exit_when_idle and time.monotonic() - seen > args.exit_when_idle:
+                    log.info("no panel connected for %d s: exiting", args.exit_when_idle)
+                    break
                 try:
-                    if helper.opening_due() and not args.simulate:
-                        # opening a real board blocks for seconds (WiFi discovery up to 10 s, 16 channel settings): run it in a thread
-                        # so the WebSocket keeps answering the panel ("is the helper running?") the whole time
-                        await asyncio.to_thread(helper.step)
+                    if opening is not None and opening.is_alive():
+                        pass                             # still opening: the loop keeps serving the panel and watching for shutdown
+                    elif helper.opening_due() and not args.simulate:
+                        # opening a real board blocks for seconds (WiFi discovery up to 20 s, 16 channel settings): run it in a thread
+                        # so the WebSocket keeps answering the panel ("is the helper running?") and Disconnect stops the helper at once
+                        opening = threading.Thread(target=open_step, name="open-board", daemon=True)
+                        opening.start()
                     else:
+                        opening = None
                         helper.step()
                 except Exception as e:
                     log.exception("helper step failed: %s", e)
@@ -1104,12 +1125,43 @@ def parse_args(argv=None):
     p.add_argument("--sim-ecg-on", type=int, default=0)
     p.add_argument("--run-seconds", type=float, default=0)
     p.add_argument("--log-level", default="info")
-    return p.parse_args(argv)
+    p.add_argument("--from-url", default=None, help="started from the panel's musecyton: link, e.g. musecyton:wifi?ip=192.168.4.1")
+    p.add_argument("--exit-when-idle", type=float, default=0, help="exit when no panel has been connected for this many seconds")
+    p.add_argument("--log-file", default=None)
+    a = p.parse_args(argv)
+    if a.from_url:
+        apply_url(a, a.from_url)
+    return a
+
+
+def apply_url(a, url):
+    """musecyton:wifi[?ip=A.B.C.D] -> --link wifi [--ip A.B.C.D]. Anything else in the link is ignored (it comes from a web page)."""
+    from urllib.parse import urlsplit, parse_qs
+    import ipaddress
+    u = urlsplit(url.strip().strip('"'))
+    if u.scheme.lower() != "musecyton":
+        return a
+    what = (u.path or u.netloc or "").strip("/").lower()
+    if what in ("wifi", "dongle"):
+        a.link = what
+    ip = (parse_qs(u.query).get("ip") or [None])[0]
+    if ip:
+        try:
+            a.ip = str(ipaddress.ip_address(ip))
+        except ValueError:
+            pass
+    return a
 
 
 def main(argv=None):
     args = parse_args(argv)
-    logging.basicConfig(level=getattr(logging, args.log_level.upper(), logging.INFO), format="%(asctime)s %(levelname)s %(message)s")
+    level = getattr(logging, args.log_level.upper(), logging.INFO)
+    if args.log_file or sys.stderr is None:      # started without a console (pythonw from the musecyton: link): log to a file
+        path = args.log_file or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".tmp", "cyton_helper.log")
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        logging.basicConfig(level=level, format="%(asctime)s %(levelname)s %(message)s", filename=path, filemode="w")
+    else:
+        logging.basicConfig(level=level, format="%(asctime)s %(levelname)s %(message)s")
     try:
         return asyncio.run(serve(args))
     except KeyboardInterrupt:
