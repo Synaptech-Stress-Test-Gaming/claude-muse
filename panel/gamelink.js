@@ -79,5 +79,5 @@ setInterval(()=>{
   renderFocus();
 },250);
 $("btnCal").addEventListener("click",startCal);
-$("stMot").addEventListener("click",startMotionCal);
+$("stMot").addEventListener("click",()=>{if(!engIsNew())startMotionCal();}); // the still-calibration is a Legacy control; New mode has none (its motion gate tunes itself)
 initFocusSwitch();loadBaselines();renderFocus();

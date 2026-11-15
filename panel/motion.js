@@ -126,11 +126,11 @@ function motionUi(){
     else if(m.status==="UNAVAILABLE")t=S.emitted>FS*3?"no motion data from headband":"motion --";
     else if(m.status==="NO_MOTION_DATA")t="motion data missing";
     else if(m.bad)t="MOVING, measurement paused";
-    else t="motion ok"+(MOT.th.calibrated?"":" (uncalibrated)");
+    else t="motion ok"+(MOT.th.calibrated||(typeof engIsNew==="function"&&engIsNew())?"":" (uncalibrated)");
     cls=m.bad&&!m.cal?"bad":"";
   }
   el.textContent=t;el.className="inl"+(cls?" "+cls:"");
-  el.title="Click, then sit still for "+MOT.CAL_SEC+" s to calibrate the movement thresholds";
+  el.title=typeof engIsNew==="function"&&engIsNew()?"Head movement gate (the new engine tunes its thresholds by itself)":"Click, then sit still for "+MOT.CAL_SEC+" s to calibrate the movement thresholds";
 }
 
 /* ============ recording columns (appended after the focus columns; nothing renamed) ============ */
