@@ -48,7 +48,9 @@
       ownerBaseRate: 0.7, motionTh: null, accel: null, undoPanelHp: null, cfg: null }, opts);
     const dev = opts.device, fs = opts.fs, chans = (opts.channels || (dev === "muse" ? ["TP9", "AF7", "AF8", "TP10"] : [])).slice(), C = chans.length;
     const tuned = opts.tuned || null;
-    const cfg = U.deepMerge(U.deepMerge(CONFIG, tuned && tuned.config ? tuned.config : null), opts.cfg || null);
+    // tuned.config is either per device ({cyton: {...}, muse: {...}}, as tools/autotune.py writes it) or one object for both
+    const tc = tuned && tuned.config ? (tuned.config.cyton || tuned.config.muse ? tuned.config[dev] || null : tuned.config) : null;
+    const cfg = U.deepMerge(U.deepMerge(CONFIG, tc), opts.cfg || null);
     const flags = Object.assign({ asr: dev === "cyton", nlms: false }, cfg.flags || {}, opts.flags || {});
     const priorsDev = U.deepMerge(PRI[dev], tuned && tuned.priors && tuned.priors[dev] ? tuned.priors[dev] : null);
     const ecgCh = dev === "cyton" ? (opts.ecgChannel != null ? opts.ecgChannel : -1) : -1;
@@ -216,6 +218,8 @@
       if (hf.focus.staleFor > cfg.staleRestartS) metrics.restart("focus");
       if (hf.stress.staleFor > cfg.staleRestartS) metrics.restart("stress");
       const m = metrics.hop({ t, hop, feats: F, cardiac: card, motionFrac20, aliasWarn: st.aliasWarn, drowsy });
+      const xv = f => f && f.valid && !f.eyesClosed ? f.x : null;
+      st.lastRaw = { thetaF: xv(F.thetaF), alphaP: xv(F.alphaP), betaLoC: xv(F.betaLoC), ratioD: xv(F.ratioD), hr: card.hr8 == null ? null : card.hr8, lnRmssd: card.lnRmssd == null ? null : card.lnRmssd, focusRaw: m.focus.raw == null ? null : m.focus.raw, stressRaw: m.stress.raw == null ? null : m.stress.raw };
       // identity (profile choice) before any learning
       let prof = { id: null, label: null, confidence: 0, state: "guest", badge: "" };
       if (identity) prof = identity.observe({ t, feats: F, channels: chans, card, ecgTemplate: st.ecgOut ? st.ecgOut.template : null, contact: eegIdx.map(c => contact.state.Q[c]), clean: F.alphaP.valid && F.thetaF.valid && st.gateState === "VALID" && !F.alphaP.eyesClosed && F.alphaP.cleanFrac > 0.9, metrics, hop });
@@ -321,6 +325,7 @@
       st.out = o; return o;
     };
     eng.output = () => st.out;
+    eng.lastRaw = () => st.lastRaw || null;   // the hop's raw feature values (tools/replay.js, tools/autotune.py)
     eng.setHelperInfo = function (info) { if (info && info.alias && info.alias.warn) st.aliasWarn = true; if (info && info.warnings) info.warnings.forEach(w => st.warnings.add(w)); };
     eng.setImpedance = (c, kohm) => contact.setImpedance(c, kohm, st.t);
     function summarize() { const iaf = feat.iafEstimate(); return { device: dev, montage: montageKey(), cleanSec: st.cleanSec, features: metrics.summary(), det: events.det(), iaf: { valid: iaf.valid, hz: iaf.hz, apExp: iaf.apExp }, asr: asr ? asr.export() : null }; }

@@ -82,7 +82,7 @@ function engEnsureEngine(f) {
   const M = engM(), cfg = engState.cfg;
   engState.eng = M.create({ device: f.device, fs: f.fs, channels: f.channels, ecgChannel: f.device === "cyton" && cfg ? cfg.ecgChannel : f.device === "cyton" ? f.channels.indexOf("ECG") : -1,
     unusedChannels: f.device === "cyton" && cfg ? cfg.unusedChannels : [], mains: cfg && cfg.mains || 60, accel: f.device === "cyton" && cfg && cfg.accel === false ? false : null,
-    flags: { asr: f.device === "cyton", nlms: false }, priors: M.PRIORS, tuned: M.TUNED || null, store: window.engStore || null,
+    priors: M.PRIORS, tuned: M.TUNED || null, store: window.engStore || null,
     legacyProvider: f.device === "muse" ? () => ({ focus: S.connected ? pctOf(focus) : null, stress: window.StressMeter ? StressMeter.value() : null }) : null,
     motionTh: f.device === "muse" && MOT.th && MOT.th.calibrated ? MOT.th : null, undoPanelHp: f.device === "muse" });
   engState.eng.onEvent = engOnButton;
