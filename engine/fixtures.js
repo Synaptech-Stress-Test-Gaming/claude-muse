@@ -136,21 +136,21 @@
     return [a, b, addEv(rec, { type: "double_blink", onset: t, offset: b.offset, peak2: b.peak })];
   }
   /* band-limited white noise (20 Hz .. min(110, fs/2-3) Hz) with 20 ms ramps, unit RMS */
-  function emgNoise(rec, n) {
+  function emgNoise(rec, n, loHz) {
     const fs = rec.fs, fhi = Math.min(110, fs / 2 - 3), r = rec.rng;
-    const h1 = U.hp(20, fs), h2 = U.hp(20, fs), l1 = U.lp(fhi, fs), l2 = U.lp(fhi, fs), pre = Math.round(0.2 * fs), y = new Float32Array(n);
+    const h1 = U.hp(loHz || 20, fs), h2 = U.hp(loHz || 20, fs), l1 = U.lp(fhi, fs), l2 = U.lp(fhi, fs), pre = Math.round(0.2 * fs), y = new Float32Array(n);
     let s = 0; for (let i = -pre; i < n; i++) { const v = l2.p(l1.p(h2.p(h1.p(r.normal())))); if (i >= 0) { y[i] = v; s += v * v; } }
     const k = 1 / Math.sqrt(s / n || 1); for (let i = 0; i < n; i++) y[i] *= k; return y;
   }
-  function addNoise(rec, c, t0, t1, rmsUv) {
+  function addNoise(rec, c, t0, t1, rmsUv, loHz) {
     if (c < 0 || c === rec.ecgChannel || !rmsUv) return; const fs = rec.fs, i0 = Math.max(0, Math.round(t0 * fs)), i1 = Math.min(rec.n, Math.round(t1 * fs)); if (i1 <= i0) return;
-    const nz = emgNoise(rec, i1 - i0), x = rec.data[c];
+    const nz = emgNoise(rec, i1 - i0, loHz), x = rec.data[c];
     for (let i = i0; i < i1; i++) x[i] += rmsUv * nz[i - i0] * ramp(i / fs, t0, t1, 0.02);
   }
   function emgBurst(rec, t, o) {
     o = Object.assign({ durMs: 300, chans: null, ampUv: 40, sub: "other", record: true }, o);
     const d = o.durMs / 1000, chans = o.chans || rec.channels, amps = o.amps || {};
-    rec.channels.forEach((nm, c) => { const a = amps[nm] != null ? amps[nm] : chans.includes(nm) ? o.ampUv : 0; addNoise(rec, c, t, t + d, a); });
+    rec.channels.forEach((nm, c) => { const a = amps[nm] != null ? amps[nm] : chans.includes(nm) ? o.ampUv : 0; addNoise(rec, c, t, t + d, a, o.loHz); });
     return o.record ? [addEv(rec, { type: "emg_burst", sub: o.sub, onset: t, offset: t + d, channels: chans })] : [];
   }
   function muscleAmps(rec, tempUv, frontUv, otherUv) {
@@ -172,7 +172,7 @@
   function talk(rec, t, seconds) {
     const r = rec.rng, G = GROUPS[rec.device]; let u = t;
     while (u < t + seconds - 0.1) {
-      const dur = r.range(0.12, 0.45), lr = Math.exp(r.range(-1.2, 1.2)), front = r.range(18, 35), temp = r.range(6, 18);   // speech: perioral/frontal muscles dominate
+      const dur = r.range(0.12, 0.45), lr = Math.exp(r.range(-0.5, 0.5)), front = r.range(18, 35), temp = r.range(5, 14);   // speech: perioral/frontal muscles dominate
       const amps = {}; rec.channels.forEach(nm => { const left = /[13579]$|AF7|TP9/.test(nm); amps[nm] = G.frontal.includes(nm) ? front : G.temporal.includes(nm) ? temp * (left ? lr : 1 / lr) : 4; });
       emgBurst(rec, u, { durMs: Math.min(dur, t + seconds - u) * 1000, amps, record: false });
       u += dur + r.range(0.15, 0.9);

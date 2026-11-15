@@ -30,6 +30,7 @@
     function addInt(t0, t1, reason, chans, ev) { if (t1 <= t0) return null; const it = { t0, t1, reason, chans: chans ? [...new Set(chans)] : null, ev: ev || null }; M.list.push(it); return it; }
     /* turn a finalised event into its mask interval(s) */
     function add(ev) {
+      if (k.disabled) return null;                                // test control only (M2: "with masking disabled")
       const front = G.frontal && G.frontal.length ? G.frontal : null;
       switch (ev.type) {
         case "blink": case "blink_voluntary": return addInt(ev.onset - k.blinkPre, ev.offset + k.blinkPost, "blink", front, ev);
@@ -50,7 +51,7 @@
       }
     }
     /* open masks: [{t0, reason, chans}] valid until replaced (the pipeline sets them every tick); they extend to +infinity */
-    function setOpen(list) { M.open = list.filter(Boolean); }
+    function setOpen(list) { M.open = k.disabled ? [] : list.filter(Boolean); }
     function setOpenFlags(list) { M.openFlags = list.filter(Boolean); }
     function prune(tNow) { const lo = tNow - k.keepS; M.list = M.list.filter(x => x.t1 >= lo); M.flags = M.flags.filter(x => x.t1 >= lo); }
     function intervalsFor(c, t0, t1) {

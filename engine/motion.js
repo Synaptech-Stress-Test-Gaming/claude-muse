@@ -73,7 +73,8 @@
         if (G.state === "VALID" && prev === "VALID") { G.validFeat.push({ t, acc: fa, gyro: fg }); G.validTime += dt;
           if (G.validTime >= k.tuneAfterS && t - G.tunedAt >= 1) { G.tunedAt = t; selfTune(t); } }
       }
-      if (prev === "VALID" && G.state !== "VALID") G.open = { type: "motion", sub: G.state === "NO_DATA" ? "no_data" : "movement", onset: t - k.onsetBackS, lastOver: t };
+      if (prev === "VALID" && G.state !== "VALID") G.open = { type: "motion", sub: G.state === "NO_DATA" ? "no_data" : "movement", onset: t - k.onsetBackS, lastOver: t, silent: !G.everValid };
+      if (!missing && G.state === "VALID") G.everValid = true;     // the start-up no_data stretch is masked but not reported
       if (G.open) G.open.lastOver = Math.max(G.open.lastOver, G.lastOver);
       if (prev !== "VALID" && G.state === "VALID" && G.open) { const ev = Object.assign(G.open, { offset: t, validAt: t, t: tEeg }); G.events.push(ev); G.open = null; }
       G.lastT = t;

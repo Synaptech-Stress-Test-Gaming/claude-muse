@@ -175,39 +175,46 @@
       if (iNow < iPk1) return;
       if (!c.peak) {
         let pk = 0, ip = c.i; for (let i = iPk0; i <= iPk1; i++) { const a = Math.abs(vrAt(i) - c.m); if (a > pk) { pk = a; ip = i; } }
-        if (pk < c.A) { S.cand = null; S.scanFrom = iPk1; return; }
+        if (pk < c.A) { S.rej = { why: "small", pk, A: c.A, t: tOf(c.i) }; S.cand = null; S.scanFrom = iPk1; return; }
         const sg = Math.sign(vrAt(ip) - c.m);
         if (sg === -S.lastBlinkSign && tOf(c.i) - S.lastBlinkOff < 1.2) { S.cand = null; S.scanFrom = iPk1; return; }   // filter rebound right after a blink
         let on = null; for (let i = ip; i >= ip - Math.round(0.3 * fs) && i >= S.validFrom; i--) if (Math.abs(vrAt(i) - c.m) < 0.1 * pk) { on = i; break; }
         c.peak = { pk, ip, sg, on: on == null ? ip - Math.round(0.3 * fs) : on };
       }
-      const P = c.peak; let off = null;
-      for (let i = P.ip; i <= Math.min(iNow, P.ip + fs); i++) if (Math.abs(vrAt(i) - c.m) < 0.1 * P.pk) { off = i; break; }
+      const P = c.peak; let off = null, split = false, minV = Infinity, minI = P.ip;
+      for (let i = P.ip; i <= Math.min(iNow, P.ip + fs); i++) {
+        const sv = P.sg * (vrAt(i) - c.m);
+        if (Math.abs(vrAt(i) - c.m) < 0.1 * P.pk) { off = i; break; }
+        if (sv < minV) { minV = sv; minI = i; }
+        // a second blink starts before the first has returned (double blinks overlap): end the first at the dip
+        if (minV < 0.6 * P.pk && sv > minV + 0.25 * P.pk) { off = minI; split = true; break; }
+      }
       if (off == null) {
         if (iNow > P.ip + fs) { S.closingT.push({ t: tOf(P.on), sign: P.sg }); while (S.closingT.length > 10) S.closingT.shift(); S.cand = null; S.scanFrom = iNow; checkEyesOpen(tOf(P.on)); }
         return;
       }
       S.cand = null; S.scanFrom = off;
+      if (split) S.cand = { i: off, ds: P.sg, A: c.A, m: c.m, mo: c.mo, me: c.me, splitFrom: P.ip };
       // width at 50%
       let a = P.ip, b = P.ip; while (a > P.on && Math.abs(vrAt(a) - c.m) >= 0.5 * P.pk) a--; while (b < off && Math.abs(vrAt(b) - c.m) >= 0.5 * P.pk) b++;
       const durMs = (b - a) / fs * 1000, tOn = tOf(P.on), tOff = tOf(off), tPk = tOf(P.ip);
       if (S.eyesClosed) { closeEyes(tOn); return; }                         // any eye deflection while eyes are closed = opening
-      if (durMs < k.blinkMinMs || durMs > k.blinkMaxMs) return;
+      if (durMs < k.blinkMinMs || durMs > k.blinkMaxMs) { S.rej = { why: "dur", durMs, t: tOn }; return; }
       // common-mode check: a blink is frontal; a head-movement wave is everywhere
       let oDev = 0; for (let i = Math.max(c.i, P.ip - Math.round(0.1 * fs)); i <= P.ip + Math.round(0.1 * fs); i++) oDev = Math.max(oDev, Math.abs(at(otherR, i) - c.mo));
-      if (G.nonFrontal.length && P.pk < k.blinkCommonRatio * oDev) return;
+      if (G.nonFrontal.length && P.pk < k.blinkCommonRatio * oDev) { S.rej = { why: "common", pk: P.pk, oDev, t: tOn }; return; }
       // two eye channels: same sign, ratio 1/3..3; opposite signs = saccade
       let agree = true, two = false;
       if (use(G.eye).length === 2) { two = true; const qa = G.eye.indexOf(use(G.eye)[0]), qb = G.eye.indexOf(use(G.eye)[1]);
         const da = at(eyeRR[qa], P.ip) - c.me[qa], db = at(eyeRR[qb], P.ip) - c.me[qb];
         if (Math.sign(da) !== Math.sign(db)) { if (tPk - S.lastSacc > 0.3) { S.lastSacc = tPk; emit({ type: "saccade", sub: null, onset: tOn, offset: tOn + 0.2, conf: 0.6, channels: G.eye.map(i => o.channels[i]), amp: P.pk, durMs: 200, t: tNow }); } return; }
         const ra = Math.abs(da) / Math.max(1e-9, Math.abs(db)); if (ra < 1 / 3 || ra > 3) agree = false; }
-      if (two && !agree) return;
+      if (two && !agree) { S.rej = { why: "agree", t: tOn }; return; }
       if (S.nBlinks + S.detN >= 10 && S.sign && P.sg !== S.sign) return;    // learned polarity
       const vol = P.pk >= Math.max(k.volFactor * S.medAmp, S.medAmp + k.volMadK * S.madAmp) || durMs >= k.volDurMs;
       const conf = U.clamp(P.pk / c.A - 1, 0.3, 1) * (two ? 1 : 0.7);
       const ev = emit({ type: vol ? "blink_voluntary" : "blink", sub: null, onset: tOn, offset: tOff, peak: tPk, conf, channels: use(G.eye).map(i => o.channels[i]), amp: P.pk, durMs, t: tNow, sign: P.sg });
-      S.lastBlinkT = tNow; S.lastBlinkOn = tOn; S.lastBlinkOff = tOff; S.lastBlinkSign = P.sg;
+      S.lastBlinkT = tNow; S.lastBlinkOn = tOn; S.lastBlinkOff = tOff; S.lastBlinkSign = P.sg; S.lastBase = { m: c.m, mo: c.mo, me: c.me };
       S.closingT.push({ t: tOn, sign: P.sg, blink: true }); while (S.closingT.length > 10) S.closingT.shift();
       if (!vol) {
         S.blinkAmps.push(P.pk); S.blinkDurs.push(durMs); S.blinkSigns.push(P.sg); S.nBlinks++;
@@ -244,7 +251,10 @@
           if (!S.cand) {
             const th = blinkThresholds(); const from = Math.max(S.scanFrom, S.validFrom + Math.round(0.5 * fs), iNow - Math.round(0.3 * fs));
             for (let i = from; i <= iNow; i++) { const di = (vAt(i) - vAt(i - n20)) / 0.02;
-              if (Math.abs(di) >= th.D) { S.cand = { i, A: th.A, m: localBase(vrR, i), mo: localBase(otherR, i), me: eyeRR.map(R => localBase(R, i)) }; break; } }
+              if (Math.abs(di) >= th.D) {
+                // right after a blink the pre-candidate stretch is still the previous blink's tail: keep that blink's baseline
+                const recent = S.lastBase && tOf(i) - S.lastBlinkOff < 0.6;
+                S.cand = { i, ds: Math.sign(di), A: th.A, m: recent ? S.lastBase.m : localBase(vrR, i), mo: recent ? S.lastBase.mo : localBase(otherR, i), me: recent ? S.lastBase.me : eyeRR.map(R => localBase(R, i)) }; break; } }
             if (!S.cand) S.scanFrom = iNow + 1;
           }
           if (S.cand) processCandidate(t, iNow);
@@ -312,7 +322,7 @@
     function pending(t) {
       const p = [];
       if (S.merged) p.push({ type: "emg_burst", sub: "open", onset: S.merged.onset, chanIdx: [...S.merged.chans] });
-      if (S.cand) p.push({ type: "blink", sub: "open", onset: tOf(S.cand.i) - 0.3 });
+      if (S.cand) p.push({ type: "blink", sub: "open", onset: tOf(S.cand.i) - 0.3, split: !!S.cand.splitFrom, slope: S.cand.ds, level: S.idx >= 0 ? Math.abs(vrAt(S.idx) - S.cand.m) / S.cand.A : 0 });
       if (S.eyesClosed) p.push({ type: "eyes_closed", sub: "open", onset: S.eyesClosed.onset });
       if (S.eaRun && t - S.eaRun.t0 > 0.3) p.push({ type: "eyes_closed", sub: "candidate", onset: S.eaRun.t0 - 1.5 });
       return p;
