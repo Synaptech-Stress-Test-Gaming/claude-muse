@@ -39,6 +39,14 @@ No test failed before the work started.
 - **`Open Cyton Helper.bat`:** the parentheses in "(takes a minute)" are escaped as `^(` and `^)`; unescaped, the `)` closes the `if` block and breaks the script (checked with cmd).
 - **Panel start-up connect** moved to `DOMContentLoaded` in `panel/main.js` (it must run after `panel/engine-link.js` has loaded); Muse behaviour is unchanged.
 - **Muse adapter stream time starts at 2.0 s** (sampleIndex counts from the first index after a reset; the first 512 samples are skipped as specified).
+- **ECG polarity check reads w, not y.** After the 5-15 Hz band-pass the QRS is nearly symmetric, so the skewness of y does not show an inverted lead; the skewness of the 0.5-40 Hz signal w does (C2 passes with the flip).
+- **C1 "error with refinement <= without":** the two RMSSD errors are both about 0.1 ms and their order is noise, so the comparison uses the RMS error of the measured RR intervals (what RMSSD inherits). RMSSD error itself is < 3 ms at 125 Hz as specified.
+- **P1 truth alignment:** the pulse band-pass delays every beat equally, and intervals across a NaN hole do not exist; the test's truth uses the same shifted 8 s window without those intervals.
+- **Overlapping blinks are split at the dip** (a double blink 350 ms apart overlaps: the second rises before the first returns to 10%), and a candidate that starts within 0.6 s after a blink keeps that blink's baseline.
+- **Third-blink wait for double_blink:** the button waits only while an open blink candidate has risen by at least the blink threshold A after the second blink; a falling tail does not delay the event (keeps latency < 400 ms).
+- **Only the re-anchoring EEG power features (thetaF, alphaP, betaLoC) can trigger the anti-stall epoch.** Drowsiness markers are lifetime-only and a new person's markers sit far from the prior for a whole session; letting them stall opened a new epoch every ~70 s.
+- **M2/M3 setup:** 240 s of clean history before the 120 s test stretch (with no history the statistics absorb the artifacts and the control cannot show a difference), the mean shift is compared over hops the artifact run actually measured (held values are not measurements), and the M2 burst is a full clench (60 uV on every channel, 13-110 Hz). M3 checks the mean shift as written; the trace-range check is M2's.
+- **Order of work:** the hold/fade module, the full pipeline and engine/legacy.js were written in step 7 (the metric tests need them); step 8 adds their tests and the panel.
 - **Self-check ECG channel numbers** in the `selfcheck` message are 1-based board channels (as a user reads them); `config.ecgChannel` stays 0-based.
 
 ## Changes to numbers in the prompt

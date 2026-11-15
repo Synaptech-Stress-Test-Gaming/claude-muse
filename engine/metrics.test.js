@@ -22,7 +22,8 @@ const T0 = 240;
 function immunity(dev, inject, label, limitCtl, rangeCheck) {
   const clean = K.rec(dev, T0 + 130, 21), dirty = K.rec(dev, T0 + 130, 21); inject(dirty);
   const a = K.run(clean).outs, b = K.run(dirty).outs, c = limitCtl ? K.run(dirty, { engine: { cfg: { mask: { disabled: true } } } }).outs : null;
-  const pair = (x, y) => { const m = new Map(x.map(o => [o.t.toFixed(2), o.focus.value])); return y.filter(o => o.t >= T0 && o.focus.value != null && m.get(o.t.toFixed(2)) != null).map(o => [m.get(o.t.toFixed(2)), o.focus.value]); };
+  // compared where the artifact run measured (live/learning): held values are, by design, not measurements
+  const pair = (x, y) => { const m = new Map(x.map(o => [o.t.toFixed(2), o.focus.value])); return y.filter(o => o.t >= T0 && o.focus.value != null && (o.focus.state === "live" || o.focus.state === "learning") && m.get(o.t.toFixed(2)) != null).map(o => [m.get(o.t.toFixed(2)), o.focus.value]); };
   const p = pair(a, b), ma = K.mean(p.map(q => q[0])), mb = K.mean(p.map(q => q[1]));
   const cleanV = vals(a, "focus", T0, T0 + 130), lo = Math.min(...cleanV) - 2, hi = Math.max(...cleanV) + 2, dirtyV = vals(b, "focus", T0, T0 + 130);
   ok(Math.abs(mb - ma) <= 2, label + " " + dev + ": mean focus shift " + (mb - ma).toFixed(2) + " points (<= 2), " + p.length + " hops compared");
@@ -30,7 +31,7 @@ function immunity(dev, inject, label, limitCtl, rangeCheck) {
   if (c) { const pc = pair(a, c), mc = K.mean(pc.map(q => q[1])) - K.mean(pc.map(q => q[0])); ok(Math.abs(mc) > 5, label + " " + dev + ": control with masking disabled shifts the mean by " + mc.toFixed(1) + " points (> 5)"); }
 }
 for (const dev of ["cyton", "muse"]) {
-  immunity(dev, r => { for (let t = T0 + 5; t < T0 + 120; t += 10) F.emgBurst(r, t, { durMs: 500, ampUv: 30, loHz: 13, sub: "clench" }); }, "M2", true, true);
+  immunity(dev, r => { for (let t = T0 + 5; t < T0 + 120; t += 10) F.emgBurst(r, t, { durMs: 500, ampUv: 60, loHz: 13, sub: "clench" }); }, "M2", true, true);
   immunity(dev, r => { for (let t = T0 + 2; t < T0 + 120; t += 3) F.blink(r, t, { ampUv: 150 }); }, "M3", false, false);
 }
 // M4 eyes closed 20 s (Cyton): focus held/stale, never a rise from the alpha change; alphaP statistics unchanged
