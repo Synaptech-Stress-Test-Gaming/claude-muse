@@ -54,6 +54,7 @@ function engUiBuild() {
   void raw;
   // help overlay
   engEl("div", { id: "engHelp", hidden: "" }, "", document.body);
+  engUiCyConnectBuild();
   // the selftest box (?selftest=1)
   if (params.get("selftest") === "1") engEl("pre", { id: "engSelfTest", hidden: "" }, "", document.body);
   engUiDevice();
@@ -73,6 +74,68 @@ function engUiCheckContact() {
   if (!engState.cy || EngUI.checking) return;
   if (engState.cy.send("impedance_sweep")) { EngUI.checking = true; toast("Checking contact: scores are paused for about 30 seconds.", "info", 5000); }
   engUiCyton();
+}
+/* ---------- the Cyton connect sheet (opens from Connect when nothing is set up yet, or after a failed attempt) ----------
+   USB dongle: the browser's own device picker (Web Serial), then the panel reads the board itself.
+   WiFi Shield: needs the helper; "Start helper" opens musecyton:wifi, a link Open Cyton Panel.bat / Open Cyton Helper.bat register
+   for this Windows user (tools/start_cyton_helper.bat); the sheet watches for the helper and connects as soon as it answers. */
+const ENG_ICON_USB = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v14"/><path d="m9 5 3-3 3 3"/><path d="M7 10v2.5a2 2 0 0 0 1 1.7l4 2.3"/><path d="M17 8v3.5a2 2 0 0 1-1 1.7l-4 2.3"/><rect x="5.5" y="7.5" width="3" height="3" rx=".5"/><circle cx="17" cy="7" r="1.5"/><circle cx="12" cy="19.5" r="2.5"/></svg>';
+const ENG_ICON_WIFI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8.8a14 14 0 0 1 19 0"/><path d="M5.8 12.2a9.2 9.2 0 0 1 12.4 0"/><path d="M9.1 15.6a4.6 4.6 0 0 1 5.8 0"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/></svg>';
+const ENG_USB_HINT = "Plug the dongle in. Your browser asks which device to use, once.";
+function engUiCyConnectBuild() {
+  const d = engEl("div", { id: "cyConn", hidden: "", role: "dialog", "aria-modal": "true", "aria-labelledby": "cyConnT" },
+    '<div class="card"><div class="hd"><div><b id="cyConnT">Connect the Cyton</b><span>Switch the board on (PC position) and pick how it talks to this computer.</span></div><button type="button" class="x" id="cyConnX" aria-label="Close">×</button></div>' +
+    '<div class="err" id="cyConnErr" hidden></div>' +
+    '<div class="opt" id="cyOptUsb"><div class="ic">' + ENG_ICON_USB + '</div><div class="tx"><b>USB dongle</b><span id="cyUsbSt">' + ENG_USB_HINT + '</span></div><button type="button" class="pri" id="cyUsbBtn">Choose dongle</button></div>' +
+    '<div class="opt" id="cyOptWifi"><div class="ic">' + ENG_ICON_WIFI + '</div><div class="tx"><b>WiFi Shield</b><span id="cyWifiSt">Runs through the Cyton helper on this computer.</span></div><button type="button" id="cyWifiBtn">Start helper</button></div>' +
+    '<div class="ft"><span>Close the OpenBCI GUI first; it holds the board.</span><button type="button" class="lnk" id="cyConnSim">No board? Try a simulated one</button></div></div>', document.body);
+  const close = () => engUiCyConnectClose();
+  $("cyConnX").addEventListener("click", close);
+  d.addEventListener("mousedown", e => { if (e.target === d) close(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !d.hidden) close(); });
+  $("cyUsbBtn").addEventListener("click", async () => {
+    const A = engM().Adapters.CytonSerial;
+    if (!A.supported()) return;
+    $("cyUsbSt").textContent = "Pick the dongle (“FT231X” or “USB Serial Port”) in the browser’s list…";
+    const port = await A.choosePort();                       // must run inside this click: the browser shows its device picker
+    if (!port) { $("cyUsbSt").textContent = "No dongle chosen. Plug it in and try again."; return; }
+    close(); engStartCyDongle(port);
+  });
+  $("cyWifiBtn").addEventListener("click", () => {
+    if (EngUI.cyHelperUp) { close(); engStartCyHelper(); return; }
+    EngUI.cyHelperAsked = Date.now();
+    const a = document.createElement("a"); a.href = "musecyton:wifi"; a.style.display = "none"; document.body.appendChild(a); a.click(); a.remove();
+    engUiCyConnectWifi(); engUiCyConnectPoll();
+  });
+  $("cyConnSim").addEventListener("click", () => { close(); engStartCySim(); });
+}
+function engUiCyConnect(err) {
+  const d = $("cyConn"); if (!d) return;
+  const e = $("cyConnErr"); e.hidden = !err; e.textContent = err || "";
+  const A = engM().Adapters.CytonSerial, ok = !!(A && A.supported());
+  $("cyUsbBtn").disabled = !ok;
+  $("cyUsbSt").textContent = ok ? ENG_USB_HINT : "Needs Chrome or Edge (this browser cannot open USB serial devices).";
+  EngUI.cyHelperAsked = 0; EngUI.cyHelperUp = false; engUiCyConnectWifi();
+  d.hidden = false; document.documentElement.classList.add("cy-conn-open");
+  setTimeout(() => { const b = ok ? $("cyUsbBtn") : $("cyWifiBtn"); if (b) b.focus(); }, 0);
+  clearInterval(EngUI.cyPollT); EngUI.cyPollT = setInterval(engUiCyConnectPoll, 1500); engUiCyConnectPoll();
+}
+function engUiCyConnectClose() { const d = $("cyConn"); if (d) d.hidden = true; document.documentElement.classList.remove("cy-conn-open"); clearInterval(EngUI.cyPollT); }
+function engUiCyConnectWifi() {
+  const st = $("cyWifiSt"), b = $("cyWifiBtn"); if (!st || !b) return;
+  b.classList.toggle("pri", !!EngUI.cyHelperUp);
+  if (EngUI.cyHelperUp) { st.textContent = "The helper is running."; b.textContent = "Connect"; return; }
+  b.textContent = "Start helper";
+  const t = EngUI.cyHelperAsked ? Date.now() - EngUI.cyHelperAsked : 0;
+  st.textContent = !EngUI.cyHelperAsked ? "Runs through the Cyton helper on this computer."
+    : t < 9000 ? "Starting the helper… allow the browser’s prompt if it asks."
+    : "The helper did not start. Open Cyton Panel.bat sets this button up the first time it runs.";
+}
+async function engUiCyConnectPoll() {
+  const d = $("cyConn"); if (!d || d.hidden) return;
+  const up = await engProbeHelper(700);
+  EngUI.cyHelperUp = up; engUiCyConnectWifi();
+  if (up && EngUI.cyHelperAsked && !S.connected && !S.connecting) { engUiCyConnectClose(); engStartCyHelper(); }   // started from here: connect at once
 }
 /* a button event flashes in the status line under the status pill for 600 ms */
 function engUiButton(ev) {
@@ -151,8 +214,8 @@ function engUiStatusLine() {
   if (S.dev !== "cyton") return; const el = $("rate"); if (!el) return;
   if (EngUI.flashUntil && Date.now() < EngUI.flashUntil) { el.textContent = EngUI.flashText; el.classList.add("cyflash"); return; }
   el.classList.remove("cyflash");
-  const h = engState.helper || {}, cfg = engState.cfg, sc = engState.stats, link = cfg ? ({ wifi: "WiFi", dongle: "dongle", sim: "simulated" }[cfg.link] || cfg.link) : "";
-  if (h.state === "down") { el.textContent = "Start Open Cyton Panel.bat"; el.title = h.text; return; }
+  const h = engState.helper || {}, cfg = engState.cfg, sc = engState.stats, link = cfg ? ({ wifi: "WiFi", dongle: "USB dongle", sim: "simulated" }[cfg.link] || cfg.link) : "";
+  if (h.state === "down" && engState.cyKind === "helper") { el.textContent = "Waiting for the Cyton helper"; el.title = h.text; return; }
   if (EngUI.checking) { el.textContent = "Checking contact\u2026 scores paused"; return; }
   el.title = "";
   el.textContent = S.connected ? [link, (sc && sc.fs ? Math.round(sc.fs) : cfg ? cfg.fs : "--") + " Hz", (sc ? (+sc.lossPct).toFixed(1) : "0.0") + "% lost"].filter(Boolean).join(" \u00b7 ") : "";

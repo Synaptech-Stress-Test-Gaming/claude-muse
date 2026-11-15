@@ -13,7 +13,7 @@ const TESTS = [
   ["node", "game/mkds.test.js"], ["node", "focus/experimental/focus.test.js"], [PY, "game-py/test_mkds.py"],
   // new tests
   ["node", "engine/util.test.js"], ["node", "engine/frame.test.js"], ["node", "engine/fixtures.test.js"],
-  ["node", "adapters/muse.test.js"], ["node", "adapters/cyton.test.js"],
+  ["node", "adapters/muse.test.js"], ["node", "adapters/cyton.test.js"], ["node", "adapters/cyton-serial.test.js"],
   ["node", "engine/preproc.test.js"], ["node", "engine/contact.test.js"], ["node", "engine/motion.test.js"],
   ["node", "engine/events.test.js"], ["node", "engine/mask.test.js"], ["node", "engine/features.test.js"],
   ["node", "engine/ecg.test.js"], ["node", "engine/ppg.test.js"], ["node", "engine/norm.test.js"], ["node", "engine/priors.test.js"],

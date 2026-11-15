@@ -19,7 +19,13 @@ Other READMEs: [focus/README.md](focus/README.md) (the display switch), [panel/R
 
 **Muse 2:** double-click **Open Muse Panel.bat**, leave **MUSE** selected (the small switch above Connect), press **Connect** and pick your Muse.
 
-**Cyton + Daisy:** turn the board on and double-click **Open Cyton Panel.bat**. That is all: it starts the helper in a minimized "Cyton Helper" window (the first run sets up its own Python environment, about a minute, once; it finds the WiFi Shield or the USB dongle by itself, WiFi first) and opens the panel already set to **CYTON**, which connects on its own. Close the "Cyton Helper" window to stop it. (Mac: **Open Cyton Panel (Mac).command**. `Open Cyton Helper.bat` alone still starts just the helper.)
+**Cyton + Daisy:** switch the board on, open the panel, pick **CYTON** above Connect and press **Connect**. A small sheet asks how the board is linked:
+
+- **USB dongle** (recommended): **Choose dongle** opens the browser's own device list, like the Muse; pick the dongle once. The panel reads the board itself: no helper, no Python. Next time Connect reconnects with no question.
+- **WiFi Shield**: needs the small Cyton helper. **Start helper** starts it (the browser asks once whether to open it) and the panel connects as soon as it answers. The button is set up by the first run of **Open Cyton Panel.bat**, which also starts the helper and opens the panel set to CYTON (first run: about a minute to set up its own Python environment). Close the "Cyton Helper" window to stop it. Mac: **Open Cyton Panel (Mac).command**.
+- **No board?** "Try a simulated one" in the same sheet.
+
+Close the OpenBCI GUI first: it holds the board.
 
 **Switching:** click **MUSE** or **CYTON** above Connect at any time; the panel disconnects the current device first, then connects the other one (the Muse reconnects by itself if this browser has paired it before, otherwise press Connect once).
 
@@ -86,10 +92,10 @@ Muse: close the Muse app on any phone, remove "Muse" in Windows Bluetooth settin
 | `muse-panel.html`, `Open Muse Panel.bat`, `Open Muse Panel (Mac).command` | the panel and its launchers |
 | `panel/` | the panel's code (UI, signal path, Bluetooth, Legacy focus, recording, games, and `engine-*.js`: the glue, UI and recorder of the new engine, `validation.js`) |
 | `engine/` | the new engine: pure maths, one file per stage, each with a `*.test.js` |
-| `adapters/` | Muse frames, the Cyton WebSocket client and the in-browser Cyton simulator |
+| `adapters/` | Muse frames, the Cyton USB dongle reader (Web Serial), the Cyton helper's WebSocket client and the in-browser Cyton simulator |
 | `tools/` | `cyton_helper.py`, `replay.js`, `make_synth_recording.js`, `autotune.py`, `get_datasets.py`, `browser_smoke.js`, `run_all_tests.js` |
-| `Open Cyton Panel.bat`, `Open Cyton Panel (Mac).command` | one double-click for the Cyton: starts the helper (creates `.venv-cyton` on first run) and opens the panel set to CYTON |
-| `Open Cyton Helper.bat` | starts only the Cyton helper |
+| `Open Cyton Panel.bat`, `Open Cyton Panel (Mac).command` | the Cyton over WiFi: starts the helper (creates `.venv-cyton` on first run), opens the panel set to CYTON, and sets up the panel's Start helper button |
+| `Open Cyton Helper.bat`, `tools/start_cyton_helper.bat` | start only the helper (the second is what Start helper runs) |
 | `validation.html`, `workflows/validate_focus_stress.md` | the validation recording and its SOP |
 | `focus/`, `arousal.js`, `stress.js` | Legacy display switch, the Legacy arousal model and stress card; `focus/experimental/` is parked (not loaded) |
 | `game/`, `game-py/`, `game-link/` | the games |

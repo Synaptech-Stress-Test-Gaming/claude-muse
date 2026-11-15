@@ -17,6 +17,7 @@ import math
 import os
 import struct
 import sys
+import threading
 import time
 from collections import deque
 
@@ -733,6 +734,11 @@ class Helper:
         self.status("stopped", "")
 
     # ---- loop
+    def opening_due(self, now=None):
+        """True when the next step() will try to open the board (BrainFlow discovery and the channel settings can take seconds)."""
+        now = self.clock() if now is None else now
+        return self.board is None and (self.retry_at is None or now >= self.retry_at)
+
     def step(self):
         now = self.clock()
         if self.board is None:
@@ -985,7 +991,13 @@ async def serve(args, ready=None, board_factory=None):
     stop = asyncio.Event()
     helper = None
 
+    loop = asyncio.get_running_loop()
+    loop_thread = threading.get_ident()
+
     def send(kind, payload):
+        if threading.get_ident() != loop_thread:          # called from the board-opening thread: hand it to the event loop
+            loop.call_soon_threadsafe(send, kind, payload)
+            return
         msg = payload if kind == "bin" else json.dumps(payload)
         for ws, q in list(clients.items()):
             if kind == "bin" and q.qsize() >= max_q:
@@ -1050,7 +1062,12 @@ async def serve(args, ready=None, board_factory=None):
         try:
             while not stop.is_set():
                 try:
-                    helper.step()
+                    if helper.opening_due() and not args.simulate:
+                        # opening a real board blocks for seconds (WiFi discovery up to 10 s, 16 channel settings): run it in a thread
+                        # so the WebSocket keeps answering the panel ("is the helper running?") the whole time
+                        await asyncio.to_thread(helper.step)
+                    else:
+                        helper.step()
                 except Exception as e:
                     log.exception("helper step failed: %s", e)
                     helper._close()

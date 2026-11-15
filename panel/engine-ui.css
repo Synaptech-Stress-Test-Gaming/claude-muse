@@ -109,3 +109,34 @@
 [data-look="clean"] #engCard{background:#fbfaf6;color:#22251f;border-color:#d8d3c3;box-shadow:0 4px 18px rgba(0,0,0,.12);font-family:var(--font-clean)}
 [data-look="clean"] #engCard .hd button{background:#fff;border-color:#d8d3c3;color:#22251f}
 [data-look="neon"] #engCard{background:rgba(20,0,36,.95);border-color:rgba(255,80,220,.7);box-shadow:0 0 18px rgba(255,60,220,.35)}
+
+/* ---------- Cyton connect sheet ---------- */
+#cyConn{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(2,6,30,.55);backdrop-filter:blur(3px)}
+#cyConn[hidden]{display:none}
+#cyConn *{position:relative;box-sizing:border-box}
+#cyConn .card{width:min(560px,100%);display:flex;flex-direction:column;gap:12px;padding:22px 22px 16px;border-radius:14px;background:#0a1240;color:#e9f1ff;border:1px solid rgba(110,150,255,.55);box-shadow:0 18px 60px rgba(0,0,0,.45);font:13px/1.4 "Segoe UI",system-ui,sans-serif}
+#cyConn .hd{display:flex;align-items:flex-start;gap:12px}#cyConn .hd>div{flex:1;display:flex;flex-direction:column;gap:4px}
+#cyConn .hd b{font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:700}#cyConn .hd span{font-size:12.5px;color:#9fb2e6}
+#cyConn .x{width:30px;height:30px;border-radius:8px;border:1px solid transparent;background:none;color:inherit;font-size:20px;line-height:1;cursor:pointer;opacity:.7}#cyConn .x:hover{opacity:1;border-color:rgba(110,150,255,.4)}
+#cyConn .err{padding:9px 12px;border-radius:8px;background:rgba(255,95,122,.14);border:1px solid rgba(255,95,122,.45);font-size:12.5px}
+#cyConn .err[hidden]{display:none}
+#cyConn .opt{display:flex;align-items:center;gap:14px;padding:14px;border-radius:10px;border:1px solid rgba(110,150,255,.3);background:rgba(255,255,255,.03)}
+#cyConn .ic{width:40px;height:40px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;border-radius:10px;background:rgba(53,230,255,.12);color:#35e6ff}#cyConn .ic svg{width:22px;height:22px}
+#cyConn .tx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}#cyConn .tx b{font-size:14px;font-weight:600}#cyConn .tx span{font-size:12px;color:#9fb2e6}
+#cyConn .opt button{flex:0 0 auto;min-width:128px;height:34px;padding:0 16px;border-radius:8px;border:1px solid rgba(110,150,255,.6);background:transparent;color:inherit;font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.04em;cursor:pointer;white-space:nowrap}
+#cyConn .opt button.pri{background:#35e6ff;border-color:#35e6ff;color:#06102e}#cyConn .opt button:disabled{opacity:.45;cursor:default}
+#cyConn button:focus-visible{outline:2px solid #35e6ff;outline-offset:2px}
+#cyConn .ft{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;font-size:11.5px;color:#8fa6e6;padding-top:2px}
+#cyConn .lnk{border:0;background:none;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:inherit;padding:0}
+@media (max-width:520px){#cyConn .opt{flex-wrap:wrap}#cyConn .opt button{width:100%}}
+/* clean look */
+[data-look="clean"] #cyConn{background:rgba(35,39,43,.28)}
+[data-look="clean"] #cyConn .card{background:var(--panel);color:var(--ink);border-color:var(--line);box-shadow:0 24px 64px rgba(20,40,60,.22);font-family:var(--font-clean)}
+[data-look="clean"] #cyConn .hd b{letter-spacing:.16em}[data-look="clean"] #cyConn .hd span,[data-look="clean"] #cyConn .tx span,[data-look="clean"] #cyConn .ft{color:var(--muted)}
+[data-look="clean"] #cyConn .x:hover{border-color:var(--line)}
+[data-look="clean"] #cyConn .err{background:#fbeceb;border-color:#e8b9b4;color:#7a2a22}
+[data-look="clean"] #cyConn .opt{border-color:var(--line);background:var(--card)}
+[data-look="clean"] #cyConn .ic{background:var(--green-l);color:var(--green)}
+[data-look="clean"] #cyConn .opt button{border-color:var(--line);background:#fff;color:var(--ink)}
+[data-look="clean"] #cyConn .opt button.pri{background:var(--green);border-color:var(--green);color:#fff}
+[data-look="clean"] #cyConn button:focus-visible{outline-color:var(--green)}

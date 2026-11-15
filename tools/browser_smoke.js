@@ -1,6 +1,6 @@
 /* tools/browser_smoke.js: optional headless Edge/Chrome smoke test + screenshots of the panel.
    For {muse, cyton} x {cosmic, clean, neon} x {new, legacy} x {1366x768, 1536x864}: a screenshot in .tmp/shots/<case>.png (?demo=1 data).
-   Then per device a ?selftest=1 run with --dump-dom: the #engSelfTest JSON must show no errors, focus not "unavailable", values finite or null,
+   Then per device (and the Cyton through the browser's own dongle reader, &link=dongle) a ?selftest=1 run with --dump-dom: the #engSelfTest JSON must show no errors, focus not "unavailable", values finite or null,
    and on the Cyton at least one double_blink and one clench_tap (the default simulator script has them).
    Then the validation protocol at &fast=1&autostart=1 on the simulated Cyton: all 18 blocks start and end, in order.
    Prints PASS/FAIL per case; exits 0 with "SKIPPED: no browser found" when there is no Edge/Chrome. Run: node tools/browser_smoke.js [--quick] */
@@ -42,14 +42,16 @@ function main() {
     run(browser, ["--window-size=1366,768", "--screenshot=" + file], fileUrl("demo=1&device=cyton&look=" + l + "&engine=new&view=raw"), 12000);
     ok(fs.existsSync(file) && fs.statSync(file).size > 20000, "screenshot " + name);
   }
-  for (const d of devs) {
-    const r = run(browser, ["--window-size=1366,768", "--dump-dom"], fileUrl("demo=1&device=" + d + "&selftest=1&engine=new"), 32000);
+  // the selftest per device; "cyton-dongle" runs the simulator's signals through the browser's own USB dongle reader (adapters/cyton-serial.js)
+  for (const d of devs.concat(["cyton-dongle"])) {
+    const q = d === "cyton-dongle" ? "device=cyton&link=dongle" : "device=" + d;
+    const r = run(browser, ["--window-size=1366,768", "--dump-dom"], fileUrl("demo=1&" + q + "&selftest=1&engine=new"), 32000);
     const m = /<pre id="engSelfTest"[^>]*>([^<]*)<\/pre>/.exec(r.stdout || ""); let j = null; try { j = JSON.parse(m[1].replace(/&quot;/g, '"')); } catch (x) {}
     ok(!!j, d + ": selftest JSON present after 20 s" + (j ? " (" + j.hops + " hops)" : ""));
     if (!j) continue;
     ok(j.errors.length === 0, d + ": no page errors" + (j.errors.length ? " (" + j.errors.slice(0, 3).join("; ") + ")" : ""));
     ok(j.focus && j.focus.state !== "unavailable" && j.focus.finite && j.stress.finite && (!j.drowsiness || j.drowsiness.finite), d + ": focus " + (j.focus && j.focus.state) + ", values finite or null");
-    if (d === "cyton") ok(j.events.includes("double_blink") && j.events.includes("clench_tap"), "cyton: double_blink and clench_tap seen (" + j.events.join(",") + ")");
+    if (d !== "muse") ok(j.events.includes("double_blink") && j.events.includes("clench_tap"), d + ": double_blink and clench_tap seen (" + j.events.join(",") + ")");
   }
   const v = run(browser, ["--window-size=1366,768", "--dump-dom"], fileUrl("demo=1&validate=1&fast=1&autostart=1&device=cyton"), 260000);   // the fast protocol lasts about 200 s plus connecting
   const vm = /<pre id="validationSelfTest"[^>]*>([^<]*)<\/pre>/.exec(v.stdout || ""); let vj = null; try { vj = JSON.parse(vm[1].replace(/&quot;/g, '"')); } catch (x) {}

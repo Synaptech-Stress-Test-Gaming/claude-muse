@@ -1,6 +1,6 @@
 #!/bin/bash
 # One double-click for the OpenBCI Cyton + Daisy on a Mac: sets up the helper's Python environment on the first run,
-# starts the helper (WiFi Shield or USB dongle, found by itself), serves the panel on localhost and opens it set to CYTON.
+# starts the helper for the WiFi Shield, serves the panel on localhost and opens it set to CYTON (the USB dongle is read by the panel).
 # Close this window to stop the helper and the server.
 cd "$(dirname "$0")" || exit 1
 if [ ! -x .venv-cyton/bin/python ]; then
@@ -9,7 +9,7 @@ if [ ! -x .venv-cyton/bin/python ]; then
   .venv-cyton/bin/python -m pip install --upgrade pip
   .venv-cyton/bin/python -m pip install -r tools/requirements.txt || { echo "Could not install the helper's packages."; exit 1; }
 fi
-.venv-cyton/bin/python tools/cyton_helper.py "$@" &
+.venv-cyton/bin/python tools/cyton_helper.py --link wifi "$@" &
 HELPER=$!
 PORT=8077
 if ! lsof -iTCP:$PORT -sTCP:LISTEN >/dev/null 2>&1; then

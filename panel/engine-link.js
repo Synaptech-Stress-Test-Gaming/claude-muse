@@ -29,16 +29,57 @@ function engSetDevice(d) {
 }
 
 /* ---------- connect / disconnect ---------- */
-function engConnect(userClicked) {
-  if (S.dev !== "cyton") return connectMuse(userClicked);
-  if (S.connected || S.connecting) return;
+/* Cyton: three ways in, all behind the Connect button.
+   - the USB dongle, read by the browser itself (adapters/cyton-serial.js, Web Serial): no helper, no Python;
+   - the WiFi Shield through the helper (adapters/cyton.js -> tools/cyton_helper.py on ws://127.0.0.1:8766);
+   - the simulator (adapters/cyton-sim.js; ?demo=1, or "Try a simulated board" in the connect sheet).
+   Connect (and page load) tries the link used last first: a dongle this browser already allowed (connects with no prompt) or the
+   helper when it is running; with neither, a click opens the connect sheet (panel/engine-ui.js) and page load says "Press Connect".
+   The dongle is always read by the browser and the helper only looks for the WiFi Shield, so the two never fight over the board. */
+const engCyCommon = () => ({ onFrame: engOnFrame, onMessage: engOnHelperMsg, onStatus: engOnHelperStatus });
+function engStartCy(adapter, kind) {
+  if (engState.cy) { try { engState.cy.stop(); } catch (e) {} }
   S.connecting = true; S.userDisconnected = false; setButtons(); setStatus("search", "Connecting");
   resetStream(); engState.firstFrameWall = 0;   // timers such as the 20 s "no ECG" help count from this connection
-  const M = engM(), useSim = DEMO && params.get("helper") !== "1";
-  const common = { onFrame: engOnFrame, onMessage: engOnHelperMsg, onStatus: engOnHelperStatus };
-  engState.cy = useSim ? M.Adapters.CytonSim.create(Object.assign({ fs: +(params.get("simfs") || 125), script: params.get("script") || "default" }, common))
-    : M.Adapters.Cyton.create(Object.assign({ url: "ws://127.0.0.1:" + (params.get("wsport") || 8766) }, common));
-  engState.cy.start();
+  engState.cyKind = kind; engState.cy = adapter; engState.helper = { state: "connecting", text: "", fix: null };
+  adapter.start();
+  return adapter;
+}
+function engStartCySim() { return engStartCy(engM().Adapters.CytonSim.create(Object.assign({ fs: +(params.get("simfs") || 125), script: params.get("script") || "default" }, engCyCommon())), "sim"); }
+function engStartCyHelper() { try { localStorage.setItem("muse2panel.cytonLink", "wifi"); } catch (e) {} return engStartCy(engM().Adapters.Cyton.create(Object.assign({ url: "ws://127.0.0.1:" + (params.get("wsport") || 8766) }, engCyCommon())), "helper"); }
+function engStartCyDongle(port) { try { localStorage.setItem("muse2panel.cytonLink", "dongle"); } catch (e) {} return engStartCy(engM().Adapters.CytonSerial.create(Object.assign({ port }, engCyCommon())), "dongle"); }
+/* is the helper listening? (one WebSocket attempt, no retry loop) */
+function engProbeHelper(ms) {
+  return new Promise(res => {
+    let ws, done = false; const end = v => { if (done) return; done = true; try { ws && ws.close(); } catch (e) {} res(v); };
+    try { ws = new WebSocket("ws://127.0.0.1:" + (params.get("wsport") || 8766)); } catch (e) { return res(false); }
+    ws.onopen = () => end(true); ws.onerror = () => end(false); ws.onclose = () => end(false); setTimeout(() => end(false), ms || 1500);
+  });
+}
+async function engConnect(userClicked) {
+  if (S.dev !== "cyton") return connectMuse(userClicked);
+  if (S.connected || S.connecting) return;
+  engState.cyUserClicked = !!userClicked;
+  const M = engM();
+  if (DEMO && params.get("link") === "dongle") return engStartCyDongle(M.Adapters.CytonSerial.fakePort({ source: engFakeCySource() }));   // the dongle path, with a fake board
+  if (DEMO && params.get("helper") !== "1") return engStartCySim();
+  let last = "dongle"; try { last = localStorage.getItem("muse2panel.cytonLink") || "dongle"; } catch (e) {}
+  const [helperUp, port] = await Promise.all([engProbeHelper(800), M.Adapters.CytonSerial.knownPort()]);
+  if (S.dev !== "cyton" || S.connected || S.connecting) return;
+  if (helperUp && (last === "wifi" || !port)) return engStartCyHelper();
+  if (port) return engStartCyDongle(port);
+  if (userClicked && typeof engUiCyConnect === "function") return engUiCyConnect();
+  setStatus("search", "Press Connect");
+}
+/* ?demo=1&link=dongle: the simulator's signals sent through the real dongle code path (packets, Daisy pairing, gains) */
+function engFakeCySource() {
+  const sim = engM().Adapters.CytonSim.create({ fs: 125, script: params.get("script") || "default" });
+  let chunk = -1, base = 0, frames = [], fi = 0, k = 0;
+  return (i, leadOff) => {
+    for (;;) { const f = frames[fi]; if (f && k < f.samples[0].length) break; if (f) { fi++; k = 0; continue; } chunk++; frames = sim.buildChunk(chunk); fi = 0; k = 0; }
+    const f = frames[fi], v = new Float32Array(16); for (let c = 0; c < 16; c++) v[c] = f.samples[c][k] + (leadOff[c] ? 25 * Math.sin(2 * Math.PI * 31.25 * i / 125) : 0); k++;
+    return v;
+  };
 }
 function engDisconnect() {
   if (S.dev !== "cyton") { engEndSession(); return disconnectMuse(); }
@@ -52,6 +93,9 @@ function engOnHelperStatus(s) {
   if (S.dev !== "cyton") return;
   if (s.state === "streaming") { if (!S.connected) { S.connected = true; S.connecting = false; S.everConnected = true; setButtons(); } setStatus("on", DEMO && params.get("helper") !== "1" ? "Simulated Cyton" : "Cyton live"); }
   else if (s.state === "lost") { S.connected = false; S.connecting = true; setButtons(); setStatus("search", "Lost signal, retrying"); }
+  else if (s.state === "down" && engState.cyKind === "dongle") {     // the dongle path stops on errors (unplugged, board off, port busy): say why, offer the sheet
+    S.connected = false; S.connecting = false; engState.cy = null; setButtons(); setStatus("bad", "Not connected");
+    if (engState.cyUserClicked && typeof engUiCyConnect === "function") engUiCyConnect(s.text); else { toast(s.text, "error", 9000); setStatus("search", "Press Connect"); } }
   else if (s.state === "down") { S.connected = false; S.connecting = true; setButtons(); setStatus("search", "Waiting for the helper"); }
   else if (s.state === "connecting" && !S.connected) setStatus("search", "Connecting");
 }
@@ -63,6 +107,7 @@ function engOnHelperMsg(m) {
     engState.wifiLoss.push({ t: Date.now(), bad: m.link === "wifi" && m.lossPct > 2 }); while (engState.wifiLoss.length && engState.wifiLoss[0].t < Date.now() - 30000) engState.wifiLoss.shift();
     engState.wifiBad = engState.wifiLoss.length >= 25 && engState.wifiLoss.every(x => x.bad); }
   else if (m.type === "error") toast(m.message + (m.fix ? " " + m.fix : ""), "error", 9000);
+  else if (m.type === "status" && !S.connected && engState.cyKind === "helper" && (m.state === "connecting" || m.state === "reconnecting")) setStatus("search", "Looking for the Cyton (WiFi)");
   if (typeof engUiHelperMsg === "function") engUiHelperMsg(m);
 }
 
