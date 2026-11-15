@@ -16,7 +16,7 @@
   const E = root.MuseEngine = root.MuseEngine || {};
   const U = E.Util || (typeof require !== "undefined" ? require("./util.js") : null);
   const DEF = { acc: { entry: 0.02, exit: 0.01 }, gyro: { entry: 10, exit: 5 }, stableS: 1.5, winS: 1.25, staleS: 0.5, minFrac: 0.48, tuneAfterS: 30, tuneSpanS: 300,
-    kEntry: 5, kExit: 3, floor: { acc: 0.0015, gyro: 0.3 }, onsetBackS: 0.3, lagS: 0.1, exitWinS: 0.3,
+    kEntry: 5, kExit: 3, floor: { acc: 0.0015, gyro: 0.3 }, onsetBackS: 0.2, lagS: 0.1, exitWinS: 0.3,
     proxy: { lpHz: 4, slotS: 0.25, k: 4, medS: 60, fracCyton: 0.5, fracMuse: 0.75, warmS: 5 } };
 
   function Gate(o) {

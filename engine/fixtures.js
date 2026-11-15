@@ -163,14 +163,16 @@
   }
   function chew(rec, t, n, rateHz) {
     n = n || 4; rateHz = rateHz || 1.2; const out = [];
-    for (let k = 0; k < n; k++) emgBurst(rec, t + k / rateHz, { durMs: 280, amps: muscleAmps(rec, 45, 12, 4), record: false });
+    // chewing works mostly on one side: the working side 45 uV, the other side 15 uV (see IMPLEMENTATION_NOTES)
+    const G = GROUPS[rec.device], work = rec.rng.next() < 0.5 ? 0 : 1;
+    for (let k = 0; k < n; k++) { const amps = muscleAmps(rec, 45, 12, 4); G.temporal.forEach((nm, q) => { amps[nm] = q === work ? 45 : 15; }); emgBurst(rec, t + k / rateHz, { durMs: 280, amps, record: false }); }
     out.push(addEv(rec, { type: "emg_burst", sub: "chew", onset: t, offset: t + (n - 1) / rateHz + 0.28, n }));
     return out;
   }
   function talk(rec, t, seconds) {
     const r = rec.rng, G = GROUPS[rec.device]; let u = t;
     while (u < t + seconds - 0.1) {
-      const dur = r.range(0.12, 0.45), lr = Math.exp(r.range(-1.2, 1.2)), front = r.range(15, 35), temp = r.range(10, 30);
+      const dur = r.range(0.12, 0.45), lr = Math.exp(r.range(-1.2, 1.2)), front = r.range(18, 35), temp = r.range(6, 18);   // speech: perioral/frontal muscles dominate
       const amps = {}; rec.channels.forEach(nm => { const left = /[13579]$|AF7|TP9/.test(nm); amps[nm] = G.frontal.includes(nm) ? front : G.temporal.includes(nm) ? temp * (left ? lr : 1 / lr) : 4; });
       emgBurst(rec, u, { durMs: Math.min(dur, t + seconds - u) * 1000, amps, record: false });
       u += dur + r.range(0.15, 0.9);
@@ -213,8 +215,8 @@
         const u = i / fs - t; let v = Math.min(1, u / 0.15) * (0.6 + 0.4 * Math.exp(-u / 2));
         if (u > seconds) { const q = (u - seconds) / 0.25; v *= Math.max(0, 1 - q); }
         x[i] += o.stepUv * w[c] * v; } }
-    // posterior alpha x3 in power: add (sqrt(3)-1) x the channel's own alpha component
-    const k = Math.sqrt(3) - 1;
+    // posterior alpha x3 in amplitude (see IMPLEMENTATION_NOTES): add 2 x the channel's own alpha component
+    const k = o.alphaFactor != null ? o.alphaFactor - 1 : 2;
     G.posterior.forEach(nm => { const c = chIdx(rec, nm); if (c < 0) return; const a = rec.comp.alpha[c], x = rec.data[c];
       for (let i = Math.max(0, Math.round((t + 0.3) * fs)); i < Math.min(rec.n, Math.round((t + seconds) * fs)); i++) x[i] += k * a[i] * ramp(i / fs, t + 0.3, t + seconds, 0.3); });
     return [addEv(rec, { type: "eyes_closed", onset: t, offset: t + seconds })];
