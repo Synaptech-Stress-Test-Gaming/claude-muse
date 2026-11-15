@@ -4,11 +4,11 @@
    Uses: all other panel/*.js */
 "use strict";
 /* ============ wiring ============ */
-$("btnConnect").addEventListener("click",()=>connectMuse(true));
-$("btnDisconnect").addEventListener("click",disconnectMuse);
+$("btnConnect").addEventListener("click",()=>engConnect(true));    // panel/engine-link.js: Muse -> connectMuse, Cyton -> helper / simulator
+$("btnDisconnect").addEventListener("click",()=>engDisconnect());
 $("btnStart").addEventListener("click",startRec);
 $("btnStop").addEventListener("click",()=>stopRec(false));
 if(params.get("view")==="raw")setView("raw");
 setButtons();setStatus("search","Searching");renderFocus();
-connectMuse(false);
+addEventListener("DOMContentLoaded",()=>engConnect(false)); // after every script has loaded (engine-link.js comes later)
 addEventListener("beforeunload",()=>{try{if(S.device&&S.device.gatt.connected)S.device.gatt.disconnect();}catch(e){}});

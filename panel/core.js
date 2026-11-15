@@ -37,8 +37,10 @@ const S = {
   hp:[{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], rms:[null,null,null,null], rmsAcc:[{s:0,n:0},{s:0,n:0},{s:0,n:0},{s:0,n:0}],
   pct:[null,null,null,null], usable:4, artUntil:0,
   raw:[0,1,2,3].map(()=>new Float32Array(BUF_LEN)), rawPos:0,
-  rec:null, view:"bands", pip:null, k:1, gapAt:-1e9, holdUntil:0
+  rec:null, view:"bands", pip:null, k:1, gapAt:-1e9, holdUntil:0,
+  dev:"muse" // "muse" | "cyton": URL ?device=, else localStorage muse2panel.device, else muse (changed only while disconnected; panel/engine-link.js)
 };
+try{const d=params.get("device")||localStorage.getItem("muse2panel.device");if(d==="cyton"||d==="muse")S.dev=d;}catch(e){}
 function biquad(f0,Q){return biquadFs(f0,Q,FS);}
 function biquadFs(f0,Q,fs){
   const w=2*Math.PI*f0/fs, a=Math.sin(w)/(2*Q), c=Math.cos(w), a0=1+a;

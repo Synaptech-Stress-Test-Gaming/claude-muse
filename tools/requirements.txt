@@ -1,0 +1,7 @@
+# Python packages for tools/ (the Cyton helper and the auto-tune). Install: python -m pip install -r tools/requirements.txt
+# The tests and --simulate run without brainflow and pyserial (they are imported only on the real-board path).
+brainflow>=5.12
+websockets>=12
+numpy
+scipy
+pyserial

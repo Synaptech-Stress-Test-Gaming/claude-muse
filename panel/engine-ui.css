@@ -1,0 +1,6 @@
+/* panel/engine-ui.css: styles for the new engine controls (device selector, engine switch, profile panel, engine card, Cyton card). One block per look. */
+#devSel{position:absolute;left:296px;top:766px;width:232px;height:22px;display:flex;gap:4px;z-index:6}
+#devSel button{flex:1;font:600 10px/1 "Segoe UI",sans-serif;letter-spacing:.2em;color:#9fb2e6;background:rgba(8,16,80,.75);border:1px solid rgba(110,150,255,.45);border-radius:4px;cursor:pointer}
+#devSel button.on{color:#06102e;background:#35e6ff;border-color:#35e6ff}
+#devSel button:disabled{cursor:default;opacity:.55}
+#devSel button.on:disabled{opacity:.85}
