@@ -22,7 +22,8 @@
     hop: 0.25, win: 2, delay: 0.5, delayAsrExtra: 0.5, holdS: 3.0, staleRestartS: 30, keepS: 30, tickS: 0.05, quarantineS: 5, epochGapS: 5, identityGapS: 30,
     preproc: { dcHz: 0.5, notchQ: 30, lpMax: 45 },
     contact: { railUv: 178125, railFrac: 0.02, rmsLo: 1, rmsGood: 3, rmsHi: 80, rmsMax: 190, lineGood: 2, lineBad: 20, impGood: 750, impBad: 2500, exclude: 40, include: 50, includeS: 3 },
-    motion: { acc: { entry: 0.02, exit: 0.01 }, gyro: { entry: 10, exit: 5 }, stableS: 1.5, winS: 1.25, staleS: 0.5, minFrac: 0.48, noAccelS: 10 },
+    motion: { acc: { entry: 0.05, exit: 0.025 }, gyro: { entry: 30, exit: 15 }, stableS: 0.75,   /* loosened after a first real Muse 2 session: 0.02 g / 10 deg/s paused on ordinary seated movement */
+       winS: 1.25, staleS: 0.5, minFrac: 0.48, noAccelS: 10 },
     events: { cyton: { blinkFloorUv: 60, blinkDerivFloor: 600, blinkAmpMed: 120, blinkAmpMad: 30 }, muse: { blinkFloorUv: 40, blinkDerivFloor: 400, blinkAmpMed: 80, blinkAmpMad: 20 },
       blinkK: 4, volFactor: 1.5, emgRatioIn: 3.0, emgRatioOut: 2.0, emgBaseFloorUv: 0.5, popSlope: 12500, satUv: 300 },
     mask: { blinkPre: 0.1, blinkPost: 0.4, saccPre: 0.1, saccPost: 0.3, emgPre: 0.1, emgPost: 0.3, chewPost: 1.0, motionPre: 0.2, motionPost: 0.5, gapPost: 2.0, popS: 1.0 },

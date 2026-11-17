@@ -15,7 +15,7 @@
 (function (root) {
   const E = root.MuseEngine = root.MuseEngine || {};
   const U = E.Util || (typeof require !== "undefined" ? require("./util.js") : null);
-  const DEF = { acc: { entry: 0.02, exit: 0.01 }, gyro: { entry: 10, exit: 5 }, stableS: 1.5, winS: 1.25, staleS: 0.5, minFrac: 0.48, tuneAfterS: 30, tuneSpanS: 300,
+  const DEF = { acc: { entry: 0.05, exit: 0.025 }, gyro: { entry: 30, exit: 15 }, stableS: 0.75, winS: 1.25, staleS: 0.5, minFrac: 0.48, tuneAfterS: 30, tuneSpanS: 300,
     kEntry: 5, kExit: 3, floor: { acc: 0.0015, gyro: 0.3 }, onsetBackS: 0.2, lagS: 0.1, exitWinS: 0.3,
     proxy: { lpHz: 4, slotS: 0.25, k: 4, medS: 60, fracCyton: 0.5, fracMuse: 0.75, warmS: 5 } };
 
@@ -48,7 +48,7 @@
     function selfTune(tNow) {
       const lo = tNow - k.tuneSpanS; while (G.validFeat.length && G.validFeat[0].t < lo) G.validFeat.shift();
       const one = (key, def) => { const v = G.validFeat.map(f => f[key]).filter(x => x != null); if (v.length < 20) return null; const m = U.median(v), mad = Math.max(U.mad(v, m), k.floor[key]);
-        let en = Math.max(0.5 * def.entry, m + k.kEntry * mad), ex = Math.max(0.5 * def.exit, m + k.kExit * mad); if (en < 1.5 * ex) en = 1.5 * ex; return { entry: en, exit: ex }; };
+        let en = Math.max(def.entry, m + k.kEntry * mad), ex = Math.max(def.exit, m + k.kExit * mad);   /* self-tuning may loosen the gate but never makes it stricter than the defaults */ if (en < 1.5 * ex) en = 1.5 * ex; return { entry: en, exit: ex }; };
       const a = one("acc", k.acc); if (a) G.th.acc = a;
       if (G.gyroSeen) { const g = one("gyro", k.gyro); if (g) G.th.gyro = g; }
     }

@@ -8,13 +8,13 @@
 "use strict";
 const MOT={
   K_ENTRY:5,K_EXIT:3,        // threshold = baseline median + k x MAD (starting values, tune from recordings)
-  STABLE_S:1.5,              // still time required before measurement resumes
+  STABLE_S:0.75,              // still time required before measurement resumes
   WIN_S:1.0,MARGIN_S:0.25,   // motion window = the 1 s EEG window the focus step just used, plus a margin on each side of the timestamps
   STALE_S:0.5,MIN_SAMPLES:25,// no motion packet for this long, or fewer samples than this in the window = no usable motion data
   PKT_FS:52,                 // Muse accelerometer / gyroscope rate (3 samples per packet)
   CAL_SEC:30,CAL_MIN_KEEP:0.6,CAL_OUT_K:8,
   FLOOR:{acc:0.0015,gyro:0.3},                           // smallest MAD allowed, so a perfectly quiet calibration cannot give a hair-trigger
-  DEFAULT:{acc:{entry:0.02,exit:0.01},gyro:{entry:10,exit:5},calibrated:false}, // provisional until the user runs the still calibration
+  DEFAULT:{acc:{entry:0.05,exit:0.025},gyro:{entry:30,exit:15},calibrated:false}, // provisional until the user runs the still calibration
   KEY:"muse2panel.motcal",
   th:null
 };
