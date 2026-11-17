@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Validation recording</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;background:#050a26;color:#e9f1ff;font:16px/1.55 "Segoe UI",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:32px 20px}
+h1{font-weight:300;letter-spacing:.3em;font-size:24px}h2{font-weight:400;font-size:17px;letter-spacing:.08em;color:#9fb2e6;margin-top:26px}
+a{color:#35e6ff}ul{padding-left:20px}.btns a{display:inline-block;margin:6px 8px 6px 0;padding:9px 16px;border:1px solid #4a6adf;border-radius:6px;background:#16215a;text-decoration:none;color:#e9f1ff}
+.note{background:rgba(255,200,80,.12);border-left:3px solid #ffd98a;padding:8px 12px}
+</style>
+</head>
+<body>
+<main>
+<h1>VALIDATION RECORDING</h1>
+<p>This records about 32 minutes of guided tasks and artifacts so the engine's settings can be checked and tuned for you and your headset
+(<code>python tools/autotune.py</code> afterwards). It is a developer validation, not a calibration: the panel never needs it.</p>
+<p class="note">The scores are relative to your own usual level and are not validated measures. STRESS measures physiological arousal. Moments with movement, talking, chewing or face tension are held and then shown as --; they are not measured.</p>
+<h2>Prepare</h2>
+<ul>
+<li>A quiet room, about 35 minutes alone. Headphones or speakers on (the protocol beeps).</li>
+<li>Muse 2: headband on, snug, forehead sensors on skin, ear sensors behind the ears.</li>
+<li>Cyton: Ultracortex on, combs through the hair; start <b>Open Cyton Panel.bat</b> (or <b>Open Cyton Helper.bat</b>); chest pads on (one under the right collarbone, one on the lower left ribs, leads of channel 9 clipped on, cables taped).</li>
+<li>Close other apps that use the headset. Chrome or Edge may ask once to allow multiple downloads at the end: allow it (4 files).</li>
+</ul>
+<h2>Start</h2>
+<div class="btns">
+<a href="muse-panel.html?validate=1&amp;device=muse">Muse 2</a>
+<a href="muse-panel.html?validate=1&amp;device=cyton">Cyton + Daisy</a>
+</div>
+<p>Try it first with simulated data (fast, about 4 minutes):</p>
+<div class="btns">
+<a href="muse-panel.html?validate=1&amp;device=muse&amp;demo=1&amp;fast=1">Muse 2 (simulated)</a>
+<a href="muse-panel.html?validate=1&amp;device=cyton&amp;demo=1&amp;fast=1">Cyton (simulated)</a>
+</div>
+<h2>Afterwards</h2>
+<p>The 4 files land in Downloads. Then follow <a href="workflows/validate_focus_stress.md">workflows/validate_focus_stress.md</a>: run <code>python tools/autotune.py</code> and read <code>docs/validation-report.md</code>.</p>
+</main>
+</body>
+</html>

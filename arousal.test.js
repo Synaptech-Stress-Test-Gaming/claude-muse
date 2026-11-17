@@ -1,77 +1,57 @@
-/* Arousal meter tests. Run: node arousal.test.js  (or open arousal-test.html in a browser) */
+/* Arousal meter tests. Run: node arousal.test.js */
 "use strict";
-const A = (typeof require !== "undefined" && typeof module !== "undefined") ? require("./arousal.js") : window.Arousal;
-const out = []; let fails = 0;
-function ok(c, msg) { out.push((c ? "PASS " : "FAIL ") + msg); if (!c) fails++; }
-const near = (a, b, t) => Math.abs(a - b) <= t;
-const DT = 0.25;
-const run = (M, f, sec) => { let v = null; for (let i = 0; i < Math.round(sec / DT); i++) v = M.push(typeof f === "function" ? f(i) : f, DT); return v; };
-const REST = { hr: 70, tension: -4.5, motion: 3 };
+const A = require("./arousal.js");
+let fails = 0; const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) fails++; };
+const near = (a, b, t) => Math.abs(a - b) <= (t || 1e-9);
 
-// resting baseline is automatic
-{
-  const M = A.makeMeter();
-  ok(M.state === "waiting" && M.value === null, "starts in 'waiting' with no value");
-  run(M, REST, 5);
-  ok(M.state === "resting" && M.value === null && near(M.restLeft, 10, 0.5), "first seconds are the resting baseline (countdown " + (M.restLeft && M.restLeft.toFixed(1)) + ")");
-  run(M, REST, 11);
-  ok(M.state === "live" && M.value < 3, "goes live by itself after the rest period, near 0 at rest (" + M.value.toFixed(1) + ")");
-  ok(near(M.parts.hr.base, 70, 0.5) && near(M.parts.tension.base, -4.5, 0.05), "resting values are stored per signal");
-}
-// each signal moves the score, and it responds within about 2 seconds
-{
-  const M = A.makeMeter(); run(M, REST, 17);
-  const v1 = run(M, { hr: 95, tension: -4.5, motion: 3 }, 3);
-  ok(v1 > 60 && v1 < 80, "heart rate +25 bpm alone gives a clearly raised score (" + v1.toFixed(0) + ")");
-  const M2 = A.makeMeter(); run(M2, REST, 17);
-  const after1s = run(M2, { hr: 70, tension: -2.5, motion: 3 }, 1), after3s = run(M2, { hr: 70, tension: -2.5, motion: 3 }, 2);
-  ok(after1s > 25 && after3s > 50 && after3s < 70, "a jaw clench shows within 1 s and settles around 58 (" + after1s.toFixed(0) + ", " + after3s.toFixed(0) + ")");
-  const M3 = A.makeMeter(); run(M3, REST, 17);
-  const v3 = run(M3, { hr: 70, tension: -4.5, motion: 24 }, 3);
-  ok(v3 > 40 && v3 < 60, "8x resting movement alone raises the score (" + v3.toFixed(0) + ")");
-  const M4 = A.makeMeter(); run(M4, REST, 17);
-  ok(run(M4, { hr: 100, tension: -2.5, motion: 30 }, 4) > 97, "everything raised together reaches the top");
-  ok(run(M4, REST, 5) < 5, "and it comes back down at rest");
-}
-// missing signals: the meter works with what it has, and a late signal gets its own baseline
-{
-  const M = A.makeMeter(); run(M, { hr: null, tension: -4.5, motion: null }, 17);
-  ok(M.state === "live" && M.used().join() === "tension", "works with muscle tension only (no pulse, no accelerometer)");
-  ok(run(M, { hr: null, tension: -2.9, motion: null }, 3) > 90, "one signal alone can fill the scale");
-  run(M, { hr: 80, tension: -4.5, motion: null }, 5);
-  ok(M.parts.hr.base === null && M.state === "live" && M.restLeft > 0, "a signal that appears later is baselined on its own without stopping the meter");
-  run(M, { hr: 80, tension: -4.5, motion: null }, 11);
-  ok(near(M.parts.hr.base, 80, 0.5) && M.used().join() === "hr,tension", "and then joins in");
-  const N = A.makeMeter(); run(N, { hr: null, tension: null, motion: null }, 20);
-  ok(N.state === "waiting" && N.value === null, "no signals at all: stays waiting, never invents a value");
-}
-// robustness
-{
-  const M = A.makeMeter(); run(M, i => ({ hr: i % 13 === 0 ? 140 : 70, tension: i % 17 === 0 ? -1 : -4.5, motion: 3 }), 17);
-  ok(near(M.parts.hr.base, 70, 1) && near(M.parts.tension.base, -4.5, 0.1), "blinks and glitches during the rest period do not shift the baseline (median)");
-  run(M, { hr: 250, tension: -4.5, motion: 3 }, 2);
-  ok(M.parts.hr.v === null, "impossible heart rates are ignored");
-  const D = A.makeMeter(); run(D, REST, 17); run(D, { hr: 62, tension: -4.5, motion: 3 }, 120);
-  ok(D.parts.hr.base < 65, "if you relax below the baseline, the resting value follows you down (" + D.parts.hr.base.toFixed(1) + ")");
-  ok(run(D, { hr: 70, tension: -4.5, motion: 3 }, 3) > 10, "so returning to the old level now reads as slightly raised");
-  const Nz = A.makeMeter(); let seed = 7; const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff - 0.5;
-  run(Nz, () => ({ hr: 70 + rnd() * 3, tension: -4.5 + rnd() * 0.5, motion: 3 + rnd() * 1.5 }), 17);
-  let mx = 0; for (let i = 0; i < 120; i++) mx = Math.max(mx, Nz.push({ hr: 70 + rnd() * 3, tension: -4.5 + rnd() * 0.5, motion: 3 + rnd() * 1.5 }, DT));
-  ok(mx < 8, "ordinary resting noise stays near zero (noise floor): max " + mx.toFixed(1));
-  D.rebaseline(); ok(D.state === "waiting" && D.value === null && D.parts.hr.base === null, "rebaseline starts over");
-}
-// signal helpers
-{
-  const sine = (f, amp) => Array.from({ length: 512 }, (_, i) => amp * Math.sin(2 * Math.PI * f * i / 256));
-  const calm = A.tensionOf([sine(10, 20).map((v, i) => v + 1 * Math.sin(2 * Math.PI * 38 * i / 256))]);
-  const tense = A.tensionOf([sine(10, 20).map((v, i) => v + 15 * Math.sin(2 * Math.PI * 38 * i / 256))]);
-  ok(tense > calm + 3 && A.tensionOf([]) === null, "muscle tension rises with 30-44 Hz power; none without a sensor");
-  const fs = 64, x = new Float32Array(fs * 10);
-  for (let i = 0; i < x.length; i++) { let v = 0; for (let b = 0.4; b < 10; b += 0.75) { const d = i / fs - b; if (Math.abs(d) < 0.4) v += Math.exp(-d * d / (2 * 0.06 * 0.06)); } x[i] = v - 0.15; }
-  const hr = A.hrFromBeats(A.findBeats(x, fs).map(p => p / fs));
-  ok(near(hr, 80, 1.5), "heart rate from pulse beats: 0.75 s apart reads 80 bpm (" + (hr && hr.toFixed(1)) + ")");
-  ok(A.hrFromBeats([0, 0.8]) === null, "too few beats gives no heart rate");
-}
+// spec examples
+ok(near(A.hrComponent(85, 65, 105), 0.5), "H example = 0.5");
+ok(near(A.combine({ hr: 0.7, hrv: 0.65, eeg: 0.6 }).score, 65.75), "score example = 65.75");
+ok(A.hrComponent(200, 65, 105) === 1 && A.hrComponent(40, 65, 105) === 0, "H is clipped to 0..1");
+ok(near(A.hrvComponent(31, 42, 20), 0.5), "V: halfway from baseline to low = 0.5");
+ok(near(A.eegComponent(1.175, 0.85, 1.5), 0.5), "E: halfway = 0.5");
+ok(A.hrComponent(null, 65, 105) === null && A.hrvComponent(NaN, 42, 20) === null, "invalid input gives null, not 0");
+let threw = 0; try { A.hrComponent(70, 100, 100); } catch (e) { threw++; } try { A.hrvComponent(30, 20, 20); } catch (e) { threw++; } try { A.eegComponent(1, 2, 1); } catch (e) { threw++; }
+ok(threw === 3, "invalid calibrations throw");
 
-if (typeof document !== "undefined") { document.body.style.cssText = "font:14px monospace;white-space:pre;padding:16px;background:#111;color:#ddd"; document.body.textContent = out.join("\n") + "\n\n" + (fails ? fails + " FAILED" : "ALL PASSED"); }
-else { console.log(out.join("\n")); console.log(fails ? fails + " FAILED" : "ALL PASSED"); process.exit(fails ? 1 : 0); }
+// RMSSD
+ok(near(A.rmssd([800, 810, 790, 800]), Math.sqrt((100 + 400 + 100) / 3)), "RMSSD of successive differences");
+ok(A.rmssd([800]) === null && A.rmssd([]) === null, "RMSSD needs 2 intervals");
+ok(A.medianRatio([1, 5, 2, null, NaN]) === 2 && A.medianRatio([1, 3, 2, 4]) === 2.5 && A.medianRatio([null]) === null, "median ignores invalid channels");
+ok(near(A.betaAlpha(2, 4), 2, 1e-6) && isFinite(A.betaAlpha(0, 1)), "beta/alpha with epsilon");
+
+// partial scores
+const p = A.combine({ hr: 1, hrv: null, eeg: 0 });
+ok(p.partial && near(p.score, 100 * 0.4 / 0.65) && near(p.confidence, 0.65) && p.used.join() === "hr,eeg", "partial score renormalises weights and flags it");
+ok(A.combine({ hr: null, hrv: null, eeg: null }) === null, "no valid component = no score");
+
+// labels
+ok(A.label(0) === "Low arousal" && A.label(20) === "Low arousal" && A.label(21) === "Mild arousal" && A.label(50) === "Moderate arousal" && A.label(70) === "High arousal" && A.label(95) === "Very high arousal", "display labels");
+
+// meter end to end
+const M = A.makeArousalMeter({ minSamples: 10 });
+ok(!M.ready() && M.update({ hr: 80 }, 0).stress_score === null, "no score before baseline");
+M.startBaseline(); for (let i = 0; i < 12; i++) M.pushBaseline({ hr: 65, hrv: 42, ratio: 0.85 });
+ok(M.finishBaseline() && M.ready() && M.base.hr === 65 && M.refs.hrHigh === 105 && near(M.refs.hrvLow, 21) && near(M.refs.ratioHigh, 1.4875), "baseline medians and default references");
+let r = M.update({ hr: 65, hrv: 42, ratio: 0.85 }, 1000);
+ok(near(r.stress_score, 0) && r.score_valid && !r.partial, "baseline reading scores 0");
+r = M.update({ hr: 105, hrv: 21, ratio: 1.4875 }, 2000);
+ok(near(r.stress_score, 25) && near(r.components.heart_rate, 1), "smoothing: first new valid reading moves 25% of the way");
+for (let i = 0; i < 60; i++) r = M.update({ hr: 105, hrv: 21, ratio: 1.4875 }, 3000 + i * 1000);
+ok(r.stress_score > 99 && r.label === "Very high arousal", "converges to 100 and labels it");
+const before = M.value;
+r = M.update({ hr: null, hrv: null, ratio: null, motionOk: false }, 63000);
+ok(M.value === before && r.score_valid === true && r.components.heart_rate === null && r.signal_quality.motion_valid === false, "rejected measurement keeps the last score and does not smooth in a zero");
+r = M.result(63000 + 6000);
+ok(r.stale === true && r.score_valid === false, "no valid update for 5 s marks the score stale");
+r = M.update({ hr: 105, hrv: null, ratio: null }, 70000);
+ok(r.partial && near(r.confidence, 0.4) && r.score_valid, "heart rate alone gives a reduced-confidence partial score");
+
+// baseline without HRV: that component is skipped
+const M2 = A.makeArousalMeter({ minSamples: 10 }); M2.startBaseline(); for (let i = 0; i < 12; i++) M2.pushBaseline({ hr: 70, hrv: null, ratio: 1 });
+M2.finishBaseline(); r = M2.update({ hr: 90, hrv: 20, ratio: 1.5 }, 0);
+ok(M2.base.hrv === undefined && r.components.hrv_decrease === null && r.partial, "signal with too little baseline data is skipped");
+const M3 = A.makeArousalMeter({ minSamples: 10 }); M3.startBaseline(); M3.pushBaseline({ hr: 70 });
+ok(!M3.finishBaseline() && !M3.ready() && M3.error, "too little baseline data fails with a message");
+
+console.log(fails ? fails + " FAILED" : "all passed"); process.exit(fails ? 1 : 0);

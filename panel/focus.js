@@ -7,27 +7,26 @@
    F = ln( beta power / alpha power ), smoothed ~3 s.  Meter = 25 + 50 x (F - low) / (high - low), held to 0..100 (low baseline = 25, high baseline = 75).
    Uses the true band signal; sliders and mutes only change what is drawn. */
 const CAL_SEC=+(params.get("cal")||10),MIN_SPAN=0.4;
-const focus={ema:null,fast:null,lo:null,hi:null,cal:null,result:""};
+const focus={ema:null,fast:null,lo:null,hi:null,cal:null,result:"",raw:null}; // LEGACY score state: its computation below is untouched
 function quantile(s,q){const p=(s.length-1)*q,i=Math.floor(p),f=p-i;return s[i]+(s[Math.min(i+1,s.length-1)]-s[i])*f;}
-function focusPct(){
-  if(focus.ema==null||focus.lo==null||focus.hi==null||focus.hi-focus.lo<0.05)return null;
-  return Math.max(0,Math.min(100,25+(focus.ema-focus.lo)/(focus.hi-focus.lo)*50)); // low baseline = 25, high baseline = 75, the rest extends from there
+function pctOf(f){
+  if(f.ema==null||f.lo==null||f.hi==null||f.hi-f.lo<0.05)return null;
+  return Math.max(0,Math.min(100,25+(f.ema-f.lo)/(f.hi-f.lo)*50)); // low baseline = 25, high baseline = 75, the rest extends from there
 }
+
 function renderFocus(){
-  const p=focusPct(),txt=p==null?"--":String(Math.round(p));
+  const p=focusPct(),txt=p==null?"--":String(Math.round(p)),sh=shown(),em=effMode();
   $("fnum").textContent=txt;
   [...fbar.children].forEach((s,i)=>s.classList.toggle("lit",p!=null&&i<Math.round(p/100*FSEG)));
-  let note;
-  if(focus.cal)note=focus.cal.msg();
-  else if(!S.connected)note="Connect to use focus";
-  else if(S.usable===0)note="No sensor contact";
-  else if(focus.lo==null||focus.hi==null)note=focus.result||"Press the button to set baselines";
-  else note=focus.result||"Baselines set. Focus is live.";
-  $("fnote").textContent=note;
-  $("btnCal").disabled=!(S.connected&&!focus.cal);
-  $("btnCal").classList.toggle("on",focus.lo!=null&&focus.hi!=null&&!focus.cal);
-  if(S.pip){S.pip.num.textContent=txt;[...S.pip.bar.children].forEach((s,i)=>s.classList.toggle("lit",p!=null&&i<Math.round(p/100*FSEG)));S.pip.note.textContent=p==null?(S.connected?"Set baselines in the panel":"Not connected"):"";}
-  sendGame(p);
+  renderFocusSwitch(); // switch buttons, label, status badge and note (focus/focus-switch.js)
+  const cyLeg=S.dev==="cyton"&&typeof engLegacyState==="function"?engLegacyState():null; // Cyton Legacy: engine/legacy.js baselines
+  $("btnCal").disabled=!(S.connected&&!(cyLeg?cyLeg.cal:focus.cal));
+  $("btnCal").classList.toggle("on",cyLeg?cyLeg.lo!=null&&!cyLeg.cal:(sh.lo!=null&&sh.hi!=null&&!focus.cal));
+  if(S.pip){const title=em==="drowsy"?"DROWSY":em==="stress"?"STRESS":"FOCUS";S.pip.title.textContent=title;
+    S.pip.num.textContent=txt;[...S.pip.bar.children].forEach((s,i)=>s.classList.toggle("lit",p!=null&&i<Math.round(p/100*FSEG)));
+    if(engIsNew()){const m=engMetric();S.pip.note.textContent=!S.connected?"Not connected":m?(m.state==="stale"||m.state==="unavailable"?"-- "+(m.reason||""):engChipText(m)):"--";}
+    else S.pip.note.textContent=p==null?(S.connected?(sh.lo==null?"Set baselines in the panel":em.toUpperCase()+": no valid reading"):"Not connected"):em.toUpperCase();}
+  sendGame(pctOf(focus)); // external games always get the focus score
   updateMarioBtn();
 }
 /* ============ floating focus meter (small always-on-top window) ============ */
@@ -47,9 +46,9 @@ async function toggleFloat(){
     const w=await documentPictureInPicture.requestWindow({width:300,height:136});
     try{w.moveTo(screen.availLeft+screen.availWidth-320,screen.availTop+8);}catch(e){}
     const st=w.document.createElement("style");st.textContent=PIP_CSS;w.document.head.appendChild(st);
-    w.document.body.innerHTML=`<div class="t">FOCUS</div><div class="n" id="n">--</div><div class="b" id="b"></div><div class="s" id="s"></div>`;
+    w.document.body.innerHTML=`<div class="t" id="t">FOCUS</div><div class="n" id="n">--</div><div class="b" id="b"></div><div class="s" id="s"></div>`;
     const bar=w.document.getElementById("b");for(let i=0;i<FSEG;i++){const s=w.document.createElement("span");s.style.height=(22+i*(78/(FSEG-1)))+"%";bar.appendChild(s);}
-    S.pip={w,num:w.document.getElementById("n"),bar,note:w.document.getElementById("s")};
+    S.pip={w,title:w.document.getElementById("t"),num:w.document.getElementById("n"),bar,note:w.document.getElementById("s")};
     $("btnFloat").classList.add("on");$("btnFloat").lastChild.textContent="Close float";
     w.addEventListener("pagehide",()=>{S.pip=null;$("btnFloat").classList.remove("on");$("btnFloat").lastChild.textContent="Float focus";});
     renderFocus();

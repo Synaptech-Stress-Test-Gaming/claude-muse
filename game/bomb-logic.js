@@ -46,6 +46,20 @@ function stressFromFocus(focus, T) {
   if (focus == null || !isFinite(focus)) return 0;
   return clamp01((T.neutralFocus - focus) / T.neutralFocus);
 }
+/* focus 100 -> stress 0, focus 0 -> stress 1 (straight line). Used by the FOCUS source in the game. */
+function stressFromFocusLinear(focus) {
+  if (focus == null || !isFinite(focus)) return 0;
+  return clamp01(1 - focus / 100);
+}
+/* where the stress target comes from (the two-line source selection of BombUI's loop, as a pure function).
+   A missing reading (null) is "no reading": target 0 and noRead true, so there are no stress effects. */
+function stressTarget(source, opts, manual) {
+  opts = opts || {};
+  if (source === "test") { const noRead = !!(manual && manual.none); return { target: noRead ? 0 : (manual ? manual.value : 0), noRead }; }
+  if (source === "stress" && opts.stress) { const v = opts.stress(); const noRead = v == null || !isFinite(v); return { target: noRead ? 0 : v, noRead }; }
+  if (source === "focus" && opts.focus) { const f = opts.focus(); const noRead = f == null || !isFinite(f); return { target: noRead ? 0 : stressFromFocusLinear(f), noRead }; }
+  return { target: 0, noRead: true };
+}
 function clockRate(stress, strikes, T) {
   T = T || TUNING;
   return 1 + stress * (T.clockMax - 1) + strikes * T.strikeSpeedup;
@@ -218,7 +232,7 @@ function judgeButton(level, heldSec, clock) {
 }
 function judgeKey(level, progress, sym) { return sym === level.keypad.order[progress] ? "ok" : "strike"; }
 
-const API = { TUNING, rng, stressFromFocus, clockRate, handShake, sweatRate, heartBpm, isShorted, effectiveStress, calmModeFactor,
+const API = { TUNING, rng, stressFromFocus, stressFromFocusLinear, stressTarget, clockRate, handShake, sweatRate, heartBpm, isShorted, effectiveStress, calmModeFactor,
   WIRE_COLORS, BUTTON_COLORS, BUTTON_LABELS, STRIP_COLORS, SYMBOLS, ORD, TAP_MAX,
   wireRuleMatch, wireRuleText, evalWireRules, buttonRuleMatch, buttonRuleText, evalButtonRules, stripRuleText,
   makeSerial, makeLevel, judgeWire, judgeButton, judgeKey };

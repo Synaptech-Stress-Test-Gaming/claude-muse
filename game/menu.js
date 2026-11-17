@@ -6,7 +6,7 @@
        id: "my-game",                       // unique
        title: "My Game",
        blurb: "One line about it.",
-       input: "arousal",                    // what drives it: "arousal" | "focus" | "none" (shown as a badge)
+       input: "stress",                     // what drives it: "stress" | "focus" | "none" (shown as a badge)
        kind: "inline",                      // "inline" runs in this page; "external" is a separate app (shows `howto`)
        scripts: ["game/my-game.js"],        // optional: loaded the first time the game is played
        needs: ctx => ({ ok: true, msg: "" }),   // optional: say why it cannot start yet
@@ -14,7 +14,9 @@
        howto: "Run game-x/Run.bat"          // for kind "external"
      });
 
-   ctx (built by the panel on every call): stage, connected, focusReady, stressLive, focus(), stress() [0..1], sensors(), status() */
+   ctx (built by the panel on every call): stage, connected, focusReady, stressLive, focus(), stress() [0..1 or null = no reading], sensors(), status(),
+     metrics() -> {focus, stress, drowsiness} from the new engine (each {value, conf, state, reason}) or null,
+     events() -> the button events (double_blink, clench_tap) since the last call, engine ("new" | "legacy"), device ("muse" | "cyton") */
 "use strict";
 (function (root) {
 
@@ -41,7 +43,7 @@ const CSS = `
 #gmOverlay .card .ic{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:30px;background:rgba(80,120,255,.2)}
 #gmOverlay .card h3{margin:0;font-size:16px;font-weight:600;letter-spacing:.06em}#gmOverlay .card p{margin:0;font-size:12px;color:#b9c8f5;line-height:1.45;flex:1}
 #gmOverlay .badge{display:inline-block;font-size:10px;letter-spacing:.14em;padding:2px 8px;border-radius:10px;border:1px solid #6a8cff;color:#9fb2e6;align-self:flex-start}
-#gmOverlay .badge.stress,#gmOverlay .badge.arousal{border-color:#ff8a5c;color:#ffb08f}#gmOverlay .badge.focus{border-color:#35e6ff;color:#8ff0ff}
+#gmOverlay .badge.stress{border-color:#ff8a5c;color:#ffb08f}#gmOverlay .badge.focus{border-color:#35e6ff;color:#8ff0ff}
 #gmOverlay .msg{font-size:11px;color:#ffd166;min-height:14px}#gmOverlay .msg.ok{color:#7fe3a9}
 #gmOverlay button{background:#16215a;border:1px solid #4a6adf;color:#e9f1ff;border-radius:6px;padding:8px 14px;font-size:12px;letter-spacing:.14em;cursor:pointer}#gmOverlay button:hover:not(:disabled){border-color:#7fe0ff}#gmOverlay button:disabled{opacity:.4;cursor:not-allowed}
 #gmOverlay button.play{background:#2a5bd6;font-weight:700}#gmOverlay .close{float:right}
@@ -89,16 +91,17 @@ function attach(c) {
 
 /* ---------- built-in games ---------- */
 register({
-  id: "defuse", title: "Defuse", icon: "💣", input: "arousal", kind: "inline",
-  blurb: "Defuse a bomb using its own service sheet. The more worked up your body is (heart rate, muscle tension, movement), the more your finger shakes and the more you sweat.",
-  needs: c => c.stressLive ? { ok: true, msg: "Live: driven by your arousal meter." } : { ok: true, msg: "Test mode (a slider). For live play, connect the headband and sit still for 15 s." },
-  launch: c => root.BombUI.open({ mode: c.stressLive ? "live" : "test", stress: c.stress, status: c.status })
+  id: "defuse", title: "Defuse", icon: "💣", input: "stress", kind: "inline",
+  blurb: "Defuse a bomb using its own service sheet. The more stressed you are, the more your hands shake and the more it sweats. Phone on the table to calm down. Pick the source in the game: stress meter, focus (more focus = less stress) or a manual slider.",
+  needs: c => c.focusReady ? { ok: true, msg: "Focus mode is ready (more focus = less stress)." + (c.stressLive ? " Stress meter is live too." : "") } : c.stressLive ? { ok: true, msg: "Stress meter is live." } : { ok: true, msg: c.engine === "new" ? "Manual slider only. Connect the headband first." : "Manual slider only. Connect the headband and press Auto Set Baselines for focus mode." },
+  launch: c => root.BombUI.open({ source: c.focusReady ? "focus" : c.stressLive ? "stress" : "test", stress: c.stressLive ? c.stress : null, focus: c.focusReady ? c.focus : null, status: c.status, metrics: c.metrics, events: c.events, engine: c.engine })
 });
 register({
   id: "mariokart-js", title: "Mario Kart (browser)", icon: "🏎", input: "focus", kind: "inline", scripts: ["game/mkds.js", "game/mkds-render.js"],
   blurb: "Race on Figure-8 Circuit. Your focus score sets your kart's speed (0.5x to 1.5x).",
-  needs: c => c.focusReady ? { ok: true, msg: "Focus baselines are set." } : { ok: false, msg: "Connect the headband and press Auto Set Baselines first." },
-  launch: c => root.MKDSUI.open({ stage: c.stage, focus: c.focus, sensors: c.sensors, status: c.status, onClose: () => {} })
+  needs: c => c.engine === "new" ? (c.focusReady ? { ok: true, msg: "Focus is live." } : { ok: false, msg: "Connect the headband first." })
+    : c.focusReady ? { ok: true, msg: "Focus baselines are set." } : { ok: false, msg: "Connect the headband and press Auto Set Baselines first." },
+  launch: c => root.MKDSUI.open({ stage: c.stage, focus: c.focus, sensors: c.sensors, status: c.status, metrics: c.metrics, events: c.events, onClose: () => {} })
 });
 register({
   id: "mariokart-py", title: "Mario Kart (Python)", icon: "🐍", input: "focus", kind: "external",

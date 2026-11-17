@@ -296,12 +296,19 @@ class Game:
         self.msg, self.msg_t = "", 0.0
         self.steer = 0.0
         self.tap = set()
+        self.metrics = None          # game link v2: the engine's metrics and button events, kept for later use (no gameplay change)
+        self.last_events = []
 
     # --- focus source
     def focus_state(self):
         if self.keyboard_focus:
             return "live", self.manual_focus, [99, 99, 99, 99]
-        return self.link.read()
+        r = self.link.read()
+        self.metrics = self.link.metrics
+        ev = self.link.pop_events()
+        if ev:
+            self.last_events = (self.last_events + ev)[-32:]
+        return r
 
     def load_assets(self):
         self.screen.fill((2, 3, 15))

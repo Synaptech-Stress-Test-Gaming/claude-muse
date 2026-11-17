@@ -15,6 +15,11 @@ function decodePPG(dv){ // 6 readings of 24 bits each, after the 2-byte packet c
   const out=[];for(let i=0;i<PPG_PKT;i++){const b=2+i*3;out.push((dv.getUint8(b)<<16)|(dv.getUint8(b+1)<<8)|dv.getUint8(b+2));}
   return out;
 }
+function decodeMotion(dv,kind){ // 3 readings of x,y,z (signed 16 bit, big-endian) after the 2-byte counter -> g (accelerometer) or deg/s (gyroscope)
+  const sc=kind==="acc"?0.0000610352:0.0074768,out=[];
+  for(let i=0;i<9;i++)out.push(dv.getInt16(2+i*2)*sc);
+  return out;
+}
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function linkOnce(dev){
   const server=await dev.gatt.connect();
@@ -24,18 +29,17 @@ async function linkOnce(dev){
     c.addEventListener("characteristicvaluechanged",e=>{const dv=e.target.value;handlePacket(i,dv.getUint16(0),decodeEEG(dv));});
     await c.startNotifications();}
   try{const t=await svc.getCharacteristic(TELE);t.addEventListener("characteristicvaluechanged",e=>{const dv=e.target.value;if(dv.byteLength>=4)setBattery(dv.getUint16(2)/512);});await t.startNotifications();}catch(e){}
-  try{const ac=await svc.getCharacteristic(U("000a")); // accelerometer (head movement); optional
-    ac.addEventListener("characteristicvaluechanged",e=>{const dv=e.target.value;if(dv.byteLength>=20)onAccel(dv.getUint16(0),decodeAccel(dv));});
-    await ac.startNotifications();}catch(e){console.warn("accelerometer not available",e);}
   S.ctrl=ctrl;
   if(!PL.fallback){try{const p=await svc.getCharacteristic(PPG_IR);
     p.addEventListener("characteristicvaluechanged",e=>{const dv=e.target.value;if(dv.byteLength>=2+PPG_PKT*3)onPpg(dv.getUint16(0),decodePPG(dv));});
     await p.startNotifications();}catch(e){console.warn("pulse sensor not available",e);}}
+  for(const [u,kind] of [[ACC,"acc"],[GYRO,"gyro"]]){try{const c=await svc.getCharacteristic(u);
+    c.addEventListener("characteristicvaluechanged",e=>{const dv=e.target.value;if(dv.byteLength>=20)onMotion(kind,dv.getUint16(0),decodeMotion(dv,kind));});
+    await c.startNotifications();}catch(e){console.warn("motion sensor "+kind+" not available",e);}}
   await ctrl.writeValueWithoutResponse(enc("h"));await ctrl.writeValueWithoutResponse(enc(PL.fallback?"p21":"p50"));
   await ctrl.writeValueWithoutResponse(enc("s"));await ctrl.writeValueWithoutResponse(enc("d"));
 }
-const IS_MAC=/Mac/i.test(navigator.platform||navigator.userAgent||"");
-const HELP="Could not link with your Muse 2. Try this: 1) Close the Muse app on any phone or tablet. 2) "+(IS_MAC?"On this Mac, open System Settings: under Privacy & Security > Bluetooth allow your browser, and under Bluetooth remove 'Muse' if it is listed.":"In Windows Settings, Bluetooth & devices, remove 'Muse' if it is listed.")+" 3) Turn the headband off, then on again. 4) Press Connect.";
+const HELP="Could not link with your Muse 2. Try this: 1) Close the Muse app on any phone or tablet. 2) In Windows Settings, Bluetooth & devices, remove 'Muse' if it is listed. 3) Turn the headband off, then on again. 4) Press Connect.";
 async function connectMuse(userClicked){
   if(S.connecting||S.connected)return;
   S.connecting=true;S.userDisconnected=false;setButtons();
@@ -53,7 +57,7 @@ async function connectMuse(userClicked){
     setStatus("search","Connecting");
     let lastErr=null;
     for(let a=1;a<=3;a++){
-      try{resetStream();motionReset();await linkOnce(dev);lastErr=null;break;}
+      try{resetStream();await linkOnce(dev);lastErr=null;break;}
       catch(e){lastErr=e;try{dev.gatt.disconnect();}catch(_){}await sleep(1200*a);}
     }
     if(lastErr)throw lastErr;
@@ -88,9 +92,9 @@ function setBattery(p){
 }
 
 /* ============ simulated headband (testing only: add ?demo=1 to the address) ============ */
-let demoT=null,demoN=0,demoP=0;window.demoAlpha=28;window.demoBeta=14;window.demoHr=72;window.demoGamma=6;window.demoMotion=3;
+let demoT=null,demoN=0,demoP=0,demoMA=0,demoMS=0;window.demoAlpha=28;window.demoBeta=14;window.demoHr=72;window.demoGamma=6;
 function startDemo(){
-  resetStream();motionReset();S.connected=true;S.connecting=false;setStatus("on","Simulated data");setBattery(87);setButtons();
+  resetStream();S.connected=true;S.connecting=false;setStatus("on","Simulated data");setBattery(87);setButtons();
   demoT=setInterval(()=>{
     const n=demoN++;
     for(let c=0;c<4;c++){
@@ -106,10 +110,13 @@ function startDemo(){
         arr.push(Math.round(60000+700*Math.sin(2*Math.PI*0.25*t)+900*(Math.sin(2*Math.PI*f*t)+0.35*Math.sin(4*Math.PI*f*t+1))+(Math.random()-.5)*80));}
       onPpg(demoP&0xffff,arr);
     }
+    demoMA+=47;if(demoMA>=1000*3/MOT.PKT_FS){demoMA-=1000*3/MOT.PKT_FS;demoMS++;  // simulated motion: still, with a 3 s head movement every 20 s (from 15 s to 18 s)
+      const tt=n*PKT/FS,mv=window.demoMove!==false&&tt%20>15&&tt%20<18,acc=[],gy=[];
+      for(let k=0;k<3;k++){const t=tt+k/MOT.PKT_FS,w=mv?0.15*Math.sin(2*Math.PI*2*t):0;
+        acc.push((Math.random()-.5)*.004,(Math.random()-.5)*.004+w,1+(Math.random()-.5)*.004);
+        gy.push(1+(Math.random()-.5),mv?60*Math.sin(2*Math.PI*2*t):0,(Math.random()-.5));}
+      onMotion("acc",demoMS&0xffff,acc);onMotion("gyro",demoMS&0xffff,gy);}
     if(n%2===0)demoP++;
-    if(n%5!==4){ // simulated accelerometer: gravity plus movement of about demoMotion milli-g
-      const a=window.demoMotion/1000,sm=[];for(let k=0;k<3;k++)sm.push([(Math.random()*2-1)*a,(Math.random()*2-1)*a,1+(Math.random()*2-1)*a]);
-      onAccel(n&0xffff,sm);}
   },47);
 }
 function stopDemo(){clearInterval(demoT);S.connected=false;setButtons();setStatus("bad","Disconnected");setBattery(null);if(S.rec)stopRec(true);}

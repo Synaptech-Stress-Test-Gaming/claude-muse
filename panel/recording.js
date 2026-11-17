@@ -5,13 +5,15 @@
 "use strict";
 /* ============ recording: full breakdown + file download ============ */
 function startRec(){
+  if(S.dev==="cyton"&&typeof engRecStart==="function")return engRecStart(); // Cyton: the v2 recorder (panel/engine-rec.js)
   if(!S.connected||S.rec)return;
   $("report").classList.remove("show");
   S.rec={t0:Date.now(),startDate:new Date(),samples:0,n:0,cap:FS*REC_MAX_SEC,t:new Float64Array(FS*REC_MAX_SEC),d:new Float32Array(FS*REC_MAX_SEC*REC_COLS),
-    startIdx:null,contactSum:[0,0,0,0],contactN:0,artSec:0,lost0:S.lostSamples,pLost0:PL.lost,fLo:focus.lo,fHi:focus.hi,full:false};
+    startIdx:null,contactSum:[0,0,0,0],contactN:0,artSec:0,motSec:0,lost0:S.lostSamples,pLost0:PL.lost,fLo:focus.lo,fHi:focus.hi,full:false};
   setButtons();$("btnStart").classList.add("on");setSess(true);
 }
-const COLNAMES=["TP9_uV","AF7_uV","AF8_uV","TP10_uV","delta_uV","theta_uV","alpha_uV","beta_uV","gamma_uV","sensors_in_use","focus_index_ln_beta_over_alpha","focus_0_to_100","heart_rate_bpm","heart_signal_pct","arousal_0_to_100"];
+const ENG_REC_COLNAMES=["eng_focus","eng_focus_state","eng_stress","eng_stress_state","eng_profile_conf","eng_mask"]; // new engine, appended after the motion columns
+const COLNAMES=["TP9_uV","AF7_uV","AF8_uV","TP10_uV","delta_uV","theta_uV","alpha_uV","beta_uV","gamma_uV","sensors_in_use","focus_index_ln_beta_over_alpha","focus_0_to_100","heart_rate_bpm","heart_signal_pct"].concat(MOTION_REC_COLNAMES,ENG_REC_COLNAMES);
 function pad2(n){return String(n).padStart(2,"0");}
 function stamp(d){return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+"_"+pad2(d.getHours())+"-"+pad2(d.getMinutes())+"-"+pad2(d.getSeconds());}
 function colStats(r,c){let cnt=0,sum=0,sq=0,mn=Infinity,mx=-Infinity;
@@ -20,7 +22,7 @@ function colStats(r,c){let cnt=0,sum=0,sq=0,mn=Infinity,mx=-Infinity;
 function buildReport(r){
   const dur=r.n?r.t[r.n-1]:0,dropped=S.lostSamples-r.lost0,total=r.n+dropped;
   const rep={r,name:"Muse2_recording_"+stamp(r.startDate),started:r.startDate.toLocaleString(),dur,n:r.n,dropped,dropPct:total?dropped/total*100:0,
-    rate:dur>0?(r.n-1)/dur:0,art:r.artSec,
+    rate:dur>0?(r.n-1)/dur:0,art:r.artSec,mot:r.motSec,
     sensors:SENSORS.map((n,i)=>{const st=colStats(r,i);return {n,sub:SENSOR_SUB[i],contact:r.contactN?r.contactSum[i]/r.contactN:0,rms:st.rms,min:st.min,max:st.max,pp:st.max-st.min};}),
     bands:BANDS.map((b,i)=>{const st=colStats(r,4+i);return {n:b.name,range:b.range,rms:st.rms,max:Math.max(Math.abs(st.min),Math.abs(st.max))};}),
     use:colStats(r,9),fidx:colStats(r,10),fpct:colStats(r,11),hr:colStats(r,12),hrq:colStats(r,13),hrLost:PL.lost-r.pLost0};
@@ -36,7 +38,7 @@ function reportText(R){
   const L=[];L.push("MUSE 2 RECORDING SUMMARY");L.push("Started: "+R.started);L.push("Length: "+f1(R.dur,2)+" s");
   L.push("Readings kept per sensor: "+R.n+" (measured rate "+f1(R.rate,1)+" per second, headband rate 256)");
   L.push("Dropped readings: "+R.dropped+" ("+f1(R.dropPct,2)+"%). Gaps are left as gaps in the time column, nothing is filled in.");
-  L.push("Seconds with a big noise burst (blink or jaw clench): "+R.art);L.push("");
+  L.push("Seconds with a big noise burst (blink or jaw clench): "+R.art);L.push("Seconds the motion gate paused focus (head movement or missing motion data): "+R.mot);L.push("");
   L.push("SENSORS (offset removed, no other processing)");
   R.sensors.forEach(s=>L.push(s.n+" ("+s.sub+"): contact "+f1(s.contact,0)+"%, RMS "+f1(s.rms)+" uV, min "+f1(s.min)+" uV, max "+f1(s.max)+" uV, peak to peak "+f1(s.pp)+" uV"));
   L.push("Sensors in use on average: "+f1(R.use.mean,2)+" of 4");L.push("");
@@ -50,13 +52,14 @@ function reportText(R){
   L.push("");L.push("HEART RATE  (forehead pulse sensor, 64 readings per second, updated once per second from the last 8 seconds)");
   if(R.hr.cnt)L.push("Average "+f1(R.hr.mean,0)+" bpm, lowest "+f1(R.hr.min,0)+", highest "+f1(R.hr.max,0)+". A rate is shown only when the pulse repeats clearly; "+f1(R.hrValid,0)+"% of the recording has one. Average pulse signal "+f1(R.hrq.mean,0)+"%. Lost pulse packets: "+R.hrLost+".");
   else L.push("No clear heart rate was read during this recording. Lost pulse packets: "+R.hrLost+".");
+  L.push("");L.push("ENGINE");L.push("Score shown during the recording: "+(typeof engMode!=="undefined"&&engMode==="legacy"?"Legacy (focus_0_to_100)":"New engine (eng_focus, eng_stress)")+". focus_0_to_100 is always the Legacy score; eng_* columns are the new engine (states as text, empty when there is no value; eng_mask = the current mask reason).");
   L.push("");L.push("DATA FILE COLUMNS");L.push("time_s plus: "+COLNAMES.join(", "));
   return L.join("\r\n");
 }
 function csvOf(r){
   const rows=["time_s,"+COLNAMES.join(",")];
   for(let i=0;i<r.n;i++){const o=i*REC_COLS;let line=r.t[i].toFixed(4);
-    for(let c=0;c<REC_COLS;c++){const v=r.d[o+c];line+=","+(v!==v?"":(c===9?String(v):c===12?v.toFixed(1):c===13?v.toFixed(0):c===14?v.toFixed(1):v.toFixed(3)));}
+    for(let c=0;c<REC_COLS;c++){const v=r.d[o+c];line+=","+(c>=14+MOTION_REC_COLNAMES.length?(typeof engRecFormat==="function"?engRecFormat(c-14-MOTION_REC_COLNAMES.length,v):""):c>=14?motionRecFormat(c-14,v):v!==v?"":(c===9?String(v):c===12?v.toFixed(1):c===13?v.toFixed(0):v.toFixed(3)));}
     rows.push(line);}
   return rows.join("\r\n");
 }
@@ -72,7 +75,7 @@ function showReport(R,saved,why){
   rr.innerHTML=`
    <div class="rh"><h2>SESSION REPORT</h2><div class="rs">${R.started}${why?" | "+why:""}</div></div>
    <div class="cols">
-    <div class="box"><h3>RECORDING</h3>${lines([["Length",f1(R.dur,1)+" s"],["Readings per sensor",R.n.toLocaleString()],["Measured rate",f1(R.rate,0)+" per s"],["Dropped",R.dropped+" ("+f1(R.dropPct,1)+"%)"],["Noise-burst seconds",R.art],["Sensors in use (avg)",f1(R.use.mean,1)+" of 4"]])}
+    <div class="box"><h3>RECORDING</h3>${lines([["Length",f1(R.dur,1)+" s"],["Readings per sensor",R.n.toLocaleString()],["Measured rate",f1(R.rate,0)+" per s"],["Dropped",R.dropped+" ("+f1(R.dropPct,1)+"%)"],["Noise-burst seconds",R.art],["Motion-paused seconds",R.mot],["Sensors in use (avg)",f1(R.use.mean,1)+" of 4"]])}
       <h3 style="margin-top:14px">FOCUS</h3>${R.lo!=null&&R.hi!=null?lines([["Baseline low / high",f1(R.lo,2)+" / "+f1(R.hi,2)],["Lowest",f1(R.fpct.min,0)],["Average",f1(R.fpct.mean,0)],["Highest",f1(R.fpct.max,0)],["Time at 50+",f1(R.f50,0)+"%"],["Time at 75+",f1(R.f75,0)+"%"]]):lines([["Baselines","not set"],["Raw index avg",f1(R.fidx.mean,2)],["Raw index range",f1(R.fidx.min,2)+" to "+f1(R.fidx.max,2)]])}</div>
     <div class="box"><h3>SENSORS (offset removed only)</h3>
       <table><tr><th>SENSOR</th><th>CONTACT</th><th>RMS &micro;V</th><th>MIN</th><th>MAX</th><th>P-P</th></tr>
@@ -90,14 +93,15 @@ function showReport(R,saved,why){
   $("rpClose").onclick=()=>rr.classList.remove("show");
 }
 function stopRec(auto,why){
+  if(S.rec&&S.rec.v2&&typeof engRecStop==="function")return engRecStop(auto,why);
   if(!S.rec)return;const r=S.rec;S.rec=null;
   $("btnStart").classList.remove("on");setButtons();
-  if(r.n<FS){$("sessT").textContent=fmt(Math.round((Date.now()-r.t0)/1000));$("sessN").textContent=String(r.n);$("sessM").textContent="Too short to save (under 1 second)";
+  if(r.n<FS){$("sessT").textContent=fmt(Math.round((Date.now()-r.t0)/1000));$("sessN").textContent=String(r.n);sessMsg("Too short to save (under 1 second)");
     toast("That recording was under 1 second, so nothing was saved.","info",5000);return;}
   const R=buildReport(r);
   $("sessT").textContent=fmt(Math.round(R.dur));$("sessN").textContent=R.n.toLocaleString();
   let saved=false;
   try{download(R.name+".csv",csvOf(r),"text/csv");saved=true;}catch(e){console.error(e);}
-  $("sessM").textContent=saved?"Saved to Downloads":"Press Download in the report";
+  sessMsg(saved?"Saved to Downloads":"Press Download in the report");
   showReport(R,saved,auto?(why||"Ended: signal lost"):"");
 }

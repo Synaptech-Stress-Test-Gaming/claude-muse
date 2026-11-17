@@ -4,20 +4,36 @@
 <meta charset="utf-8">
 <title>Muse 2 Control Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var l=new URLSearchParams(location.search).get("look")||localStorage.getItem("muse2panel.look");document.documentElement.dataset.look=l==="clean"||l==="neon"?l:"cosmic";}catch(e){document.documentElement.dataset.look="cosmic";}</script>
+<script>try{if(new URLSearchParams(location.search).get("stress")==="1")document.documentElement.classList.add("show-stress");}catch(e){}</script>
 <link rel="stylesheet" href="panel/ui.css">
+<link rel="stylesheet" href="focus/focus-switch.css">
+<link rel="stylesheet" href="panel/engine-ui.css">
 </head>
 <body>
 <div id="stage">
+  <div id="lookSw" role="radiogroup" aria-label="Look" data-pos="0"><i class="knob"></i><button type="button" role="radio" data-look="cosmic" aria-checked="true">Cosmic</button><button type="button" role="radio" data-look="clean" aria-checked="false" tabindex="-1">Clean</button><button type="button" role="radio" data-look="neon" aria-checked="false" tabindex="-1">Neon</button></div>
+  <!-- neon look: dark patches over the baked sample controls of neon-bg.png (shown only in the neon look) -->
+  <div class="neon-only nc" style="left:508px;top:222px;width:194px;height:50px"></div>
+  <div class="neon-only nc" style="left:1036px;top:248px;width:440px;height:46px"></div>
+  <div class="neon-only nc" style="left:1338px;top:556px;width:134px;height:128px"></div>
+  <div class="neon-only nc" style="left:1336px;top:298px;width:180px;height:124px"></div>
+  <div class="neon-only nc" style="left:340px;top:661px;width:410px;height:62px"></div>
+  <div class="neon-only nc" style="left:762px;top:661px;width:292px;height:66px"></div>
+  <div class="neon-only nc" style="left:1066px;top:661px;width:246px;height:62px"></div>
+  <div id="cCard" class="clean-only"></div>
+  <div id="cBrand" class="clean-only"><span class="mono">W</span><span class="ttl"><b>MUSE 2</b><em>RAW SIGNAL PANEL</em></span></div>
+  <div id="cUW" class="clean-only">UNIVERSITY OF<br>WASHINGTON</div>
   <!-- header status (inside the baked status pill) -->
-  <div class="cov dark" style="left:506px;top:150px;width:276px;height:46px"></div>
-  <div style="left:506px;top:150px;width:276px;height:46px"><div id="lamp" class="bad"></div><div id="statusText" class="t">Starting</div><div id="rate" class="t"></div></div>
+  <div class="g" id="gPill"><div class="cov dark" style="left:506px;top:150px;width:276px;height:46px"></div>
+  <div id="pillIn" style="left:506px;top:150px;width:276px;height:46px"><div id="lamp" class="bad"></div><div id="statusText" class="t">Starting</div><div id="rate" class="t"></div></div></div>
 
   <!-- battery -->
-  <div class="cov bar" style="z-index:3;left:968px;top:234px;width:228px;height:46px"></div>
-  <div style="z-index:4;left:974px;top:238px;width:218px;height:42px"><div class="blbl t">BATTERY</div><div class="bat"><i id="batFill"></i></div><div id="batText" class="t">--</div></div>
+  <div class="g" id="gBat"><div class="cov bar" style="z-index:3;left:968px;top:234px;width:228px;height:46px"></div>
+  <div id="batIn" style="z-index:4;left:974px;top:238px;width:218px;height:42px"><div class="blbl t">BATTERY</div><div class="bat"><i id="batFill"></i></div><div id="batText" class="t">--</div></div></div>
   <!-- sensors -->
-  <div class="cov dark" style="z-index:3;left:1198px;top:229px;width:204px;height:52px"></div>
-  <div id="sensors" style="z-index:4;left:1204px;top:238px;width:196px;height:42px"></div>
+  <div class="g" id="gSens"><div class="cov dark" style="z-index:3;left:1198px;top:229px;width:204px;height:52px"></div>
+  <div id="sensors" style="z-index:4;left:1204px;top:238px;width:196px;height:42px"></div></div>
 
   <!-- band rows: covers + live elements are built by script -->
   <div id="bandlayer" style="left:0;top:0;width:1672px;height:941px"></div>
@@ -27,72 +43,67 @@
   <div id="rawov"></div>
 
   <!-- focus -->
-  <div class="cov dark" style="left:290px;top:686px;width:252px;height:68px"></div>
-  <div class="fname t" style="left:298px;top:688px">FOCUS</div>
-  <div class="fform t" style="left:300px;top:716px">ln( &beta; &divide; &alpha; )</div>
-  <div id="fnote" style="left:300px;top:733px">Connect to use focus</div>
-  <div id="gameLink" class="t" style="left:420px;top:694px;font-size:9.5px;letter-spacing:.14em;color:#6f82c4">GAME: OFF</div>
-  <div class="cov bar" style="left:546px;top:672px;width:508px;height:80px"></div>
+  <div class="g" id="gFocus"><div class="cov dark" style="left:290px;top:686px;width:252px;height:76px"></div>
+  <div class="fname t" id="fname" style="left:298px;top:688px">FOCUS</div>
+  <div id="gameLink" class="t" style="left:420px;top:694px;font-size:9.5px;letter-spacing:.14em;color:#6f82c4" data-state="off">GAME: OFF</div>
+  <div id="fctl" style="left:298px;top:714px">
+    <div id="fmode" role="radiogroup" aria-label="Show focus or stress">
+      <button type="button" id="fmF" role="radio" aria-checked="true" class="on">FOCUS</button>
+      <button type="button" id="fmS" role="radio" aria-checked="false">STRESS</button>
+    </div>
+  </div>
+  <div id="fnote" style="left:298px;top:742px">Connect to use focus</div></div>
+  <div class="g" id="gMeter"><div class="cov bar" style="left:546px;top:672px;width:508px;height:80px"></div>
   <div id="fnum" class="t" style="left:552px;top:704px">--</div>
-  <div id="fbar" style="left:606px;top:680px;width:428px;height:64px"></div>
-  <div class="cov dark" style="left:1068px;top:688px;width:328px;height:60px"></div>
+  <div id="fbar" style="left:606px;top:680px;width:428px;height:64px"></div></div>
+  <div class="g" id="gCal"><div class="cov dark" style="left:1068px;top:688px;width:328px;height:60px"></div>
   <button class="oct" id="btnCal" disabled style="left:1076px;top:692px;width:312px;height:52px;--fg:#cfe7ff;--bd:#4aa8ff;font-size:11.5px;letter-spacing:.16em;line-height:1.35;gap:14px">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#6fd0ff" stroke-width="1.6" stroke-linecap="round" style="width:26px;height:26px"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>AUTO SET BASELINES<br>10 SECONDS</span></button>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#6fd0ff" stroke-width="1.6" stroke-linecap="round" style="width:26px;height:26px"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>AUTO SET BASELINES<br>10 SECONDS</span></button></div>
 
   <!-- primary controls -->
-  <div class="cov" style="left:290px;top:779px;width:244px;height:86px"></div>
+  <div class="g" id="gBtns"><div class="cov" style="left:290px;top:779px;width:244px;height:86px"></div>
   <div class="cov dark" style="left:578px;top:779px;width:248px;height:86px"></div>
   <div class="cov" style="left:868px;top:779px;width:236px;height:86px"></div>
   <div class="cov dark" style="left:1138px;top:779px;width:248px;height:86px"></div>
-  <button class="oct bigbtn" id="btnConnect" style="left:296px;top:793px;width:232px;--fg:#35e6ff;--bd:#35e6ff;--glow:rgba(53,230,255,.9);--bg:linear-gradient(180deg,#0a3a9a,#04186a)">
+  <button title="Connect" aria-label="Connect" class="oct bigbtn" id="btnConnect" style="left:296px;top:793px;width:232px;--fg:#35e6ff;--bd:#35e6ff;--glow:rgba(53,230,255,.9);--bg:linear-gradient(180deg,#0a3a9a,#04186a)">
     <svg viewBox="0 0 24 24" style="width:34px;height:34px"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/></svg><span>Connect</span></button>
-  <button class="oct bigbtn" id="btnDisconnect" disabled style="left:584px;top:793px;width:236px;--fg:#a9b8ee;--bd:#5f78d8;--glow:rgba(110,140,255,.6)">
+  <button title="Disconnect" aria-label="Disconnect" class="oct bigbtn" id="btnDisconnect" disabled style="left:584px;top:793px;width:236px;--fg:#a9b8ee;--bd:#5f78d8;--glow:rgba(110,140,255,.6)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:28px;height:28px"><circle cx="12" cy="12" r="9"/><path d="M9 14a2.2 2.2 0 0 0 3.1 0l1.6-1.6a2.2 2.2 0 0 0-3.1-3.1l-.5.5M14 10a2.2 2.2 0 0 0-3.1 0L9.3 11.6a2.2 2.2 0 0 0 3.1 3.1l.5-.5"/></svg><span>Disconnect</span></button>
-  <button class="oct bigbtn" id="btnStart" disabled style="left:874px;top:793px;width:224px;--fg:#c9bbff;--bd:#7a62e8;--glow:rgba(255,77,157,.6);font-size:15px;line-height:1.3">
+  <button title="Start recording" aria-label="Start recording" class="oct bigbtn" id="btnStart" disabled style="left:874px;top:793px;width:224px;--fg:#c9bbff;--bd:#7a62e8;--glow:rgba(255,77,157,.6);font-size:15px;line-height:1.3">
     <svg viewBox="0 0 24 24" style="width:30px;height:30px"><circle cx="12" cy="12" r="9" fill="none" stroke="#ff4d9d" stroke-width="2"/><circle cx="12" cy="12" r="4.4" fill="#ff4d9d"/></svg><span>Start<br>Recording</span></button>
-  <button class="oct bigbtn" id="btnStop" disabled style="left:1144px;top:793px;width:236px;--fg:#c9bbff;--bd:#7a62e8;--glow:rgba(208,92,255,.6);font-size:15px;line-height:1.3">
-    <svg viewBox="0 0 24 24" style="width:30px;height:30px"><circle cx="12" cy="12" r="9" fill="none" stroke="#d05cff" stroke-width="1.6"/><rect x="8" y="8" width="8" height="8" rx="1.4" fill="none" stroke="#d05cff" stroke-width="2"/></svg><span>Stop<br>Recording</span></button>
+  <button title="Stop recording" aria-label="Stop recording" class="oct bigbtn" id="btnStop" disabled style="left:1144px;top:793px;width:236px;--fg:#c9bbff;--bd:#7a62e8;--glow:rgba(208,92,255,.6);font-size:15px;line-height:1.3">
+    <svg viewBox="0 0 24 24" style="width:30px;height:30px"><circle cx="12" cy="12" r="9" fill="none" stroke="#d05cff" stroke-width="1.6"/><rect x="8" y="8" width="8" height="8" rx="1.4" fill="none" stroke="#d05cff" stroke-width="2"/></svg><span>Stop<br>Recording</span></button></div>
 
   <!-- left: session -->
-  <div class="cov dark" style="left:64px;top:354px;width:98px;height:182px"></div>
-  <div style="left:64px;top:354px;width:98px;height:182px">
+  <div class="g" id="gSess"><div class="cov dark" style="left:64px;top:354px;width:98px;height:182px"></div>
+  <div id="sessIn" style="left:64px;top:354px;width:98px;height:182px">
     <div class="ptitle" style="left:12px;top:14px">SESSION</div>
     <div id="sessT" class="pv t" style="left:12px;top:38px;font-size:22px">--:--</div>
     <div class="pk" style="left:12px;top:72px">READINGS</div>
     <div id="sessN" class="pv t" style="left:12px;top:88px;font-size:15px">--</div>
-    <div class="pk" id="sessM" style="left:12px;top:122px;width:80px;white-space:normal;line-height:1.4">File saves when you stop</div>
-  </div>
+    <div class="clean-only legend"><div class="lt">SIGNAL QUALITY</div><div class="li"><i class="d g"></i>Good<b>70% +</b></div><div class="li"><i class="d f"></i>Fair<b>40 - 69%</b></div><div class="li"><i class="d p"></i>Poor<b>under 40%</b></div></div>
+    <div class="pk" id="sessM" data-idle="1" style="left:12px;top:122px;width:80px;white-space:normal;line-height:1.4">File saves when you stop</div>
+  </div></div>
 
   <!-- right: heart rate + stream readout -->
-  <div class="cov dark" style="left:1464px;top:250px;width:179px;height:124px"></div>
-  <div style="left:1464px;top:250px;width:172px;height:124px">
-    <div class="hrname" style="left:10px;top:6px">HEART RATE</div><div id="hrState" style="right:6px;top:7px">--</div>
-    <div id="hrNum" style="left:10px;top:20px">--</div><div class="pk" style="left:88px;top:40px;color:#ff8c9b">BPM</div>
+  <div class="g" id="gHr"><div class="cov dark" style="left:1464px;top:250px;width:179px;height:124px"></div>
+  <div id="hrIn" style="left:1464px;top:250px;width:172px;height:124px">
+    <div class="hrname" id="hrName" style="left:10px;top:6px">HEART RATE</div><div id="hrState" style="right:6px;top:7px">--</div>
+    <div id="hrNum" style="left:10px;top:20px">--</div><div class="pk" id="hrBpm" style="left:88px;top:40px;color:#ff8c9b">BPM</div>
     <canvas id="hrCv" class="hrcv" style="left:10px;top:62px;width:154px;height:30px"></canvas>
-    <div class="hrbar" style="left:10px;top:97px;width:154px"><i id="hrFill"></i></div>
-    <div class="pk" style="left:10px;top:110px;font-size:9px;letter-spacing:.06em"><span id="stRate" class="inl">-- Hz</span> &middot; <span id="stDrop" class="inl">--% lost</span> &middot; <span id="stUse" class="inl">-/4 in use</span></div>
-  </div>
-
-  <!-- right: arousal (body activation). Click for details. Drawn by panel/arousal-link.js -->
-  <div class="cov dark" style="left:1464px;top:378px;width:179px;height:130px"></div>
-  <div id="arBox" title="Arousal: click for details" style="left:1464px;top:378px;width:172px;height:130px">
-    <div class="arname" style="left:10px;top:6px">AROUSAL</div><div id="arState" style="right:6px;top:7px">--</div>
-    <div id="arNum" style="left:10px;top:20px">--</div><div class="pk" style="left:88px;top:40px;color:#ffc27a">BODY</div>
-    <div class="arbar" style="left:10px;top:64px;width:154px"><i id="arFill"></i></div>
-    <div class="arsig" style="left:10px;top:82px;width:154px"><span id="arH" class="inl"><i class="inl"></i>HEART</span><span id="arT" class="inl"><i class="inl"></i>MUSCLE</span><span id="arM" class="inl"><i class="inl"></i>MOVE</span></div>
-    <div class="pk" id="arNote" style="left:10px;top:106px;font-size:9px;letter-spacing:.04em">connect to use</div>
-  </div>
+    <div class="hrbar" id="hrBar" style="left:10px;top:97px;width:154px"><i id="hrFill"></i></div>
+    <div class="pk" id="hrStat" style="left:10px;top:110px;font-size:9px;letter-spacing:.06em"><span id="stRate" class="inl">-- Hz</span> &middot; <span id="stDrop" class="inl">--% lost</span> &middot; <span id="stUse" class="inl">-/4 in use</span> &middot; <span id="stMot" class="inl" style="cursor:pointer">motion --</span></div>
+  </div></div>
 
   <!-- right: view buttons -->
-  <div class="cov dark" style="left:1462px;top:512px;width:130px;height:258px"></div>
-  <button class="oct smallbtn on" id="btnBand" style="left:1465px;top:517px;--fg:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12c3-9 5 9 8 0s5 9 8 0 3 4 4 3"/></svg>Band view</button>
-  <button class="oct smallbtn" id="btnView" style="left:1465px;top:559px;--fg:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12h3l2-6 3 12 3-9 2 5 2-2h5"/></svg>Raw view</button>
-  <button class="oct smallbtn" id="btnFloat" style="left:1465px;top:601px;--fg:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="5" fill="currentColor"/></svg>Float focus</button>
-  <button class="oct smallbtn" id="btnFull" style="left:1465px;top:643px;--fg:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Fullscreen</button>
+  <div class="g" id="gViews"><div class="cov dark" style="left:1462px;top:512px;width:130px;height:216px"></div>
+  <button title="Band view" aria-label="Band view" class="oct smallbtn on" id="btnBand" style="left:1465px;top:517px;--fg:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12c3-9 5 9 8 0s5 9 8 0 3 4 4 3"/></svg>Band view</button>
+  <button title="Raw view" aria-label="Raw view" class="oct smallbtn" id="btnView" style="left:1465px;top:559px;--fg:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12h3l2-6 3 12 3-9 2 5 2-2h5"/></svg>Raw view</button>
+  <button title="Float focus" aria-label="Float focus" class="oct smallbtn" id="btnFloat" style="left:1465px;top:601px;--fg:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="5" fill="currentColor"/></svg>Float focus</button>
+  <button title="Fullscreen" aria-label="Fullscreen" class="oct smallbtn" id="btnFull" style="left:1465px;top:643px;--fg:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Fullscreen</button>
 
   <!-- game launcher: Mario Kart (needs focus baselines) -->
-  <button class="oct smallbtn" id="btnMario" title="Open the game menu" style="left:1465px;top:685px;--fg:#dbe8ff"><svg viewBox="0 0 64 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M16 4h32c8 0 14 8 15 18 1 8-3 14-9 14-5 0-8-5-11-9H21c-3 4-6 9-11 9-6 0-10-6-9-14C2 12 8 4 16 4z"/><path d="M18 14v10M13 19h10"/><circle cx="43" cy="16" r="2.4" fill="currentColor"/><circle cx="50" cy="22" r="2.4" fill="currentColor"/></svg>Games</button>
-  <button class="oct smallbtn" id="btnGuide" title="Step-by-step setup guide" style="left:1465px;top:727px;--fg:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1.9-1.1 1.8M12 17v.2"/></svg>Guide</button>
+  <button class="oct smallbtn" id="btnMario" title="Open the game menu" style="left:1465px;top:685px;--fg:#dbe8ff"><svg viewBox="0 0 64 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M16 4h32c8 0 14 8 15 18 1 8-3 14-9 14-5 0-8-5-11-9H21c-3 4-6 9-11 9-6 0-10-6-9-14C2 12 8 4 16 4z"/><path d="M18 14v10M13 19h10"/><circle cx="43" cy="16" r="2.4" fill="currentColor"/><circle cx="50" cy="22" r="2.4" fill="currentColor"/></svg>Games</button></div>
 </div>
 <script src="game/bomb-logic.js"></script>
 <script src="game/bomb.js"></script>
@@ -106,11 +117,43 @@
 <script src="panel/dsp.js"></script>
 <script src="panel/ble.js"></script>
 <script src="panel/focus.js"></script>
+<script src="focus/focus-switch.js"></script>
 <script src="panel/recording.js"></script>
 <script src="panel/gamelink.js"></script>
 <script src="panel/main.js"></script>
 <script src="arousal.js"></script>
-<script src="panel/arousal-link.js"></script>
-<script src="panel/guide.js"></script>
+<script src="stress.js"></script>
+<script src="panel/stress-link.js"></script>
+<!-- new engine (engine/, adapters/, panel/engine-*.js): classic scripts, each one IIFE on window.MuseEngine -->
+<script src="engine/util.js"></script>
+<script src="engine/frame.js"></script>
+<script src="engine/fixtures.js"></script>
+<script src="engine/preproc.js"></script>
+<script src="engine/contact.js"></script>
+<script src="engine/motion.js"></script>
+<script src="engine/events.js"></script>
+<script src="engine/mask.js"></script>
+<script src="engine/clean.js"></script>
+<script src="engine/features.js"></script>
+<script src="engine/ecg.js"></script>
+<script src="engine/ppg.js"></script>
+<script src="engine/norm.js"></script>
+<script src="engine/priors.js"></script>
+<script src="engine/metrics.js"></script>
+<script src="engine/buttons.js"></script>
+<script src="engine/holdfade.js"></script>
+<script src="engine/identity.js"></script>
+<script src="engine/profiles.js"></script>
+<script src="engine/legacy.js"></script>
+<script src="engine/gamebody.js"></script>
+<script src="engine/pipeline.js"></script>
+<script src="adapters/muse.js"></script>
+<script src="adapters/cyton.js"></script>
+<script src="adapters/cyton-sim.js"></script>
+<script src="adapters/cyton-serial.js"></script>
+<script src="panel/engine-rec.js"></script>
+<script src="panel/engine-ui.js"></script>
+<script src="panel/engine-link.js"></script>
+<script src="panel/validation.js"></script>
 </body>
 </html>

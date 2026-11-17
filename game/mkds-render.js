@@ -209,6 +209,8 @@ function open(host) {
   if (ui) return;
   css();
   const stage = host.stage || document.getElementById("stage");
+  const engineFeed = { metrics: host.metrics || null, events: host.events || null };   // the new engine's feed: stored, unused (no gameplay change)
+  void engineFeed;
   const el = document.createElement("div"); el.id = "mk";
   el.innerHTML = `
   <div class="hud" style="left:40px;width:1592px"></div>

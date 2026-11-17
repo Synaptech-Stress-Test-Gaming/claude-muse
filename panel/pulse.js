@@ -32,6 +32,7 @@ function onPpg(seq,vals){
     PL.bp[PL.bpPos]=b;PL.mk[PL.bpPos]=PL.skip>0?0:1;if(PL.skip>0)PL.skip--;PL.bpPos=(PL.bpPos+1)%PL.bp.length;
     if(PL.filled<PL.bp.length)PL.filled++;
   }
+  if(typeof engTapPpg==="function")engTapPpg();
 }
 function ppgAnalyse(){
   if(!S.connected){PL.state="--";PL.bpm=null;PL.pct=null;PL.hist=[];return;}

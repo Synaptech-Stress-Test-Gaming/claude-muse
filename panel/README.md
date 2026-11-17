@@ -10,20 +10,24 @@ order is set in `muse-panel.html` and matters.
 | `ui.js` | **UI** | builds the stage, toasts, status lamp, buttons, view switch, canvas drawing | UI |
 | `core.js` | shared | constants, `S` (shared state), `?demo=1`, band filters | rarely |
 | `pulse.js` | signal | heart-rate estimate from the pulse sensor | signal |
+| `motion.js` | signal | accelerometer/gyro motion gate: pauses focus while the head moves (test: `node panel/motion.test.js`) | signal |
 | `dsp.js` | **signal path** | packet alignment, offset removal, band filtering, contact quality (**blink / head-movement filter goes here**) | signal |
 | `ble.js` | **data in** | Muse Bluetooth connect/retry, battery, simulated headband (`?demo=1`) | hardware |
 | `focus.js` | **focus meter** | focus score, baselines, floating meter | focus |
 | `recording.js` | **recording** | record, report, CSV | recording |
 | `gamelink.js` | **games** | hands live signals to the game menu; feeds external games | games |
 | `main.js` | start-up | wiring, must load last | rarely |
-| `motion.js` | signal | head movement from the accelerometer (`motionLevel()`) | signal |
-| `arousal-link.js` | **arousal meter** | reads heart rate, forehead tension and movement for `../arousal.js`; draws the AROUSAL box and its details window | arousal |
-| `guide.js` | **UI** | the setup guide overlay | UI |
-| `stress-link.js` | legacy | old stress-meter glue, no longer loaded | - |
+| `stress-link.js` | **stress meter** (Legacy arousal model, see `../arousal.js`) | hands `../stress.js` the panel's signals | stress |
+| `engine-link.js` | **new engine glue** | Muse / Cyton connect dispatch (`engConnect`), the tap functions called from `dsp.js`/`pulse.js`/`motion.js`, frames -> `MuseEngine.create`, `window.EngineOut`, the Cyton display and Legacy focus on the Cyton, identity tick/cross | engine |
+| `engine-ui.js`, `engine-ui.css` | **new engine UI** | MUSE/CYTON switch, NEW/LEGACY switch, profile panel, engine card, the Cyton in the main panel (16-tile contact strip, 16-channel raw view, ECG in the Heart Rate box, status-line button flashes), help with the honest limits, three looks | UI |
+| `engine-rec.js` | **recording** | the 6 `eng_*` CSV columns (appended) and the v2 recorder (4 files) for the Cyton and the validation protocol | recording |
+| `validation.js` | **validation** | the guided validation protocol (`?validate=1`) | engine |
 
-Not in this folder (already separate): `../stress.js` (stress meter), `../game/*` (games and the game menu).
+Not in this folder (already separate): `../stress.js` (stress meter), `../game/*` (games and the game menu), `../focus/*` (Legacy / Corrected / Gate-only focus scores, the CAL calibration and the extra recording columns; see `../focus/README.md`).
 
-Load order: `game/bomb-logic.js`, `game/bomb.js`, `game/menu.js`, then `core, pulse, ui, dsp, ble, focus, recording, gamelink, main`, then `arousal.js`, `arousal-link.js`, `guide.js` (`motion.js` loads right after `pulse.js`).
+Load order: `game/bomb-logic.js`, `game/bomb.js`, `game/menu.js`, then `core, pulse, motion, ui, dsp, ble, focus`, `focus/focus-switch.js`, `recording, gamelink, main`, `arousal.js`, `stress.js`, `stress-link.js`, then the new engine (`engine/*.js` in pipeline order, `adapters/*.js`) and `engine-rec, engine-ui, engine-link, validation`. The four tap lines in `dsp.js`, `pulse.js` and `motion.js` test `typeof` at call time, so the engine loading last is fine.
+
+Legacy and New run side by side: the Legacy maths here is unchanged (focus loop in `gamelink.js`, `pctOf` in `focus.js`); the NEW/LEGACY switch only picks which number is shown and sent. In Cyton mode the 1 s interval in `dsp.js` does not paint the Muse-only places (sensor tiles, rates, heart rate, motion line); `engine-ui.js` fills them.
 
 ## Where the old `muse-panel.html` sections went
 constants + state -> `core.js` · pulse (heart rate) -> `pulse.js` · build UI on the stage + drawing -> `ui.js` · stream handling -> `dsp.js` ·

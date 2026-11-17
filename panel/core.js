@@ -10,6 +10,7 @@ const U = n => "273e" + n + "-4c4d-454d-96be-f03bac821358";
 const CTRL = U("0001"), TELE = U("000b");
 const EEG = [U("0003"), U("0004"), U("0005"), U("0006")];
 const PPG_IR = U("0010"); // pulse sensor, infrared channel (muse-js: 000f ambient, 0010 infrared, 0011 red)
+const GYRO = U("0009"), ACC = U("000a"); // motion sensors (muse-js: 0009 gyroscope, 000a accelerometer), 52 Hz, 3 readings per packet
 const PPG_FS = 64, PPG_PKT = 6;
 const SENSORS = ["TP9","AF7","AF8","TP10"];
 const SENSOR_SUB = ["Left ear","Left forehead","Right forehead","Right ear"];
@@ -36,8 +37,10 @@ const S = {
   hp:[{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], rms:[null,null,null,null], rmsAcc:[{s:0,n:0},{s:0,n:0},{s:0,n:0},{s:0,n:0}],
   pct:[null,null,null,null], usable:4, artUntil:0,
   raw:[0,1,2,3].map(()=>new Float32Array(BUF_LEN)), rawPos:0,
-  rec:null, view:"bands", pip:null, k:1
+  rec:null, view:"bands", pip:null, k:1, gapAt:-1e9, holdUntil:0,
+  dev:"muse" // "muse" | "cyton": URL ?device=, else localStorage muse2panel.device, else muse (switching disconnects the current device first; panel/engine-link.js)
 };
+try{const d=params.get("device")||localStorage.getItem("muse2panel.device");if(d==="cyton"||d==="muse")S.dev=d;}catch(e){}
 function biquad(f0,Q){return biquadFs(f0,Q,FS);}
 function biquadFs(f0,Q,fs){
   const w=2*Math.PI*f0/fs, a=Math.sin(w)/(2*Q), c=Math.cos(w), a0=1+a;

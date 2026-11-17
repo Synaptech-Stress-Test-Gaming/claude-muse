@@ -1,9 +1,11 @@
 /* Bomb defusal prototype: browser view. Needs game/bomb-logic.js.
    Open it with BombUI.open({ focus, stress, status, seed, onEvent, onClose }).
-   - mode: "live" (default when focus is given: real headband) or "test" (manual slider). Switchable in the top bar.
-   - focus():  0..100 from the panel's focus meter, or null when there is no reading (default: no stress effects)
-   - stress(): optional 0..1 stress value from a future algorithm; overrides the focus mapping when it returns a number
+   - source: "stress" (the stress meter), "focus" (the focus meter) or "test" (manual slider). Pick it in the top bar; the default is the first one available.
+   - focus():  0..100 from the panel's focus meter, or null when there is no reading. FOCUS source: stress = 1 - focus/100 (focus 100 = no stress, focus 0 = full stress)
+   - stress(): 0..1 from the stress meter, or null
+   - mode: legacy option, "test" starts on the manual slider
    - onEvent(type, data): start | strike | module_solved | explode | defused | finish
+   - metrics(), events(): the new engine's metrics and button events (stored for later use; gameplay does not read them); engine: "new" | "legacy"
    All art is drawn in code. */
 "use strict";
 (function (root) {
@@ -17,6 +19,9 @@ const CSS = `
 .bz-bar b{letter-spacing:.2em;font-weight:600;font-size:13px}.bz-bar .sp{flex:1}.bz-bar .st{font-size:12px;color:#8ea1b3}
 .bz-btn{background:#1b2630;border:1px solid #34495c;color:#dbe7f2;border-radius:6px;padding:6px 14px;font-size:12px;letter-spacing:.08em;cursor:pointer}
 .bz-btn:hover{border-color:#6fb1ff}
+.bz-btn:disabled{opacity:.4;cursor:not-allowed}
+.bz-seg{display:flex}.bz-seg .bz-btn{border-radius:0;margin-left:-1px;padding:6px 12px}.bz-seg .bz-btn:first-child{border-radius:6px 0 0 6px;margin-left:0}.bz-seg .bz-btn:last-child{border-radius:0 6px 6px 0}
+.bz-seg .bz-btn.on{background:#2c5b86;border-color:#6fb1ff;color:#fff;position:relative}
 .bz-view{position:absolute;left:0;right:0;top:46px;bottom:0;cursor:none;display:flex;align-items:center;justify-content:center}
 .bz-room{position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(#7d5a46,#4a3328);box-shadow:0 -20px 40px rgba(0,0,0,.5) inset}
 .bz-wrap{position:relative}
@@ -218,13 +223,14 @@ function boomSound() {
 function open(opts) {
   if (ui) return;
   opts = opts || {};
+  const engineFeed = { metrics: opts.metrics || null, events: opts.events || null };   // stored, unused: no gameplay change
   if (!document.getElementById("bz-css")) { const s = document.createElement("style"); s.id = "bz-css"; s.textContent = CSS; document.head.appendChild(s); }
   const T = Object.assign({}, L.TUNING, opts.tuning || {});
   const root = el("div", "bz", null, opts.parent || document.body);
 
   /* top bar */
   const bar = el("div", "bz-bar", '<b>DEFUSE</b><span class="st" id="bzSt"></span><span class="sp"></span>', root);
-  const bMode = el("button", "bz-btn", "", bar), bSnd = el("button", "bz-btn", "SOUND ON", bar), bExit = el("button", "bz-btn", "EXIT (Esc)", bar);
+  const bSeg = el("div", "bz-seg", "", bar), bSnd = el("button", "bz-btn", "SOUND ON", bar), bExit = el("button", "bz-btn", "EXIT (Esc)", bar);
   const stEl = bar.querySelector("#bzSt");
 
   const view = el("div", "bz-view", null, root);
@@ -340,14 +346,25 @@ function open(opts) {
     <div class="row"><button class="bz-btn" id="bzGo" style="background:#2a5bd6;font-weight:700;padding:10px 26px">START (Enter)</button></div></div>`, root);
   introEl.querySelector("#bzGo").onclick = () => begin();
   const bayOf = { timer: bTimer, info: bInfo, button: bBtn, wires: bWire, keypad: bKey, vitals: bVit };
-  let mode = opts.mode || ((opts.stress || opts.focus) ? "live" : "test");
-  function setMode(m) {
-    mode = m; tools.style.display = m === "test" ? "flex" : "none";
-    bMode.textContent = m === "test" ? "MODE: MANUAL TEST" : "MODE: LIVE (MUSE)";
-    bMode.style.borderColor = m === "test" ? "#e6c46a" : "#43f28a";
-    if (S) emit("mode", { mode: m });
+  /* where the stress level comes from: the stress meter, the focus meter (stress = 1 - focus/100) or the manual slider */
+  const SRC = [["stress", "STRESS METER", !!opts.stress, "Stress meter not available. Connect the headband and calibrate it in the panel."],
+    ["focus", "FOCUS", !!opts.focus, "Focus needs the headband connected and Auto Set Baselines pressed in the panel."],
+    ["test", "MANUAL", true, ""]];
+  let source = opts.source || (opts.mode === "test" ? "test" : opts.stress ? "stress" : opts.focus ? "focus" : "test");
+  if (!SRC.some(x => x[0] === source && x[2])) source = "test";
+  let mode = source === "test" ? "test" : "live";
+  const segBtn = {};
+  SRC.forEach(([id, label, avail, why]) => { const b = el("button", "bz-btn", label, bSeg); b.disabled = !avail; if (!avail) b.title = why; b.onclick = () => setSource(id); segBtn[id] = b; });
+  function applySource() {
+    mode = source === "test" ? "test" : "live"; tools.style.display = source === "test" ? "flex" : "none";
+    SRC.forEach(x => segBtn[x[0]].classList.toggle("on", x[0] === source));
+    if (S) emit("mode", { mode, source });
   }
-  bMode.onclick = () => { if (S && S.state === "running" && S.t > 1 && !confirm("Switching mode mid-game mixes test and real readings in this run's results. Switch anyway?")) return; setMode(mode === "test" ? "live" : "test"); };
+  function setSource(id) {
+    if (id === source) return;
+    if (S && S.state === "running" && S.t > 1 && !confirm("Changing the stress source mid-game mixes sources in this run's results. Change anyway?")) return;
+    source = id; applySource();
+  }
 
   /* ---------- the service sheet: written for THIS bomb only (rules differ on every bomb) ---------- */
   function setTab(t) { tab = t; beep(700, .03, "triangle", .03); renderManual(); }
@@ -429,7 +446,7 @@ function open(opts) {
     updMods(); endEl.style.display = "none"; root.classList.remove("bz-glitch");
     renderManual();
     introEl.style.display = withIntro ? "flex" : "none";
-    if (!withIntro) emit("start", { seed: level.seed, serial: level.serial, mode });
+    if (!withIntro) emit("start", { seed: level.seed, serial: level.serial, mode, source });
   }
   function begin() { if (S.state !== "intro") return; S.state = "running"; introEl.style.display = "none"; if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (x) { /* no sound */ } } emit("start", { seed: level.seed, serial: level.serial, mode }); }
   function drawWire(i, cut) {
@@ -686,7 +703,7 @@ function open(opts) {
   /* ---------- end states ---------- */
   function summary() {
     const dur = Math.max(S.t, 0.001);
-    return { seed: level.seed, mode, result: S.state, secondsPlayed: +S.t.toFixed(1), clockLeft: +Math.max(S.remaining, 0).toFixed(1), strikes: S.strikes,
+    return { seed: level.seed, mode, source, result: S.state, secondsPlayed: +S.t.toFixed(1), clockLeft: +Math.max(S.remaining, 0).toFixed(1), strikes: S.strikes,
       modulesSolved: nSolved(), sweatDrops: S.drops, slips: S.slips, wipes: S.wipes, blockedPresses: S.blocked, paperBlots: S.blots, avgStress: +(S.stressSum / dur).toFixed(3), secondsHighStress: +S.stressHi.toFixed(1),
       phoneSeconds: +S.phoneSec.toFixed(1), calmModeUsed: S.feedDone, calmModeAtSec: S.calmAt, peakMindClear: +S.calmPeak.toFixed(2), events: S.events.slice() };
   }
@@ -747,11 +764,7 @@ function open(opts) {
   function frame(now) { raf = requestAnimationFrame(frame); update(now); }
   function update(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
-    let target = 0, noRead = false;
-    if (mode === "test") { noRead = no.checked; target = noRead ? 0 : +sl.value / 100; }
-    else if (opts.stress) { const v = opts.stress(); noRead = v == null || !isFinite(v); target = noRead ? 0 : v; }
-    else if (opts.focus) { const f = opts.focus(); noRead = f == null; target = L.stressFromFocus(f, T); }
-    else noRead = true;
+    const src = L.stressTarget(source, opts, { none: no.checked, value: +sl.value / 100 }), target = src.target, noRead = src.noRead;
     S.stressSm += (target - S.stressSm) * (1 - Math.exp(-dt / T.smoothingSec));
     if (S.state === "running" && !S.phone) S.calm = Math.max(0, S.calm - T.calmDecay * dt);
     S.calmPeak = Math.max(S.calmPeak, S.calm);
@@ -808,8 +821,12 @@ function open(opts) {
     effect.querySelector("#bzT").textContent = shake.toFixed(1) + " px"; effect.querySelector("#bzC").textContent = "x" + rate.toFixed(2); effect.querySelector("#bzH").textContent = Math.round(L.heartBpm(s)) + " bpm"; effect.querySelector("#bzW").textContent = smudges.length;
     effect.querySelector("#bzK").textContent = calmNow ? Math.ceil(S.calmUntil - S.t) + " s" : S.feedDone ? "used" : "ready";
     calmBadge.style.display = calmNow && S.state === "running" ? "flex" : "none"; calmFx.style.opacity = calmNow && S.state === "running" ? 1 : 0; if (calmNow) calmBadge.querySelector("#cmT").textContent = Math.ceil(S.calmUntil - S.t) + " s left: shaking and sweat paused";
-    vNote.textContent = mode === "test" ? "MANUAL TEST MODE: arousal is set by the slider. Results are not real data." : noRead ? "LIVE MODE: no arousal reading yet. Connect the headband and sit still for 15 s. Until then nothing shakes." : "LIVE MODE: driven by your arousal meter (heart rate, muscle tension, movement) compared with your rest.";
-    stEl.textContent = (mode === "test" ? "MANUAL TEST" : "LIVE") + (opts.status ? "  |  " + opts.status() : "");
+    vNote.textContent = source === "test" ? "MANUAL TEST MODE: stress is set by the slider. Results are not real data."
+      : source === "focus" ? (noRead ? "FOCUS MODE: no focus reading yet. Connect the headband and press Auto Set Baselines in the panel. Until then there are no stress effects." : "FOCUS MODE: stress = 100 minus your focus. Focus 100 means no stress, focus 0 means full stress. Focus is a rough proxy, not a validated measure.")
+      : !noRead && opts.engine === "new" ? "STRESS MODE: driven by the engine (heart rate, heart-rate variability, alpha). Measures arousal, not a validated stress measure."
+      : noRead ? "STRESS MODE: no stress reading yet. Connect the headband and calibrate the stress meter in the panel. Until then there are no stress effects." : "STRESS MODE: driven by the experimental stress meter (heart rate, frontal beta/alpha, face tension). Not a validated stress measure.";
+    rowS.querySelector("span").textContent = source === "test" ? "STRESS (MANUAL)" : source === "focus" ? "STRESS (100 - FOCUS)" : "STRESS (METER)";
+    stEl.textContent = (source === "test" ? "MANUAL TEST" : source === "focus" ? "FOCUS" : "STRESS METER") + (opts.status ? "  |  " + opts.status() : "");
   }
 
   /* ---------- layout, keys ---------- */
@@ -836,7 +853,7 @@ function open(opts) {
   /* advance(seconds): run the simulation faster than real time (used by tests and screenshots) */
   function advance(sec) { let n = last; for (let i = 0; i < Math.round(sec * 60); i++) { n += 1000 / 60; update(n); } last = performance.now(); }
   ui = { close, restart: build, state: () => S, level: () => level, el: root, advance };
-  fit(); build(opts.seed, opts.intro !== false); setMode(mode); raf = requestAnimationFrame(frame);
+  fit(); build(opts.seed, opts.intro !== false); applySource(); raf = requestAnimationFrame(frame);
 }
 
 root.BombUI = { open, close: () => ui && ui.close(), isOpen: () => !!ui, _ui: () => ui };

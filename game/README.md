@@ -97,3 +97,7 @@ Checked with the panel's **simulated** Muse data (`?demo=1`), driving whole race
 ## Legal
 
 Mario Kart, Mario and the other characters belong to Nintendo. This is an unofficial fan project for private, non-commercial use. Do not sell it or distribute it widely without checking the rules first.
+
+## Game link v2 and the new engine
+
+Games get `ctx` from the panel (see the header of `game/menu.js`): `focus()` is the selected engine's focus (New: the engine value, `null` when stale or unavailable; Legacy: as before), `stress()` is 0..1 or **null** (no reading: no stress effects), and the new members `metrics()` ({focus, stress, drowsiness}, each with value, conf, state, reason), `events()` (button events since the last call: `double_blink`, `clench_tap` on the Cyton), `engine` and `device`. The bomb and Mario Kart games accept and store `metrics`/`events`; their gameplay is unchanged. In New mode the menu's messages no longer mention Auto Set Baselines. `MKDSUI.close()` closes the race (used by the validation protocol).
