@@ -29,11 +29,24 @@ function mkMot(){
 function resetMotion(){S.mot=mkMot();}
 resetMotion();
 
+/* A real gyroscope reads a constant few deg/s when perfectly still (zero-rate offset; 7.5 deg/s measured on one Muse 2), which is above the
+   5 deg/s "still" threshold, so the gate never released. The offset is the long-run mean per axis (a head cannot keep turning one way), tracked
+   with a 10 s average after a quick start, and removed before the samples are used by this gate and by the engine. */
+function gyroUnbias(m,v){
+  const b=m.gBias||(m.gBias={n:0,o:[0,0,0]}),out=v.slice();
+  for(let k=0;k<3&&3*k+2<v.length;k++){
+    b.n++;const a=b.n<104?1/b.n:1/(MOT.PKT_FS*10);
+    for(let j=0;j<3;j++){b.o[j]+=(v[3*k+j]-b.o[j])*a;out[3*k+j]=v[3*k+j]-b.o[j];}
+  }
+  return out;
+}
+
 /* one packet = 3 samples of x/y/z in physical units (g, deg/s). Timestamps are the arrival time spread back over the packet. */
 function onMotion(kind,seq,v,now){
   const m=S.mot;if(!m)return;
   if(m.seq[kind]===seq)return;m.seq[kind]=seq;
   now=now==null?Date.now():now;
+  if(kind==="gyro")v=gyroUnbias(m,v);
   const q=m[kind],keep=now-6000;
   for(let k=0;k<3&&3*k+2<v.length;k++){
     q.t.push(now-(2-k)*1000/MOT.PKT_FS);q.m.push(Math.hypot(v[3*k],v[3*k+1],v[3*k+2]));
