@@ -22,7 +22,7 @@
   const EEG_KEYS = ["thetaF", "alphaP", "alphaP@iaf", "betaLoC", "ratioD"], DROWSY_KEYS = ["ratioD", "blinkDur", "blinkRate", "perclos", "spindleRate"];
   const DEF = {
     focus: { wTheta: 1, wAlpha: 1, wBeta: 0.5, offsetTauMin: 90, emaS: 2, ceilingCyton: 1.0, ceilingMuse: 0.7 },
-    stress: { cyton: { hr: 0.45, hrv: 0.40, eeg: 0.15 }, muse: { hr: 0.65, hrv: 0.20, eeg: 0.15 }, offsetTauMin: 45, emaS: 4, ceilingCyton: 1.0, ceilingMuse: 0.8, exertMotionFrac: 0.3, exertHrBpm: 15, exertWinS: 20 },
+    stress: { cyton: { hr: 0.45, hrv: 0.40, eeg: 0.15 }, muse: { hr: 0.65, hrv: 0.20, eeg: 0.15 }, offsetTauMin: 45, priorS: 20, emaS: 4, ceilingCyton: 1.0, ceilingMuse: 0.8, exertMotionFrac: 0.3, exertHrBpm: 15, exertWinS: 20 },
     drowsy: { emaS: 60, needLifetimeS: 600, ratioWinS: 20, ratioNeedS: 8, updateS: 2, blinkWinS: 60, blinkMin: 5, capZ: 1, needTwoZ: 0.5, rateWeight: 0.5 }
   };
   function create(o) {
@@ -35,6 +35,10 @@
       if (DROWSY_KEYS.includes(key)) opt.lifetimeOnly = true;
       if (key === "focusRaw") opt.offsetTau = k.focus.offsetTauMin * 60;
       if (key === "stressRaw") opt.offsetTau = k.stress.offsetTauMin * 60;
+      /* heart features lean on the wearer quickly: the population prior counts as priorS seconds of data instead of the default 120 s,
+         so within about a minute the score compares you with your own level this session, not with an average person (a real Muse 2 wearer at
+         85 bpm read 80-90 for minutes with the 120 s prior) */
+      if (key === "hr" || key === "lnRmssd" || key === "stressRaw") opt.T0 = k.stress.priorS;
       return N.feature(pr, opt); }
     for (const key of FEATURES[dev].concat(o.iafKey === "alphaP@iaf" ? ["alphaP@iaf"] : [])) { const f = mkFeat(key); if (f) feats[key] = f; }
     const alphaKey = o.iafKey === "alphaP@iaf" && feats["alphaP@iaf"] ? "alphaP@iaf" : "alphaP";

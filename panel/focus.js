@@ -22,7 +22,7 @@ function renderFocus(){
   const cyLeg=S.dev==="cyton"&&typeof engLegacyState==="function"?engLegacyState():null; // Cyton Legacy: engine/legacy.js baselines
   $("btnCal").disabled=!(S.connected&&!(cyLeg?cyLeg.cal:focus.cal));
   $("btnCal").classList.toggle("on",cyLeg?cyLeg.lo!=null&&!cyLeg.cal:(sh.lo!=null&&sh.hi!=null&&!focus.cal));
-  if(S.pip){const title=em==="drowsy"?"DROWSY":em==="stress"?"STRESS":"FOCUS";S.pip.title.textContent=title;
+  if(S.pip){const title=em==="drowsy"?"DROWSY":em==="stress"?(typeof engIsNew==="function"&&engIsNew()?"AROUSAL":"STRESS"):"FOCUS";S.pip.title.textContent=title;
     S.pip.num.textContent=txt;[...S.pip.bar.children].forEach((s,i)=>s.classList.toggle("lit",p!=null&&i<Math.round(p/100*FSEG)));
     if(engIsNew()){const m=engMetric();S.pip.note.textContent=!S.connected?"Not connected":m?(m.state==="stale"||m.state==="unavailable"?"-- "+(m.reason||""):engChipText(m)):"--";}
     else S.pip.note.textContent=p==null?(S.connected?(sh.lo==null?"Set baselines in the panel":em.toUpperCase()+": no valid reading"):"Not connected"):em.toUpperCase();}

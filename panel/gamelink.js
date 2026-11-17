@@ -19,7 +19,7 @@ function updateMarioBtn(){}                    // renderFocus() still calls this
 addEventListener("load",()=>GameMenu.attach({button:$("btnMario"),note:null,
   ctx:()=>({stage:$("stage"),connected:S.connected,focusReady:focusReady(),stressLive:stressLive(),
     focus:()=>gameFocus(), // games always get the focus score, even when the panel shows stress
-    stress:()=>{if(engIsNew()){const s=window.EngineOut&&EngineOut.stress;return S.connected&&s&&s.value!=null?s.value/100:null;}const v=window.StressMeter&&StressMeter.value();return v==null?0:v/100;},
+    stress:()=>{if(engIsNew()){const s=window.EngineOut&&EngineOut.stress;return S.connected&&s&&s.value!=null?Math.max(0,Math.min(1,(s.value-50)/40)):null;}const v=window.StressMeter&&StressMeter.value();return v==null?0:v/100;},
     metrics:()=>window.EngineOut?{focus:EngineOut.focus,stress:EngineOut.stress,drowsiness:EngineOut.drowsiness}:null,
     events:()=>engGameQ.splice(0),engine:engMode,device:S.dev,
     sensors:()=>engSensors4().map(p=>({txt:p==null?"--":Math.round(p)+"%",cls:p==null?"":p>=70?"good":p>=40?"fair":"poor"})),

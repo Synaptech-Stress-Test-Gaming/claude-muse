@@ -70,7 +70,7 @@ function renderFocusSwitch() {
   $("fmF").setAttribute("aria-checked", md === "focus" ? "true" : "false"); $("fmS").setAttribute("aria-checked", st ? "true" : "false");
   $("fmF").title = isNew ? "Focus: frontal theta up, posterior alpha down, relative to your usual (not a validated measure)" : "Show the Legacy focus meter (a rough proxy, not a validated measure)";
   $("fmS").title = isNew ? "Stress: heart rate, heart-rate variability and alpha; measures arousal" : "Show Legacy stress = 100 minus focus (a rough proxy, not a validated measure)";
-  $("fname").textContent = dr ? "DROWSY" : st ? "STRESS" : "FOCUS";
+  $("fname").textContent = dr ? "DROWSY" : st ? (typeof engIsNew === "function" && engIsNew() ? "AROUSAL" : "STRESS") : "FOCUS";
   const fn = $("fnote"); fn.textContent = "";
   if (isNew) {
     const m = engMetric();

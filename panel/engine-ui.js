@@ -10,7 +10,7 @@ const ENG_LIMITS = [
   "The scores are relative to your own usual level (50 = usual for you). They are not absolute and cannot be compared between people.",
   "Focus and stress are not validated measures.",
   "Muse focus is weak: 4 sensors, none over the top of the head.",
-  "STRESS measures physiological arousal. Excitement, effort and caffeine look the same.",
+  "AROUSAL is how activated your body is (heart rate, heart-rate variability) compared with your own usual level. 50 = your usual. It is not a stress measure: excitement, effort and caffeine look the same.",
   "While you move, talk, chew or tense your face, the score is held and then shown as --. Those moments are not measured.",
   "Drowsiness is a slow trend with minutes of lag and needs 10 minutes of history.",
   "Person detection is a guess, and on the Muse it is unreliable. Use ✗ to correct it.",
@@ -253,7 +253,7 @@ function engUiPicker() {
 function engChipCls(m) { return !m ? "na" : m.state === "live" ? "live" : m.state === "held" ? "held" : m.state === "learning" ? "learn" : "na"; }
 function engUiCard() {
   const o = window.EngineOut, bd = $("engCardBd"); if (!bd) return;
-  const rows = [["FOCUS", "focus"], ["STRESS", "stress"]].concat(S.dev === "cyton" ? [["DROWSY", "drowsiness"]] : []);
+  const rows = [["FOCUS", "focus"], ["AROUSAL", "stress"]].concat(S.dev === "cyton" ? [["DROWSY", "drowsiness"]] : []);
   const val = m => m && m.value != null ? Math.round(m.value) : "--";
   let html = rows.map(([nm, k]) => { const m = o && o[k]; return '<div class="mrow"><span class="nm">' + nm + '</span><span class="v">' + val(m) + '</span><span class="chip ' + engChipCls(m) + '">' + engEsc(m ? engChipText(m) : "--") + (m && (m.state === "stale" || m.state === "unavailable") && m.reason ? " " + engEsc(m.reason) : "") + '</span><span class="cf"><i style="width:' + Math.round(100 * (m ? m.conf : 0)) + '%"></i></span></div>'; }).join("");
   if (o && o.stress && o.stress.components) { const c = o.stress.components, z = x => x.valid && x.z != null ? (x.z >= 0 ? "+" : "") + x.z.toFixed(1) : "--";

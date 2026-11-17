@@ -347,7 +347,7 @@ function open(opts) {
   introEl.querySelector("#bzGo").onclick = () => begin();
   const bayOf = { timer: bTimer, info: bInfo, button: bBtn, wires: bWire, keypad: bKey, vitals: bVit };
   /* where the stress level comes from: the stress meter, the focus meter (stress = 1 - focus/100) or the manual slider */
-  const SRC = [["stress", "STRESS METER", !!opts.stress, "Stress meter not available. Connect the headband and calibrate it in the panel."],
+  const SRC = [["stress", "AROUSAL", !!opts.stress, "Stress meter not available. Connect the headband and calibrate it in the panel."],
     ["focus", "FOCUS", !!opts.focus, "Focus needs the headband connected and Auto Set Baselines pressed in the panel."],
     ["test", "MANUAL", true, ""]];
   let source = opts.source || (opts.mode === "test" ? "test" : opts.stress ? "stress" : opts.focus ? "focus" : "test");
@@ -823,10 +823,10 @@ function open(opts) {
     calmBadge.style.display = calmNow && S.state === "running" ? "flex" : "none"; calmFx.style.opacity = calmNow && S.state === "running" ? 1 : 0; if (calmNow) calmBadge.querySelector("#cmT").textContent = Math.ceil(S.calmUntil - S.t) + " s left: shaking and sweat paused";
     vNote.textContent = source === "test" ? "MANUAL TEST MODE: stress is set by the slider. Results are not real data."
       : source === "focus" ? (noRead ? "FOCUS MODE: no focus reading yet. Connect the headband and press Auto Set Baselines in the panel. Until then there are no stress effects." : "FOCUS MODE: stress = 100 minus your focus. Focus 100 means no stress, focus 0 means full stress. Focus is a rough proxy, not a validated measure.")
-      : !noRead && opts.engine === "new" ? "STRESS MODE: driven by the engine (heart rate, heart-rate variability, alpha). Measures arousal, not a validated stress measure."
+      : !noRead && opts.engine === "new" ? "AROUSAL MODE: driven by your heart rate and heart-rate variability compared with your own usual level. Your usual level = no effects. Not a validated stress measure."
       : noRead ? "STRESS MODE: no stress reading yet. Connect the headband and calibrate the stress meter in the panel. Until then there are no stress effects." : "STRESS MODE: driven by the experimental stress meter (heart rate, frontal beta/alpha, face tension). Not a validated stress measure.";
-    rowS.querySelector("span").textContent = source === "test" ? "STRESS (MANUAL)" : source === "focus" ? "STRESS (100 - FOCUS)" : "STRESS (METER)";
-    stEl.textContent = (source === "test" ? "MANUAL TEST" : source === "focus" ? "FOCUS" : "STRESS METER") + (opts.status ? "  |  " + opts.status() : "");
+    rowS.querySelector("span").textContent = source === "test" ? "AROUSAL (MANUAL)" : source === "focus" ? "STRESS (100 - FOCUS)" : "AROUSAL (METER)";
+    stEl.textContent = (source === "test" ? "MANUAL TEST" : source === "focus" ? "FOCUS" : "AROUSAL") + (opts.status ? "  |  " + opts.status() : "");
   }
 
   /* ---------- layout, keys ---------- */

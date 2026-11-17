@@ -93,7 +93,7 @@ function attach(c) {
 register({
   id: "defuse", title: "Defuse", icon: "💣", input: "stress", kind: "inline",
   blurb: "Defuse a bomb using its own service sheet. The more stressed you are, the more your hands shake and the more it sweats. Phone on the table to calm down. Pick the source in the game: stress meter, focus (more focus = less stress) or a manual slider.",
-  needs: c => c.focusReady ? { ok: true, msg: "Focus mode is ready (more focus = less stress)." + (c.stressLive ? " Stress meter is live too." : "") } : c.stressLive ? { ok: true, msg: "Stress meter is live." } : { ok: true, msg: c.engine === "new" ? "Manual slider only. Connect the headband first." : "Manual slider only. Connect the headband and press Auto Set Baselines for focus mode." },
+  needs: c => c.focusReady ? { ok: true, msg: "Focus mode is ready (more focus = less stress)." + (c.stressLive ? " Arousal meter is live too." : "") } : c.stressLive ? { ok: true, msg: "Stress meter is live." } : { ok: true, msg: c.engine === "new" ? "Manual slider only. Connect the headband first." : "Manual slider only. Connect the headband and press Auto Set Baselines for focus mode." },
   launch: c => root.BombUI.open({ source: c.focusReady ? "focus" : c.stressLive ? "stress" : "test", stress: c.stressLive ? c.stress : null, focus: c.focusReady ? c.focus : null, status: c.status, metrics: c.metrics, events: c.events, engine: c.engine })
 });
 register({
