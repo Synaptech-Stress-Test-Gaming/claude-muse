@@ -79,6 +79,10 @@
       const sw = k.stress[dev], card = inp.cardiac || {}, stress = { usable: false, value: null, conf: 0, reason: null, learning: false, available: true, exertion: false,
         components: { hr: { z: null, valid: false, bpm: card.hr8 != null ? card.hr8 : null }, hrv: { z: null, valid: false, rmssdMs: card.rmssdMs != null ? card.rmssdMs : null }, eeg: { z: null, valid: false } } };
       const C = stress.components;
+      /* pulse glitch guard: a reading more than 25 bpm away from the median of the last 20 s is a sensor slip (a real Muse 2 jumped 78 -> 40 -> 78
+         within seconds when the forehead sensor lost grip), not a heart-rate change. It is left out and does not enter the history. */
+      { const hs = S.hrHist.map(x => x.hr).filter(x => x != null).sort((a, b) => a - b), md = hs.length >= 8 ? hs[hs.length >> 1] : null;
+        if (card.hr8 != null && md != null && Math.abs(card.hr8 - md) > 25) { S.hrGlitch = (S.hrGlitch || 0) + (inp.hop || 0.25); if (S.hrGlitch < 10) card.hr8 = null; } else S.hrGlitch = 0; }   // after 10 s it is accepted as real
       if (card.hr8 != null && isFinite(card.hr8)) { C.hr.z = feats.hr.z(card.hr8); C.hr.valid = C.hr.z != null; }
       if (card.lnRmssd != null && isFinite(card.lnRmssd)) { const z = feats.lnRmssd.z(card.lnRmssd); C.hrv.z = z == null ? null : -z; C.hrv.valid = z != null; }
       if (al.valid && !eyesClosed) { const z = feats[alphaKey].z(al.x); C.eeg.z = z == null ? null : -z; C.eeg.valid = z != null; }
@@ -96,8 +100,11 @@
         const b = badgeOf("hr"), sqi = dev === "cyton" ? (card.sqi || 0) : (card.quality != null ? card.quality : 0.5);
         stress.value = sig(S.zs); stress.z = S.zs; stress.raw = raw; stress.badge = b;
         stress.conf = U.clamp01(wsum * sqi * b.conf * (dev === "cyton" ? k.stress.ceilingCyton : k.stress.ceilingMuse));
-        if (exertion) { stress.exertion = true; stress.usable = false; stress.reason = "movement"; }
-        else { stress.usable = true;
+        /* exertion (lots of movement, or heart rate up without the HRV drop): the score stays live, because a game needs it while the player moves,
+           but nothing is learned from it so the baseline is not pulled up. It used to be withheld ("held: movement"), which paused it constantly. */
+        stress.usable = true;
+        if (exertion) stress.exertion = true;
+        else {
           if (C.hr.valid) ups.push({ key: "hr", x: card.hr8, w: h });
           if (C.hrv.valid && card.hrvNew) ups.push({ key: "lnRmssd", x: card.lnRmssd, w: 5 });
           ups.push({ key: "stressRaw", x: raw, w: h }); }
