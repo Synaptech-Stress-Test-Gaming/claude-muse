@@ -1,0 +1,163 @@
+/* panel/look-brainrot.css: the BRAINROT look (data-look="brainrot"). Background is brainrot-bg.jpg on the same 1672x941 stage.
+   Loaded last, so it wins ties. Every live control sits on its own dark "screen" over the painted sample controls. */
+html[data-look="brainrot"]{
+  --lime:#b9f23c;--orange:#ff7a1a;--scr:#121415;--scr2:#1b1e20;--edge:#000;--chrome:linear-gradient(180deg,#f1efe9,#bdbab2 55%,#8f8c85);
+  --text:#f3f3ea;--dim:#a9ae9f;--lav:#cfd3c4;--good:#b9f23c;--fair:#ffc93c;--poor:#ff5a3c;--cyan:#b9f23c;--blue:#b9f23c;
+  --font:"Avenir Next Condensed","Arial Narrow","Bahnschrift","Segoe UI",system-ui,sans-serif;
+  --b-delta:#b9f23c;--b-theta:#6fe8c8;--b-alpha:#ffe14a;--b-beta:#ff9a2e;--b-gamma:#ff6fae;
+  --cv-grid:rgba(255,255,255,.07);--cv-text:#a9ae9f;--cv-mid:rgba(255,255,255,.13);--cv-err:#ff5a3c;--cv-raw:#b9f23c;--cv-hr:#ff4a3a;--cv-muted:#70766c;
+}
+[data-look="brainrot"] body{background:#0b0c0c}
+[data-look="brainrot"] #stage{background:#0b0c0c url(../brainrot-bg.jpg) 0 0/1672px 941px no-repeat;user-select:none;-webkit-user-select:none;font-weight:600}
+[data-look="brainrot"] .cov{background:var(--scr);border-radius:7px;box-shadow:inset 0 0 0 1px #000,inset 0 2px 8px rgba(0,0,0,.8)}
+[data-look="brainrot"] :is(#gBat,#gSens,#gPill,#gHr,#gSess,#gViews,#gBtns)>.cov,[data-look="brainrot"] #bandlayer>.cov{display:none!important}
+
+/* look switch + device switch (top left) */
+html[data-look="brainrot"] #lookSw{left:24px;top:17px;width:256px;height:30px;border:1px solid #000;border-radius:15px;background:#17191a;box-shadow:inset 0 2px 6px rgba(0,0,0,.9)}
+html[data-look="brainrot"] #lookSw .knob{height:22px;border-radius:11px;background:linear-gradient(180deg,#ff9a3c,#f05a00);box-shadow:0 0 10px rgba(255,120,20,.7),inset 0 1px 0 rgba(255,255,255,.45)}
+html[data-look="brainrot"] #lookSw button{color:#d6d8cf;line-height:22px;font-weight:700}
+html[data-look="brainrot"] #lookSw button[aria-checked="true"]{color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.4)}
+html[data-look="brainrot"] #lookSw button:focus-visible{outline-color:var(--lime)}
+[data-look="brainrot"] #devSel{left:402px;top:18px;width:238px;height:27px;gap:0;padding:2px;border-radius:14px;background:#17191a;box-shadow:inset 0 0 0 1px #000,inset 0 2px 6px rgba(0,0,0,.9)}
+[data-look="brainrot"] #devSel button{font:700 13px/1 var(--font);letter-spacing:.12em;color:#e6e8de;background:none;border:0;border-radius:12px}
+[data-look="brainrot"] #devSel button.on{color:#1a0d00;background:linear-gradient(180deg,#ff9a3c,#f05a00);box-shadow:0 0 10px rgba(255,120,20,.6),inset 0 1px 0 rgba(255,255,255,.45)}
+/* Float focus / Fullscreen: clear hit areas over the two painted square buttons */
+[data-look="brainrot"] :is(#btnFloat,#btnFull){top:14px!important;height:36px!important;font-size:0!important;gap:0!important;filter:none!important;border-radius:8px;z-index:5}
+[data-look="brainrot"] :is(#btnFloat,#btnFull)::before,[data-look="brainrot"] :is(#btnFloat,#btnFull)::after{display:none}
+[data-look="brainrot"] :is(#btnFloat,#btnFull) svg{display:none}
+[data-look="brainrot"] :is(#btnFloat,#btnFull):hover{background:rgba(185,242,60,.22)}
+[data-look="brainrot"] #btnFloat{left:299px!important;width:38px!important}
+[data-look="brainrot"] #btnFull{left:341px!important;width:42px!important}
+
+/* status pill */
+[data-look="brainrot"] #pillIn{left:535px!important;top:238px!important;width:154px!important;height:38px!important;background:var(--scr);border-radius:8px;box-shadow:inset 0 0 0 1px #000}
+[data-look="brainrot"] #lamp{left:11px;top:12px;width:13px;height:13px;transform:none;border-radius:50%}
+[data-look="brainrot"] #statusText{left:32px;top:5px;font-size:11.5px;letter-spacing:.1em;font-weight:700}
+[data-look="brainrot"] #rate{left:32px;top:21px;font-size:9px;width:118px;overflow:hidden;text-overflow:ellipsis}
+/* battery */
+[data-look="brainrot"] #batIn{left:1020px!important;top:245px!important;width:214px!important;height:38px!important;background:var(--scr);border-radius:8px;box-shadow:inset 0 0 0 1px #000}
+[data-look="brainrot"] .blbl{left:10px;top:4px;font-size:10px;letter-spacing:.2em;font-weight:700;color:var(--lav)}
+[data-look="brainrot"] .bat{left:10px;top:18px;width:146px;height:13px;border:1px solid #000;border-radius:3px;background:#2a2d2e}
+[data-look="brainrot"] .bat i{background:linear-gradient(180deg,#d4ff5a,#93d414);box-shadow:0 0 8px rgba(185,242,60,.6);border-radius:2px}
+[data-look="brainrot"] #batText{left:164px;top:11px;font-size:16px;font-weight:700}
+/* sensors: one line of five (Muse) or two rows of eight (Cyton) */
+[data-look="brainrot"] #sensors{left:1256px!important;top:246px!important;width:272px!important;height:28px!important;background:var(--scr);border-radius:8px;box-shadow:inset 0 0 0 1px #000;display:flex;align-items:center;padding:0 6px}
+[data-look="brainrot"] .sensor{position:static;flex:1;width:auto;height:auto;display:flex;align-items:center;justify-content:center;gap:4px}
+[data-look="brainrot"] .sensor .sl{position:static;width:auto;font-size:10px;font-weight:700;color:var(--text);gap:4px}
+[data-look="brainrot"] .sensor .lamp{transform:none;border-radius:50%;width:8px;height:8px;border-color:#777c70}
+[data-look="brainrot"] .sensor .q{position:static;width:auto;font-size:9.5px;font-weight:600;color:var(--dim)}
+[data-look="brainrot"] .sensor.hr .sl{color:#ff8a6a}
+[data-look="brainrot"] #cySens{left:4px;top:2px;width:264px;height:24px}
+[data-look="brainrot"] #cySens .cyt{font-size:6.5px;background:#1f2223;border-color:#000;color:var(--text)}
+
+/* heart rate */
+[data-look="brainrot"] #hrIn{left:1346px!important;top:304px!important;width:186px!important;height:108px!important;background:var(--scr);border-radius:8px;box-shadow:inset 0 0 0 1px #000}
+[data-look="brainrot"] #hrName{left:10px!important;top:7px!important;font-size:12px;letter-spacing:.14em;font-weight:700;color:var(--orange)}
+[data-look="brainrot"] #hrState{right:9px!important;top:9px!important;color:#ffb08a}
+[data-look="brainrot"] #hrNum{left:10px!important;top:23px!important;font-size:27px;font-weight:700;color:#ff6a1a;text-shadow:0 0 12px rgba(255,90,20,.8)}
+[data-look="brainrot"] #hrBpm{left:74px!important;top:35px!important;color:var(--orange)!important;font-weight:700}
+[data-look="brainrot"] #hrCv{left:10px!important;top:52px!important;width:166px!important;height:24px!important;background:#2a0705;border:1px solid #c02a12;border-radius:3px;box-shadow:inset 0 0 10px rgba(255,60,20,.35)}
+[data-look="brainrot"] #hrBar{left:10px!important;top:80px!important;width:166px!important;height:7px;border-color:#000;background:#2a2d2e}
+[data-look="brainrot"] .hrbar i{background:linear-gradient(90deg,#ff4a1a,#ff9a3c);box-shadow:none}
+[data-look="brainrot"] #hrStat{left:10px!important;top:92px!important;font-size:8.5px!important;letter-spacing:.02em!important;color:var(--dim)}
+/* session */
+[data-look="brainrot"] #sessIn{left:1346px!important;top:559px!important;width:172px!important;height:112px!important;background:var(--scr);border-radius:8px;box-shadow:inset 0 0 0 1px #000}
+[data-look="brainrot"] #sessIn .ptitle{left:11px!important;top:8px!important;font-size:12px;letter-spacing:.16em;font-weight:700;color:var(--text)}
+[data-look="brainrot"] #sessT{left:11px!important;top:24px!important;font-size:22px!important;font-weight:700}
+[data-look="brainrot"] #sessIn .pk:not(#sessM){left:96px!important;top:10px!important;color:var(--dim);font-weight:700}
+[data-look="brainrot"] #sessN{left:96px!important;top:26px!important;font-size:18px!important;font-weight:700}
+[data-look="brainrot"] #sessM{left:11px!important;top:60px!important;width:152px!important;font-size:10px!important;line-height:1.3!important;letter-spacing:.04em;color:var(--lav)}
+[data-look="brainrot"] .pk{color:var(--dim)}[data-look="brainrot"] .pv{font-weight:600}
+
+/* five band rows */
+[data-look="brainrot"] .row0{--cy:338px}[data-look="brainrot"] .row1{--cy:407px}[data-look="brainrot"] .row2{--cy:476px}[data-look="brainrot"] .row3{--cy:545px}[data-look="brainrot"] .row4{--cy:615px}
+[data-look="brainrot"] canvas.wave{background:#101213;border:1px solid #000;border-radius:5px;box-shadow:inset 0 0 14px rgba(0,0,0,.8)}
+[data-look="brainrot"] canvas.wave:is(.row0,.row1,.row2,.row3,.row4){left:498px!important;top:calc(var(--cy) - 31px)!important;width:504px!important;height:62px!important}
+[data-look="brainrot"] .sliderbox{left:1013px!important;top:calc(var(--cy) - 30px)!important;width:194px!important;height:60px!important;background:var(--scr);border-radius:7px;box-shadow:inset 0 0 0 1px #000}
+[data-look="brainrot"] .sliderbox .sn{left:10px;top:5px;font-size:10.5px;letter-spacing:.14em;font-weight:700;color:var(--text)}
+[data-look="brainrot"] .sliderbox .sv{right:10px;top:4px;font-size:12px;font-weight:700}
+[data-look="brainrot"] .sliderbox input{left:8px;top:16px;width:178px}
+[data-look="brainrot"] .rd{left:1023px!important;top:calc(var(--cy) + 14px)!important;font-size:9px;letter-spacing:.03em;color:var(--dim);z-index:2}
+[data-look="brainrot"] input[type=range]::-webkit-slider-runnable-track{height:7px;border-radius:4px;background:linear-gradient(90deg,#93d414,#d4ff5a var(--p,100%),#34383a var(--p,100%));box-shadow:0 0 7px rgba(185,242,60,.45)}
+[data-look="brainrot"] input[type=range]::-webkit-slider-thumb{width:22px;height:22px;margin-top:-8px;border-radius:50%;clip-path:none;background:radial-gradient(circle at 35% 30%,#fff,#b9b6ae 55%,#6f6c66);box-shadow:0 1px 3px rgba(0,0,0,.9),inset 0 0 0 1px rgba(0,0,0,.35)}
+/* chrome buttons (mute, games) */
+[data-look="brainrot"] .oct{filter:none;font-weight:700}
+[data-look="brainrot"] .oct::before,[data-look="brainrot"] .oct::after{display:none}
+[data-look="brainrot"] .mute:is(.row0,.row1,.row2,.row3,.row4){left:1225px!important;top:calc(var(--cy) - 27px)!important;width:89px!important;height:54px!important;font-size:13px;letter-spacing:.1em}
+[data-look="brainrot"] :is(.mute,#btnMario){color:#1c1c1a;background:var(--chrome);border:1px solid #2a2a28;border-radius:9px;box-shadow:inset 0 1px 0 #fff,inset 0 -3px 5px rgba(0,0,0,.25),0 2px 4px rgba(0,0,0,.6)}
+[data-look="brainrot"] :is(.mute,#btnMario):hover:not(:disabled){background:linear-gradient(180deg,#fff,#d6d3cb 55%,#a5a29a)}
+[data-look="brainrot"] :is(.mute,#btnMario):active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 2px 5px rgba(0,0,0,.45)}
+[data-look="brainrot"] .mute.on{background:linear-gradient(180deg,#ffa24a,#f05a00);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 12px rgba(255,120,20,.7)}
+[data-look="brainrot"] .rowdim{opacity:.5}
+
+/* focus box (left), number + game box (middle), profile box (right) */
+[data-look="brainrot"] #gFocus>.cov{left:342px!important;top:664px!important;width:404px!important;height:60px!important}
+[data-look="brainrot"] #gMeter>.cov{left:765px!important;top:664px!important;width:297px!important;height:60px!important}
+[data-look="brainrot"] #gCal>.cov{left:1081px!important;top:664px!important;width:226px!important;height:60px!important}
+[data-look="brainrot"] #fname{left:354px!important;top:668px!important;font-size:18px;letter-spacing:.22em;font-weight:600}
+[data-look="brainrot"] #engSw{left:462px;top:671px;width:112px;height:19px}
+[data-look="brainrot"] #engSw button{font:700 9px/1 var(--font);letter-spacing:.1em;color:#d6d8cf;background:#1f2223;border:1px solid #6d7068;border-radius:5px}
+[data-look="brainrot"] #engSw button.on{color:#1a0d00;background:linear-gradient(180deg,#ff9a3c,#f05a00);border-color:#ffb46a}
+[data-look="brainrot"] #fctl{left:354px!important;top:697px!important}
+[data-look="brainrot"] #fmode{gap:5px}
+[data-look="brainrot"] #fmode button{min-width:0;height:21px!important;padding:0 10px;font-size:9.5px;font-weight:700;letter-spacing:.06em;color:#d6d8cf;background:#1f2223;border:1px solid #6d7068;border-radius:6px}
+[data-look="brainrot"] #fmode.three button{padding:0 7px;min-width:0}
+[data-look="brainrot"] #fmode button:hover{background:#2c3032;color:#fff}
+[data-look="brainrot"] #fmode button.on{color:#16200a;background:linear-gradient(180deg,#d4ff5a,#93d414);border-color:#e4ff9a;box-shadow:0 0 9px rgba(185,242,60,.6)}
+[data-look="brainrot"] #fbar{left:586px!important;top:669px!important;width:152px!important;height:50px!important;gap:2px}
+[data-look="brainrot"] #fbar span{background:#25282a;border:1px solid #777b72;border-radius:2px}
+[data-look="brainrot"] #fbar span.lit{background:linear-gradient(0deg,#93d414,#d4ff5a 70%,#fff);border-color:#e4ff9a;box-shadow:0 0 7px rgba(185,242,60,.7)}
+[data-look="brainrot"] #fnum{left:776px!important;top:662px!important;font-size:26px;line-height:1;font-weight:700;text-shadow:0 0 10px rgba(185,242,60,.6)}
+[data-look="brainrot"] #gameLink{left:842px!important;top:672px!important;font-size:10px!important;letter-spacing:.1em!important;color:var(--lav)!important;font-weight:700}
+[data-look="brainrot"] #fnote{left:776px!important;top:694px!important;width:176px!important;max-height:24px;font-size:9px!important;line-height:1.3!important;color:var(--lav)}
+[data-look="brainrot"] #cstat{background:rgba(255,201,60,.22);color:#ffd98a}[data-look="brainrot"] #cstat.live{background:rgba(185,242,60,.2);color:#d4ff7a}[data-look="brainrot"] #cstat.learn{background:rgba(255,122,26,.22);color:#ffc08a}
+[data-look="brainrot"] #btnMario{left:960px!important;top:673px!important;width:96px!important;height:42px!important;font-size:11px!important;letter-spacing:.08em}
+[data-look="brainrot"] #btnMarioNote{display:none}
+[data-look="brainrot"] :is(#btnCal,#engProf){left:1085px!important;top:667px!important;width:218px!important;height:54px!important}
+[data-look="brainrot"] #btnCal{font-size:10px!important;letter-spacing:.08em!important;gap:8px!important;color:var(--text);background:#1f2223;border:1px solid #6d7068;border-radius:7px}
+[data-look="brainrot"] #btnCal svg{width:22px!important;height:22px!important;stroke:var(--lime)}
+[data-look="brainrot"] #engProf{background:none;border:0;color:var(--text);font-family:var(--font);padding:4px 8px}
+[data-look="brainrot"] #engProf .l1 span{font-size:14px;font-weight:600}
+[data-look="brainrot"] #engProf .l2{color:var(--dim);font-size:11px}
+[data-look="brainrot"] #engProf .l1 button{background:#1f2223;border-color:#6d7068;color:var(--text)}
+[data-look="brainrot"] #engPick{background:#17191a;border-color:var(--lime)}[data-look="brainrot"] #engPick button{background:#25282a;border-color:#6d7068}
+
+/* six real, labelled buttons in the six painted slots: Connect, Record, Band view, Raw view, Stop, Disconnect */
+[data-look="brainrot"] :is(#btnConnect,#btnStart,#btnBand,#btnView,#btnStop,#btnDisconnect){top:746px!important;height:56px!important;font-size:14px!important;line-height:1.05!important;letter-spacing:.08em!important;gap:9px!important;padding:0 6px!important;
+  color:#f3f3ea;background:linear-gradient(180deg,#2b2e30,#151718);border:1px solid #000;border-radius:11px;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 2px rgba(255,255,255,.04),0 2px 5px rgba(0,0,0,.7);opacity:1;white-space:nowrap}
+[data-look="brainrot"] :is(#btnConnect,#btnStart,#btnBand,#btnView,#btnStop,#btnDisconnect):hover:not(:disabled){background:linear-gradient(180deg,#3a3e40,#1d2021);box-shadow:inset 0 0 0 2px var(--ac,var(--lime)),0 0 14px var(--acg,rgba(185,242,60,.45))}
+[data-look="brainrot"] :is(#btnConnect,#btnStart,#btnBand,#btnView,#btnStop,#btnDisconnect):active:not(:disabled){transform:translateY(1px)}
+[data-look="brainrot"] :is(#btnConnect,#btnStart,#btnBand,#btnView,#btnStop,#btnDisconnect):disabled{color:#7b7f76;opacity:1;cursor:not-allowed}
+[data-look="brainrot"] :is(#btnConnect,#btnStart,#btnBand,#btnView,#btnStop,#btnDisconnect):disabled svg{opacity:.35;filter:grayscale(1)}
+[data-look="brainrot"] :is(#btnConnect,#btnStart,#btnBand,#btnView,#btnStop,#btnDisconnect):focus-visible{outline:3px solid #fff;outline-offset:-3px}
+[data-look="brainrot"] :is(#btnConnect,#btnStart,#btnBand,#btnView,#btnStop,#btnDisconnect) svg{width:28px!important;height:28px!important}
+[data-look="brainrot"] #btnConnect{left:344px!important;width:152px!important;color:#16200a;background:linear-gradient(180deg,#d4ff5a,#93d414);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 0 14px rgba(185,242,60,.55);font-size:16px!important}
+[data-look="brainrot"] #btnConnect:hover:not(:disabled){background:linear-gradient(180deg,#e6ff8a,#a6e41e);box-shadow:inset 0 1px 0 #fff,0 0 20px rgba(185,242,60,.9)}
+[data-look="brainrot"] #btnConnect:disabled{background:linear-gradient(180deg,#2b2e30,#151718);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+[data-look="brainrot"] #btnStart{left:519px!important;width:159px!important;--ac:#ff4a3a;--acg:rgba(255,74,58,.5)}
+[data-look="brainrot"] #btnStart svg circle{stroke:#ff4a3a}[data-look="brainrot"] #btnStart svg circle+circle{fill:#ff4a3a}
+[data-look="brainrot"] #btnBand{left:699px!important;width:135px!important}
+[data-look="brainrot"] #btnView{left:855px!important;width:137px!important}
+[data-look="brainrot"] :is(#btnBand,#btnView){font-size:12.5px!important;--ac:var(--orange);--acg:rgba(255,122,26,.5)}
+[data-look="brainrot"] :is(#btnBand,#btnView).on{color:#fff;background:linear-gradient(180deg,#ff9a3c,#e85600);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 14px rgba(255,120,20,.65)}
+[data-look="brainrot"] #btnStop{left:1010px!important;width:132px!important;--ac:#ff4a3a;--acg:rgba(255,74,58,.5)}
+[data-look="brainrot"] #btnStop svg :is(circle,rect){stroke:currentColor}
+[data-look="brainrot"] #btnStop:not(:disabled){color:#fff;background:linear-gradient(180deg,#ff5a4a,#c81e10);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 14px rgba(255,74,58,.6)}
+[data-look="brainrot"] #btnDisconnect{left:1160px!important;width:139px!important;font-size:12.5px!important}
+
+/* raw view sits exactly over the five band rows; report + cards recoloured */
+[data-look="brainrot"] #rawov{left:326px!important;top:304px!important;transform:scale(.85);transform-origin:0 0;z-index:3;background:#121415;border:1.5px solid #000;border-radius:8px;box-shadow:0 0 0 2px #8f8c85,inset 0 0 30px rgba(0,0,0,.7)}
+[data-look="brainrot"] .rawrow .sb{color:var(--lime)}[data-look="brainrot"] .rawrow .st{color:var(--lav)}
+[data-look="brainrot"] #cyRaw .tb button{background:#25282a;border-color:#6d7068}[data-look="brainrot"] #cyRaw canvas{background:#101213;border-color:#000}
+[data-look="brainrot"] #report{background:#141617;border:2px solid var(--lime);border-radius:12px;box-shadow:0 0 0 3px #000,0 0 40px rgba(185,242,60,.35)}
+[data-look="brainrot"] #report .box{background:#1c1f20;border-color:#4c5048}[data-look="brainrot"] #report .rs,[data-look="brainrot"] #report .note,[data-look="brainrot"] #report th{color:var(--dim)}
+[data-look="brainrot"] #report .ln{color:var(--lav)}
+[data-look="brainrot"] #report .oct{color:#16200a;background:linear-gradient(180deg,#d4ff5a,#93d414);border-radius:10px}
+[data-look="brainrot"] #engCard{background:rgba(18,20,21,.96);border-color:var(--lime);box-shadow:0 0 0 2px #000,0 0 18px rgba(185,242,60,.3);font-family:var(--font)}
+[data-look="brainrot"] #engCard .hd button{background:#25282a;border-color:#6d7068}
+[data-look="brainrot"] #engCard .mrow .nm,[data-look="brainrot"] #engCard .evs,[data-look="brainrot"] #engCard .lim,[data-look="brainrot"] #engCardSt{color:var(--dim)}
+[data-look="brainrot"] #engCard .comp{color:var(--lav)}[data-look="brainrot"] #engCard .comp i.ok{background:var(--lime)}
+[data-look="brainrot"] #engCard .cf{background:#2a2d2e}[data-look="brainrot"] #engCard .cf i{background:linear-gradient(90deg,#93d414,#d4ff5a)}
+[data-look="brainrot"] .chip.live{background:rgba(185,242,60,.2);color:#d4ff7a}[data-look="brainrot"] .chip.learn{background:rgba(255,122,26,.22);color:#ffc08a}
+[data-look="brainrot"] #toast.info{border-color:var(--lime);color:#f3ffd6;background:linear-gradient(90deg,#1c2410,#141617);box-shadow:0 0 22px rgba(185,242,60,.4)}
+[data-look="brainrot"] #toast.info svg{color:var(--lime)}

@@ -4,15 +4,16 @@
 <meta charset="utf-8">
 <title>Muse 2 Control Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script>try{var l=new URLSearchParams(location.search).get("look")||localStorage.getItem("muse2panel.look");document.documentElement.dataset.look=l==="clean"||l==="neon"?l:"cosmic";}catch(e){document.documentElement.dataset.look="cosmic";}</script>
+<script>try{var l=new URLSearchParams(location.search).get("look")||localStorage.getItem("muse2panel.look");document.documentElement.dataset.look=l==="clean"||l==="neon"||l==="brainrot"?l:"cosmic";}catch(e){document.documentElement.dataset.look="cosmic";}</script>
 <script>try{if(new URLSearchParams(location.search).get("stress")==="1")document.documentElement.classList.add("show-stress");}catch(e){}</script>
 <link rel="stylesheet" href="panel/ui.css">
 <link rel="stylesheet" href="focus/focus-switch.css">
 <link rel="stylesheet" href="panel/engine-ui.css">
+<link rel="stylesheet" href="panel/look-brainrot.css">
 </head>
 <body>
 <div id="stage">
-  <div id="lookSw" role="radiogroup" aria-label="Look" data-pos="0"><i class="knob"></i><button type="button" role="radio" data-look="cosmic" aria-checked="true">Cosmic</button><button type="button" role="radio" data-look="clean" aria-checked="false" tabindex="-1">Clean</button><button type="button" role="radio" data-look="neon" aria-checked="false" tabindex="-1">Neon</button></div>
+  <div id="lookSw" role="radiogroup" aria-label="Look" data-pos="0"><i class="knob"></i><button type="button" role="radio" data-look="cosmic" aria-checked="true">Cosmic</button><button type="button" role="radio" data-look="clean" aria-checked="false" tabindex="-1">Clean</button><button type="button" role="radio" data-look="neon" aria-checked="false" tabindex="-1">Neon</button><button type="button" role="radio" data-look="brainrot" aria-checked="false" tabindex="-1">Brainrot</button></div>
   <!-- neon look: dark patches over the baked sample controls of neon-bg.png (shown only in the neon look) -->
   <div class="neon-only nc" style="left:508px;top:222px;width:194px;height:50px"></div>
   <div class="neon-only nc" style="left:1036px;top:248px;width:440px;height:46px"></div>
